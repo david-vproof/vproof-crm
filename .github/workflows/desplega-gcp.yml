@@ -60,6 +60,9 @@ jobs:
           source deploy/gcp/config.sh
           gcloud compute ssh "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --quiet --strict-host-key-checking=no \
             --ssh-key-expire-after=2h --command "sudo docker ps -a --filter name=vproof-crm; sudo docker logs --tail 60 vproof-crm 2>&1 || true"
+          gcloud compute scp deploy/gcp/inspecciona.sh "$VM_NAME:/tmp/" --zone "$ZONE" --project "$PROJECT_ID" --quiet --strict-host-key-checking=no --ssh-key-expire-after=2h
+          gcloud compute ssh "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --quiet --strict-host-key-checking=no \
+            --ssh-key-expire-after=2h --command "bash /tmp/inspecciona.sh; rm -f /tmp/inspecciona.sh"
 
       - name: Compila la imatge
         if: ${{ !inputs.nomes_estat }}
