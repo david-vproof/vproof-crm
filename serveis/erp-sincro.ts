@@ -291,7 +291,8 @@ async function productes(erp: ConfigErp, llistaPreus: string | null) {
       familia: net(a.item_group),
       erp_familia: net(a.item_group),
       ...(proveidor ? { laboratori: laboratoris.get(proveidor.supplier) ?? undefined, referencia_proveidor: proveidor.referencia } : {}),
-      historic: Boolean(a.disabled) || !a.is_sales_item,
+      // Només si l'ERP ho diu del cert: desactivat, o marcat com a no venible.
+      historic: Number(a.disabled) === 1 || Number(a.is_sales_item) === 0,
       ...(preus ? { preu: preuDe.get(a.name) ?? null } : {}),
       ...(estocs ? { estoc_actual: estoc?.actual ?? 0, estoc_disponible: estoc?.disponible ?? 0 } : {}),
       data_alta: a.creation?.slice(0, 10) ?? null,

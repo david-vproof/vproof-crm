@@ -124,6 +124,18 @@ export async function llistaTot<T>(
     if (opcions.filtres?.length) parametres.set("filters", JSON.stringify(opcions.filtres));
     if (opcions.pare) parametres.set("parent", opcions.pare);
     const { data } = await json<{ data?: T[] }>(config, `/api/resource/${encodeURIComponent(doctype)}?${parametres}`);
+    // Amb el permís «Select» però sense «Read», Frappe només torna el nom: val més aturar-se que importar fitxes buides.
+    if (inici === 0 && data?.length) {
+      const arriben = new Set(Object.keys(data[0] as object));
+      const falten = opcions.camps.filter((camp) => !arriben.has(camp));
+      if (falten.length) {
+        throw new ErrorErp(
+          `L'usuari de l'ERP no pot llegir «${doctype}»: només en veu el nom. Li falta el permís «Read» (no n'hi ha prou amb «Select»). ` +
+            `No arriben: ${falten.join(", ")}.`,
+          403,
+        );
+      }
+    }
     files.push(...(data ?? []));
     if (!data || data.length < PER_PAGINA) return files;
   }
