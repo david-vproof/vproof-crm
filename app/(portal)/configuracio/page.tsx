@@ -1,9 +1,13 @@
 import Link from "next/link";
 
-import { Capcalera, EstatBuit, Plafo } from "@/components/UI";
+import { Capcalera, EstatBuit, Etiqueta, Plafo } from "@/components/UI";
+import { dataHoraCurta } from "@/lib/format";
 import { clientsPerCategoria, frangesDeCategoria } from "@/serveis/crm-categoria";
 import { llistaTipusActivitat, usosDelsTipus } from "@/serveis/crm-tipus-activitat";
 import { estatErp } from "@/serveis/erp";
+import { darreresSincros, hiHaSincroEnCurs } from "@/serveis/erp-sincro";
+
+import { BotoSincronitza } from "./BotoSincronitza";
 
 import { FormulariCategoria } from "./FormulariCategoria";
 import { FormulariTipusActivitat } from "./FormulariTipusActivitat";
@@ -149,19 +153,58 @@ async function PlafoTipusActivitat() {
 }
 
 
-/** La connexió amb vprooferp: d'on vindran els clients, els productes, l'estoc, els preus i la facturació. */
-function SeccioErp() {
+/** La connexió amb vprooferp: l'estat, la sincronització a mà i com han anat les darreres passades. */
+async function SeccioErp() {
   const estat = estatErp();
+  let passades: Awaited<ReturnType<typeof darreresSincros>> = [];
+  let error: string | null = null;
+  try {
+    passades = await darreresSincros(8);
+  } catch (e) {
+    error = (e as Error).message;
+  }
   return (
     <div className="max-w-[820px] space-y-4">
       <Plafo titol="vprooferp">
         <p className="text-[14px] leading-relaxed text-muted">{estat.missatge}</p>
         <p className="mt-3 text-[14px] leading-relaxed text-muted">
-          Mentrestant, el CRM treballa amb les seves pròpies dades: els clients, els laboratoris i els productes es poden
-          crear i editar des del portal, i les taules on l&apos;ERP deixarà l&apos;estoc, els preus, els albarans i la
-          facturació ja hi són, buides.
+          De l&apos;ERP arriben els tipus de client (grups de client), els agents comercials, els laboratoris (proveïdors), els
+          clients amb la seva adreça i els establiments, els productes amb el preu de venda, l&apos;estoc i la foto, els albarans
+          d&apos;aquest exercici i del passat, i la facturació mensual de tres exercicis. El que és només del CRM (potencial,
+          periodicitat, horaris, notes, activitats…) no es toca. Les fitxes que vénen de l&apos;ERP tenen bloquejats els camps
+          que porta l&apos;ERP.
         </p>
+        {estat.connectat ? (
+          <div className="mt-4">
+            <BotoSincronitza enCurs={hiHaSincroEnCurs()} />
+          </div>
+        ) : null}
+      </Plafo>
+
+      <Plafo titol="Darreres sincronitzacions">
+        {error ? (
+          <p className="text-[13.5px] text-muted">{error}</p>
+        ) : passades.length === 0 ? (
+          <p className="text-[13.5px] text-muted">Encara no se n&apos;ha fet cap.</p>
+        ) : (
+          <ul className="divide-y divide-line">
+            {passades.map((passada) => (
+              <li key={passada.inici ?? ""} className="py-3">
+                <p className="flex flex-wrap items-center gap-2 text-[13.5px]">
+                  <span className="font-medium">{passada.inici ? dataHoraCurta(passada.inici) : "—"}</span>
+                  <Etiqueta to={passada.estat === "correcte" ? "verd" : passada.estat === "en_curs" ? "blau" : passada.estat === "parcial" ? "ambre" : "marca"}>
+                    {NOM_ESTAT[passada.estat ?? ""] ?? passada.estat}
+                  </Etiqueta>
+                  <span className="text-muted">{passada.desencadenant === "manual" ? "a mà" : "programada"}</span>
+                </p>
+                {passada.missatge ? <p className="mt-1 whitespace-pre-line text-[12.5px] leading-relaxed text-muted">{passada.missatge}</p> : null}
+              </li>
+            ))}
+          </ul>
+        )}
       </Plafo>
     </div>
   );
 }
+
+const NOM_ESTAT: Record<string, string> = { correcte: "Correcta", parcial: "Amb errors", error: "Error", en_curs: "En curs" };

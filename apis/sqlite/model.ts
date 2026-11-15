@@ -99,8 +99,9 @@ export const MODEL: Record<string, DefinicioTaula> = {
   },
   crm_tipus_client: {
     camps: {
+      erp_id: { tipus: "text", index: true },
       nom: { tipus: "text" },
-      codi_erp: { tipus: "enter" },
+      codi_erp: { tipus: "text" },
       usat_crm: { tipus: "boolea", perDefecte: true },
       font: { tipus: "text", perDefecte: "portal" },
       erp_empremta: { tipus: "text" },
@@ -112,8 +113,9 @@ export const MODEL: Record<string, DefinicioTaula> = {
   },
   crm_agents: {
     camps: {
+      erp_id: { tipus: "text", index: true },
       nom: { tipus: "text" },
-      codi_erp: { tipus: "enter" },
+      codi_erp: { tipus: "text" },
       font: { tipus: "text", perDefecte: "portal" },
       erp_empremta: { tipus: "text" },
       erp_sincronitzat_el: { tipus: "instant" },
@@ -124,6 +126,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
   },
   crm_clients: {
     camps: {
+      erp_id: { tipus: "text", index: true },
       nom_comercial: { tipus: "text" },
       rao_social: { tipus: "text" },
       nif: { tipus: "text" },
@@ -148,7 +151,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
       horari_comercial: { tipus: "json" },
       horari_entregues: { tipus: "json" },
       tarifa: { tipus: "enter" },
-      codi_erp: { tipus: "enter" },
+      codi_erp: { tipus: "text" },
       latitud: { tipus: "decimal" },
       longitud: { tipus: "decimal" },
       data_alta: { tipus: "data" },
@@ -183,6 +186,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
   },
   crm_facturacio: {
     camps: {
+      erp_id: { tipus: "text", index: true },
       client: { tipus: "uuid", m2o: "crm_clients" },
       codi_client_erp: { tipus: "enter" },
       exercici: { tipus: "enter" },
@@ -206,6 +210,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
   },
   crm_establiments: {
     camps: {
+      erp_id: { tipus: "text", index: true },
       nom: { tipus: "text" },
       client: { tipus: "uuid", m2o: "crm_clients" },
       codi_erp: { tipus: "text" },
@@ -253,6 +258,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
   },
   crm_proveidors: {
     camps: {
+      erp_id: { tipus: "text", index: true },
       nom_comercial: { tipus: "text" },
       rao_social: { tipus: "text" },
       nif: { tipus: "text" },
@@ -275,7 +281,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
       bic: { tipus: "text" },
       banc: { tipus: "text" },
       compte_comptable: { tipus: "text" },
-      codi_erp: { tipus: "enter" },
+      codi_erp: { tipus: "text" },
       data_alta: { tipus: "data" },
       erp_modificat_el: { tipus: "data" },
       observacions: { tipus: "text" },
@@ -295,6 +301,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
   },
   crm_articles: {
     camps: {
+      erp_id: { tipus: "text", index: true },
       nom: { tipus: "text" },
       codi_erp: { tipus: "text" },
       codi_barres: { tipus: "text" },
@@ -518,6 +525,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
   },
   crm_albarans: {
     camps: {
+      erp_id: { tipus: "text", index: true },
       codi_erp: { tipus: "text" },
       exercici: { tipus: "enter" },
       serie: { tipus: "text" },
@@ -539,6 +547,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
   },
   crm_albarans_linies: {
     camps: {
+      erp_id: { tipus: "text", index: true },
       codi_erp: { tipus: "text" },
       albara: { tipus: "uuid", m2o: "crm_albarans", enEsborrar: "CASCADE", index: true },
       posicio: { tipus: "enter" },

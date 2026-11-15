@@ -8,6 +8,10 @@
 # L'accés a Google Cloud és el mateix que el de l'ERP: identitat federada per a
 # qualsevol repositori de david-vproof, amb el compte github-deploy.
 #
+# La connexió amb l'ERP: els secrets VPROOFERP_API_KEY i VPROOFERP_API_SECRET
+# (la clau d'API d'un usuari de l'ERP amb permís de lectura). Sense, el CRM
+# arrenca igual, sense sincronització.
+#
 # La contrasenya inicial de l'administrador (admin@vproof.local): el secret
 # CRM_ADMIN_PASSWORD del repositori si n'hi ha; si no, se'n genera una el primer
 # cop i s'escriu al port sèrie de la VM (línia VPROOF_CRM_ADMIN).
@@ -68,13 +72,15 @@ jobs:
         if: ${{ !inputs.nomes_estat }}
         env:
           CRM_ADMIN_PASSWORD: ${{ secrets.CRM_ADMIN_PASSWORD }}
+          VPROOFERP_API_KEY: ${{ secrets.VPROOFERP_API_KEY }}
+          VPROOFERP_API_SECRET: ${{ secrets.VPROOFERP_API_SECRET }}
         run: |
           source deploy/gcp/config.sh
           # La clau SSH d'aquesta execució caduca sola: no se n'acumulen a les metadades del projecte.
           OPCIONS=(--zone "$ZONE" --project "$PROJECT_ID" --quiet --strict-host-key-checking=no --ssh-key-expire-after=2h)
           gcloud compute scp vproof-crm.tar.gz deploy/gcp/remot.sh "$VM_NAME:/tmp/" "${OPCIONS[@]}"
           gcloud compute ssh "$VM_NAME" "${OPCIONS[@]}" \
-            --command "ETIQUETA=${GITHUB_SHA::12} CRM_PORT=$CRM_PORT CRM_ADMIN_PASSWORD='${CRM_ADMIN_PASSWORD}' bash /tmp/remot.sh; codi=\$?; rm -f /tmp/remot.sh; exit \$codi"
+            --command "ETIQUETA=${GITHUB_SHA::12} CRM_PORT=$CRM_PORT CRM_ADMIN_PASSWORD='${CRM_ADMIN_PASSWORD}' VPROOFERP_API_KEY='${VPROOFERP_API_KEY}' VPROOFERP_API_SECRET='${VPROOFERP_API_SECRET}' bash /tmp/remot.sh; codi=\$?; rm -f /tmp/remot.sh; exit \$codi"
 
       - name: Obre el port del CRM
         if: ${{ !inputs.nomes_estat }}

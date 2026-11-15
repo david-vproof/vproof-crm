@@ -77,7 +77,7 @@ function instant(valor: unknown): string | null {
 }
 
 /** Un valor tal com es desa a la columna. */
-function aColumna(definicio: DefinicioCamp | "id", valor: unknown): Valor {
+export function aColumna(definicio: DefinicioCamp | "id", valor: unknown): Valor {
   if (valor === undefined || valor === null) return null;
   if (definicio === "id") return String(valor);
   switch (definicio.tipus) {

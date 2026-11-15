@@ -8,7 +8,7 @@ adaptat al sector: els cellers ara són **laboratoris**, els vins són
 Cada funcionalitat porta el seu estat:
 
 - ✅ funciona tal com està, sobre la base de dades SQLite del portal;
-- 🟡 funciona, però les dades les ha de portar l'ERP (vprooferp) i ara la taula és buida;
+- 🟡 funciona amb les dades que porta l'ERP (vprooferp): sense connexió, la taula és buida;
 - ⏳ pendent.
 
 ## 1. Accés i usuaris
@@ -62,7 +62,7 @@ Cada funcionalitat porta el seu estat:
 | Valors CRM · tipus d'activitat | ✅ | Crear, reanomenar, activar o desactivar; si compten com a visita, si porten productes i si porten laboratori. |
 | Tipus de client | ✅ | Clínica veterinària, hospital veterinari, botiga d'animals, explotació ramadera, distribuïdor i altres (editables). |
 | Agents comercials | ✅ | Es creen al portal i es lliguen als usuaris. |
-| Connexió amb l'ERP | ⏳ | Pestanya que diu l'estat. El connector amb vprooferp encara no està fet (vegeu més avall). |
+| Connexió amb l'ERP | ✅ | Estat, «Sincronitza ara» i historial de passades (vegeu més avall). |
 
 ## 5. Altres
 
@@ -84,22 +84,30 @@ Cada funcionalitat porta el seu estat:
 - Tot el vocabulari del vi: anyada, varietat, productor, zona, regió, colors
   del vi, ampolles, la marca anterior i les seves fonts.
 
-## 7. Pendent: connexió amb vprooferp
+## 7. Connexió amb vprooferp (ERPNext)
 
-El CRM ja té les taules on l'ERP deixarà les dades, i cada fitxa sap si ve de
-l'ERP (`font = "erp"`, camps bloquejats) o del portal. Falta el connector, que
-anirà a `apis/vprooferp/` i es cridarà des de `serveis/erp.ts` i del
-programador (`lib/programador.ts`). Haurà de portar:
+La sincronització va de l'ERP cap al CRM (`serveis/erp-sincro.ts`, client a
+`apis/vprooferp/`). Es fa sola cada 30 minuts (`VPROOFERP_SINCRO_MINUTS`) i a mà
+des de **Configuració › Connexió amb l'ERP**, on queda el resultat de cada passada.
 
-| Dada de l'ERP | Taula del CRM |
+| De l'ERP (doctype) | Al CRM |
 | --- | --- |
-| Clients | `crm_clients` (per `codi_erp`) |
-| Establiments / adreces d'entrega | `crm_establiments` |
-| Tipus de client i agents | `crm_tipus_client`, `crm_agents` |
-| Laboratoris (proveïdors) | `crm_proveidors` |
-| Productes, preu i estoc | `crm_articles` (`preu`, `estoc_actual`, `estoc_disponible`) |
-| Albarans de venda i línies | `crm_albarans`, `crm_albarans_linies` |
-| Facturació per client i mes | `crm_facturacio`, i després `recalculaResumsDeClients()` |
+| Customer Group | Tipus de client (adopta els del CRM amb el mateix nom) |
+| Sales Person | Agents comercials |
+| Supplier (amb l'adreça principal) | Laboratoris |
+| Customer (adreça principal, comercial de l'equip de vendes) | Clients; inactiu a l'ERP = baixa |
+| Address d'entrega lligades a un client | Establiments |
+| Item, Item Price (llista de venda), Bin, Item Default/Supplier, foto | Productes: preu, estoc actual i disponible, laboratori, foto |
+| Delivery Note i línies (aquest exercici i el passat) | Albarans, i la marca «Comprat» del selector |
+| Sales Invoice (tres exercicis) | Facturació mensual, resum i categoria de cada client |
 
-Per fer-lo cal accés al repositori `david-vproof/vprooferp` per conèixer la
-seva API.
+El que és només del CRM no es toca: potencial, periodicitat, horaris, notes,
+activitats, les característiques veterinàries dels productes… Les fitxes de
+l'ERP tenen bloquejats al formulari els camps que porta l'ERP. Les que l'ERP
+deixa de portar queden marcades com a absents, no s'esborren.
+
+**Credencials**: la clau d'API d'un usuari de l'ERP amb permís de lectura
+(rols Sales User, Stock User, Purchase User i Accounts User). Es posa com a
+secrets del repositori (`VPROOFERP_API_KEY` i `VPROOFERP_API_SECRET`) i el
+desplegament la copia a la configuració del CRM a la VM. El CRM parla amb l'ERP
+per la xarxa interna de Docker de la VM.

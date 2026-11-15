@@ -6,7 +6,8 @@
 # dades (`vproof-crm-dades`) i la seva configuració a /var/lib/vproof-crm/env.
 #
 # Entrada (variables d'entorn): ETIQUETA (la de la imatge), CRM_PORT i,
-# opcionalment, CRM_ADMIN_PASSWORD. Sense, el primer cop se'n genera una
+# opcionalment, CRM_ADMIN_PASSWORD, VPROOFERP_API_KEY i VPROOFERP_API_SECRET.
+# Sense CRM_ADMIN_PASSWORD, el primer cop se'n genera una
 # d'aleatòria i s'escriu al port sèrie de la VM, com fa l'ERP amb la seva.
 
 set -euo pipefail
@@ -36,9 +37,37 @@ if ! sudo test -f "$DIR/env"; then
   fi
 fi
 
+# --- Connexió amb l'ERP ------------------------------------------------------
+# El CRM parla amb l'ERP per la xarxa interna de Docker: s'uneix a la xarxa
+# del frontend de l'ERP i hi entra amb el nom del site a la capçalera Host. La
+# clau d'API la porta el workflow (secrets VPROOFERP_API_KEY i
+# VPROOFERP_API_SECRET del repositori) i només es desa a $DIR/env.
+FRONTEND="$(sudo docker ps --format '{{.Names}}' | grep -E '(^|-)frontend(-|$)' | head -1 || true)"
+BACKEND="$(sudo docker ps --format '{{.Names}}' | grep -E '(^|-)backend(-|$)' | head -1 || true)"
+XARXA=""
+if [ -n "$FRONTEND" ] && [ -n "$BACKEND" ]; then
+  XARXA="$(sudo docker inspect -f '{{range $nom, $x := .NetworkSettings.Networks}}{{$nom}} {{end}}' "$FRONTEND" | awk '{print $1}')"
+  SITE="$(sudo docker exec -w /home/frappe/frappe-bench/sites "$BACKEND" sh -c 'for d in */site_config.json; do echo "${d%/site_config.json}"; done' 2>/dev/null | head -1 || true)"
+  echo "▸ ERP: frontend $FRONTEND, xarxa $XARXA, site ${SITE:-?}"
+  if [ -n "${VPROOFERP_API_KEY:-}" ] && [ -n "${VPROOFERP_API_SECRET:-}" ] && [ -n "$SITE" ]; then
+    # Es reescriuen sempre: si la clau canvia als secrets, el CRM fa servir la nova.
+    sudo sed -i '/^VPROOFERP_\(URL\|HOST\|API_KEY\|API_SECRET\)=/d' "$DIR/env"
+    printf 'VPROOFERP_URL=http://%s:8080\nVPROOFERP_HOST=%s\nVPROOFERP_API_KEY=%s\nVPROOFERP_API_SECRET=%s\n' \
+      "$FRONTEND" "$SITE" "$VPROOFERP_API_KEY" "$VPROOFERP_API_SECRET" | sudo tee -a "$DIR/env" >/dev/null
+    echo "  Connexió amb l'ERP configurada."
+  elif sudo grep -q '^VPROOFERP_API_SECRET=' "$DIR/env"; then
+    echo "  Es manté la connexió amb l'ERP que ja hi havia."
+  else
+    echo "  Sense clau d'API de l'ERP (secrets VPROOFERP_API_KEY i VPROOFERP_API_SECRET): el CRM arrenca sense sincronització."
+  fi
+else
+  echo "▸ No he trobat els contenidors de l'ERP: el CRM arrenca sense connexió."
+fi
+
 echo "▸ Arrencant el contenidor"
 sudo docker rm -f vproof-crm >/dev/null 2>&1 || true
 sudo docker run -d --name vproof-crm --restart unless-stopped \
+  ${XARXA:+--network "$XARXA"} \
   -p "$CRM_PORT:3000" \
   --env-file "$DIR/env" \
   -v vproof-crm-dades:/app/dades \

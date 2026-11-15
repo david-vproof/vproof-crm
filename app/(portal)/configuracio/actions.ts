@@ -7,6 +7,7 @@ import { llegeixTipusEnviats } from "@/domini/crm-tipus-activitat";
 import { potVeureTot } from "@/lib/sessio-actual";
 import { ErrorCategoria, desaFranges } from "@/serveis/crm-categoria";
 import { ErrorTipusActivitat, desaTipusActivitat } from "@/serveis/crm-tipus-activitat";
+import { sincronitzaAmbErp } from "@/serveis/erp-sincro";
 
 export type EstatConfiguracio = { to?: "ok" | "error"; missatge?: string };
 
@@ -65,5 +66,20 @@ export async function desaTipus(_previ: EstatConfiguracio, formulari: FormData):
   } catch (error) {
     if (error instanceof ErrorTipusActivitat) return { to: "error", missatge: error.message };
     return { to: "error", missatge: `No s'ha pogut desar: ${(error as Error).message}` };
+  }
+}
+
+/** Sincronitza ara amb l'ERP. Pot trigar uns quants minuts: el botó espera. */
+export async function sincronitzaAra(): Promise<EstatConfiguracio> {
+  if (!(await potVeureTot())) return SENSE_PERMIS;
+  try {
+    const resultat = await sincronitzaAmbErp("manual");
+    revalidatePath("/configuracio");
+    const errors = resultat.passos.filter((pas) => !pas.correcte);
+    return errors.length
+      ? { to: "error", missatge: `Feta amb errors: ${errors.map((pas) => `${pas.nom}: ${pas.error}`).join(" · ")}` }
+      : { to: "ok", missatge: "Sincronització feta." };
+  } catch (error) {
+    return { to: "error", missatge: (error as Error).message };
   }
 }

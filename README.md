@@ -74,12 +74,17 @@ Per fer-ne una còpia de seguretat n'hi ha prou de copiar el directori `dades/`
 
 ## ERP (vprooferp)
 
-Encara no hi ha connector. El model ja preveu el que hi arribarà: cada fitxa
-porta `font` (`erp` o `portal`) i `codi_erp`, i les que vinguin de l'ERP tindran
-els camps de l'ERP bloquejats al formulari. Les taules que esperen l'ERP són a
-[`docs/FUNCIONALITATS.md`](docs/FUNCIONALITATS.md#7-pendent-connexió-amb-vprooferp).
-El punt d'entrada serà `serveis/erp.ts`, i la importació periòdica anirà al
-programador (`lib/programador.ts`).
+vprooferp és un ERPNext. El CRM en llegeix, per l'API REST, els grups de
+client, els comercials, els proveïdors (laboratoris), els clients amb les seves
+adreces, els articles amb el preu, l'estoc i la foto, els albarans i les
+factures. És en una sola direcció i es fa cada 30 minuts o a mà des de
+Configuració. Detall i correspondència de camps a
+[`docs/FUNCIONALITATS.md`](docs/FUNCIONALITATS.md#7-connexió-amb-vprooferp-erpnext).
+
+Variables: `VPROOFERP_URL`, `VPROOFERP_API_KEY`, `VPROOFERP_API_SECRET` i,
+opcionalment, `VPROOFERP_HOST` (el site de Frappe, si l'adreça no ho és),
+`VPROOFERP_LLISTA_PREUS` (per defecte, «Standard Selling») i
+`VPROOFERP_SINCRO_MINUTS` (per defecte 30; 0 l'atura).
 
 ## Tauler de CRM
 

@@ -1,25 +1,38 @@
 /**
- * La connexió amb l'ERP, vprooferp.
- *
- * El CRM no en llegeix res encara: els clients, els laboratoris i els
- * productes viuen a la base de dades del portal i es mantenen des del portal.
- * Quan vprooferp hi estigui connectat, serà aquí on es llegirà (via
- * `apis/vprooferp/`) i des d'on s'ompliran les taules que avui l'esperen buides:
- * l'estoc i el preu dels productes, els albarans de venda i la facturació dels
- * clients. Les fitxes que en vinguin portaran `font = "erp"` i el seu codi a
- * `codi_erp`, com ja preveu el model.
+ * La connexió amb l'ERP, vprooferp (un ERPNext): si està configurada i com ha
+ * anat la darrera sincronització. La sincronització mateixa és a
+ * `serveis/erp-sincro.ts`.
  */
 import "server-only";
 
-export type EstatErp = { connectat: boolean; url: string | null; missatge: string };
+import { configErp } from "@/apis/vprooferp";
+
+export type EstatErp = { connectat: boolean; url: string | null; minuts: number; missatge: string };
+
+/** Cada quants minuts es sincronitza sol (VPROOFERP_SINCRO_MINUTS, per defecte 30; 0 l'atura). */
+export function minutsEntreSincros() {
+  const minuts = Number(process.env.VPROOFERP_SINCRO_MINUTS ?? 30);
+  return Number.isFinite(minuts) && minuts >= 0 ? minuts : 30;
+}
 
 export function estatErp(): EstatErp {
-  const url = process.env.VPROOFERP_URL?.trim() || null;
+  const config = configErp();
+  const minuts = minutsEntreSincros();
+  if (!config) {
+    return {
+      connectat: false,
+      url: process.env.VPROOFERP_URL?.trim() || null,
+      minuts,
+      missatge:
+        "El CRM no té connexió amb vprooferp: falten VPROOFERP_URL, VPROOFERP_API_KEY i VPROOFERP_API_SECRET a l'entorn del servei. El desplegament a la VM de l'ERP les posa soles.",
+    };
+  }
   return {
-    connectat: false,
-    url,
-    missatge: url
-      ? `L'adreça de vprooferp és ${url}, però el connector encara no està fet: el CRM no en llegeix res.`
-      : "El CRM encara no està connectat a vprooferp. Quan ho estigui, n'arribaran els clients, l'estoc, els preus, els albarans i la facturació.",
+    connectat: true,
+    url: config.url.toString(),
+    minuts,
+    missatge:
+      `El CRM llegeix vprooferp (${config.host ?? config.url.host})` +
+      (minuts > 0 ? ` i se sincronitza sol cada ${minuts} minuts.` : ". La sincronització automàtica està aturada."),
   };
 }
