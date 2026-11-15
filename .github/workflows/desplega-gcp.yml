@@ -55,7 +55,7 @@ jobs:
         run: |
           source deploy/gcp/config.sh
           gcloud compute ssh "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --quiet --strict-host-key-checking=no \
-            --command "sudo docker ps -a --filter name=vproof-crm; sudo docker logs --tail 60 vproof-crm 2>&1 || true"
+            --ssh-key-expire-after=2h --command "sudo docker ps -a --filter name=vproof-crm; sudo docker logs --tail 60 vproof-crm 2>&1 || true"
 
       - name: Compila la imatge
         if: ${{ !inputs.nomes_estat }}
@@ -70,7 +70,8 @@ jobs:
           CRM_ADMIN_PASSWORD: ${{ secrets.CRM_ADMIN_PASSWORD }}
         run: |
           source deploy/gcp/config.sh
-          OPCIONS=(--zone "$ZONE" --project "$PROJECT_ID" --quiet --strict-host-key-checking=no)
+          # La clau SSH d'aquesta execució caduca sola: no se n'acumulen a les metadades del projecte.
+          OPCIONS=(--zone "$ZONE" --project "$PROJECT_ID" --quiet --strict-host-key-checking=no --ssh-key-expire-after=2h)
           gcloud compute scp vproof-crm.tar.gz deploy/gcp/remot.sh "$VM_NAME:/tmp/" "${OPCIONS[@]}"
           gcloud compute ssh "$VM_NAME" "${OPCIONS[@]}" \
             --command "ETIQUETA=${GITHUB_SHA::12} CRM_PORT=$CRM_PORT CRM_ADMIN_PASSWORD='${CRM_ADMIN_PASSWORD}' bash /tmp/remot.sh; codi=\$?; rm -f /tmp/remot.sh; exit \$codi"
