@@ -17,8 +17,6 @@ const FLASH: Record<string, string> = {
   creat: "Usuari creat. Ja pot entrar al portal amb el seu correu i la contrasenya inicial.",
   desat: "Canvis desats.",
   rol: "Rol Manager creat. Ja es pot donar a qui hagi de veure els clients de tothom.",
-  rol_sense_politica:
-    "Rol Manager creat, però sense la política de l'equip (wine_users): qui el tingui no podrà entrar fins que es passi scripts/crm-acces.mjs.",
 };
 
 const dataHora = new Intl.DateTimeFormat("ca-ES", {

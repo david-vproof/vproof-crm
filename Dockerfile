@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
 
 # --- Dependències -----------------------------------------------------------
-FROM node:20-slim AS deps
+FROM node:22-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
 # --- Compilació -------------------------------------------------------------
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
@@ -15,20 +15,24 @@ COPY . .
 RUN npm run build
 
 # --- Execució ---------------------------------------------------------------
-FROM node:20-slim AS runner
+FROM node:22-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
-    PORT=8080 \
-    HOSTNAME=0.0.0.0
+    PORT=3000 \
+    HOSTNAME=0.0.0.0 \
+    SQLITE_RUTA=/app/dades/vproof-crm.sqlite
 
-# Usuari sense privilegis.
+# Usuari sense privilegis. La base de dades i els fitxers pujats viuen a
+# /app/dades, que ha de ser un volum: si no, es perden en refer el contenidor.
 RUN groupadd --system --gid 1001 nodejs \
-  && useradd --system --uid 1001 --gid nodejs nextjs
+  && useradd --system --uid 1001 --gid nodejs nextjs \
+  && mkdir -p /app/dades && chown nextjs:nodejs /app/dades
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
-EXPOSE 8080
+VOLUME ["/app/dades"]
+EXPOSE 3000
 CMD ["node", "server.js"]

@@ -152,7 +152,7 @@ export async function preusDelCataleg(): Promise<PreusDelCataleg> {
 }
 
 /** Quants clients es poden mirar d'un cop: un segment sencer hi cap. */
-export const MAXIM_CLIENTS_TASTOS = 500;
+export const MAXIM_CLIENTS_PRESENTACIONS = 500;
 
 const LINIES_ALBARA = "crm_albarans_linies";
 
@@ -164,7 +164,7 @@ type FilaCompra = {
   albara: { data: string | null; client: { id: string; nom_comercial: string | null } | null } | null;
 };
 
-const idsNets = (clients: string[]) => [...new Set(clients.filter(Boolean))].slice(0, MAXIM_CLIENTS_TASTOS);
+const idsNets = (clients: string[]) => [...new Set(clients.filter(Boolean))].slice(0, MAXIM_CLIENTS_PRESENTACIONS);
 
 /** Una activitat on s'ha presentat un producte. */
 export type ActivitatDelPresentacio = {

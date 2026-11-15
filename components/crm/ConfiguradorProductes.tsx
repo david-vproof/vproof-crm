@@ -10,7 +10,7 @@ import { FotoArticle } from "@/components/FotoArticle";
 import { ICONES } from "@/components/Icones";
 import { CARACTERISTIQUES } from "@/domini/cataleg-articles";
 import {
-  CRITERIS_BUITS, FILTRES_COMPRA, FILTRES_TAST, MAXIM_PRODUCTES_PER_ACTIVITAT, MAXIM_PRODUCTES_PER_PLANTILLA, afegeixALaCistella,
+  CRITERIS_BUITS, FILTRES_COMPRA, FILTRES_PRESENTACIO, MAXIM_PRODUCTES_PER_ACTIVITAT, MAXIM_PRODUCTES_PER_PLANTILLA, afegeixALaCistella,
   cistellaDePlantilla, commutaValor, esTriat, filtraProductes, liniesPerDesar, opcionsDeCriteris, passaFiltrePerClients,
   quantsCriteris, resumPerClients, treuDeLaCistella, producteVisible, type ClientOLead as ClientTriat, type Compres, type CriterisProductes, type FiltrePerClients, type LiniaCistella,
   type OpcioPerClients, type Plantilla, type ResumPlantilla, type Presentacio, type Presentacions, type ProducteDeCataleg,
@@ -708,7 +708,7 @@ export function ConfiguradorProductes({
       {criteriPreu}
 
       {/* Els dos criteris que depenen dels clients triats: presentat i comprat. */}
-      {criteriPerClients("Presentat", "presentacio", FILTRES_TAST, filtrePresentacio, setFiltrePresentacio)}
+      {criteriPerClients("Presentat", "presentacio", FILTRES_PRESENTACIO, filtrePresentacio, setFiltrePresentacio)}
       {criteriPerClients("Comprat", "compra", FILTRES_COMPRA, filtreCompra, setFiltreCompra)}
 
       {CARACTERISTIQUES.map((caracteristica) => {

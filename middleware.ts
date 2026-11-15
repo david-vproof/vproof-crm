@@ -72,6 +72,6 @@ export const config = {
   // S'exclouen els assets, les rutes internes de Next i el que el sistema
   // demana sense galeta en instal·lar l'app: el manifest i les icones.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icon/|apple-icon|.*\\.(?:jpg|png|svg|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icon/|apple-icon|.*\\.(?:jpg|png|svg|webp|ico|txt)$).*)",
   ],
 };

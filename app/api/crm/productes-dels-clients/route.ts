@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { MAXIM_CLIENTS_TASTOS, productesCompratsPer, productesHistoricsEntre, productesPresentatsPer } from "@/serveis/crm-productes";
+import { MAXIM_CLIENTS_PRESENTACIONS, productesCompratsPer, productesHistoricsEntre, productesPresentatsPer } from "@/serveis/crm-productes";
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
@@ -9,7 +9,7 @@ const idsDe = (brut: string | null) =>
     .split(",")
     .map((id) => id.trim())
     .filter((id) => UUID.test(id))
-    .slice(0, MAXIM_CLIENTS_TASTOS);
+    .slice(0, MAXIM_CLIENTS_PRESENTACIONS);
 
 /**
  * Què han presentat i què han comprat uns clients i uns leads, per al selector de

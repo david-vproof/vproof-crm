@@ -34,7 +34,7 @@ const PRIMERA_FRANJA = 62;
 const FRANJA = 100;
 const COLUMNA = { nom: 57, especie: 317, forma: 437, observacions: 627 };
 /** La caixa on va la foto del producte, alineada amb el nom. */
-const AMPOLLA = { left: COLUMNA.nom, top: 46, amplada: 150, alcada: 42 };
+const CAIXA_FOTO = { left: COLUMNA.nom, top: 46, amplada: 150, alcada: 42 };
 
 /**
  * react-pdf posa la línia base del text a la part de dalt de la seva caixa més
@@ -61,7 +61,7 @@ const estil = StyleSheet.create({
   producte: { position: "absolute", left: COLUMNA.nom - MARGE, top: light(MIDA.nom, 22.21).top, width: COLUMNA.especie - COLUMNA.nom - 2 },
   nom: { fontFamily: "Helvetica", fontSize: MIDA.nom },
   principiActiu: { fontFamily: "Helvetica", fontSize: MIDA.valor, marginTop: light(MIDA.valor, 35.95).top - light(MIDA.nom, 22.21).top - ALCADA_LINIA.light * MIDA.nom },
-  foto: { width: AMPOLLA.amplada, height: AMPOLLA.alcada, position: "relative" },
+  foto: { width: CAIXA_FOTO.amplada, height: CAIXA_FOTO.alcada, position: "relative" },
   etiqueta: { ...light(MIDA.etiqueta, 22), position: "absolute" },
   valor: { ...light(MIDA.valor, 35.95), position: "absolute" },
   segonaEtiqueta: { ...light(MIDA.etiqueta, 56), position: "absolute" },
@@ -97,11 +97,11 @@ const tipusVertical = {
 function Foto({ foto, sotaPrincipiActiu }: { foto: DadesFulla["productes"][number]["foto"]; sotaPrincipiActiu: boolean }) {
   if (!foto) return null;
   const dreta = foto.alcada > foto.amplada;
-  const { amplada, alcada } = AMPOLLA;
+  const { amplada, alcada } = CAIXA_FOTO;
   // On acaba el text de sobre: el nom sol, o el nom i el principi actiu.
   const final = sotaPrincipiActiu ? light(MIDA.valor, 35.95).top + ALCADA_LINIA.light * MIDA.valor : light(MIDA.nom, 22.21).top + ALCADA_LINIA.light * MIDA.nom;
   return (
-    <View style={[estil.foto, { marginTop: AMPOLLA.top - final }]}>
+    <View style={[estil.foto, { marginTop: CAIXA_FOTO.top - final }]}>
       {dreta ? (
         <ImatgePdf
           src={{ data: foto.data, format: foto.format }}

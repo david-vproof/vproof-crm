@@ -265,7 +265,7 @@ export type FiltrePerClients = "tots" | "cap" | "algun";
 /** Les opcions del criteri, amb el text per a diversos clients i per a un de sol (null: no surt). */
 export type OpcioPerClients = { valor: FiltrePerClients; etiqueta: string; ambUn: string | null };
 
-export const FILTRES_TAST: OpcioPerClients[] = [
+export const FILTRES_PRESENTACIO: OpcioPerClients[] = [
   { valor: "tots", etiqueta: "Tant si l'han presentat com si no", ambUn: "Tant si l'ha presentat com si no" },
   { valor: "cap", etiqueta: "Que no ha presentat cap", ambUn: "Que no ha presentat" },
   { valor: "algun", etiqueta: "Que n'ha presentat algun", ambUn: "Que ja ha presentat" },

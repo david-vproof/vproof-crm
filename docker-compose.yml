@@ -1,0 +1,22 @@
+# vproof CRM en un servidor amb Docker.
+#
+#   cp .env.example .env   # i omple AUTH_SECRET, PORTAL_USUARI i PORTAL_CONTRASENYA
+#   docker compose up -d --build
+#
+# La base de dades SQLite i els fitxers pujats queden al volum «dades».
+services:
+  crm:
+    build: .
+    image: vproof-crm
+    container_name: vproof-crm
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      SQLITE_RUTA: /app/dades/vproof-crm.sqlite
+    ports:
+      - "${CRM_PORT:-3000}:3000"
+    volumes:
+      - dades:/app/dades
+
+volumes:
+  dades:
