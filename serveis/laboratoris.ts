@@ -36,7 +36,7 @@ export type FitxaLaboratori = {
   pais: string | null;
   telefon: string | null;
   correu: string | null;
-  codi_erp: number | null;
+  codi_erp: string | number | null;
 };
 
 export type FiltreLaboratoris = {
@@ -57,8 +57,8 @@ function condicionsDeCerca(terme: string): Condicio[] {
   const net = terme.trim();
   if (!net) return [];
   const proves: Condicio[] = CAMPS_TEXT.map((camp) => ({ [camp]: { _icontains: net } }));
-  // _icontains contra una columna de números peta a la base de dades: el codi es prova
-  // per igualtat, i només si el terme ho és tot de xifres.
+  // El codi pot ser de l'ERP («SUP-0001») o un número: es busca com a text, i el número també per igualtat.
+  proves.push({ codi_erp: { _icontains: net } });
   if (/^\d+$/.test(net)) proves.push({ codi_erp: { _eq: Number(net) } });
   return [{ _or: proves }];
 }

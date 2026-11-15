@@ -19,7 +19,8 @@ export function tipusLaboratori(tipus: string | null) {
   return etiquetaDe("tipus", tipus);
 }
 
-/** El codi de l'ERP, a quatre xifres com el dels clients. */
-export function codiLaboratori(codi: number | null) {
-  return codi === null || codi === undefined ? "—" : String(codi).padStart(4, "0");
+/** El codi de l'ERP: si és un número, a quatre xifres; si no, tal com és. Sense codi, una ratlla. */
+export function codiLaboratori(codi: string | number | null) {
+  if (codi === null || codi === undefined || String(codi).trim() === "") return "—";
+  return /^\d+$/.test(String(codi)) ? String(codi).padStart(4, "0") : String(codi);
 }

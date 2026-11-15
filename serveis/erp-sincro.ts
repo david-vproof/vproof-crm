@@ -64,6 +64,16 @@ type Factura = { name: string; customer: string | null; posting_date: string | n
 
 const net = (valor: string | null | undefined) => (valor ?? "").trim() || null;
 
+/**
+ * El codi de l'ERP, només si és un codi: ERPNext sovint identifica proveïdors,
+ * clients i grups pel mateix nom, i llavors el «codi» repetiria el nom. El
+ * lligam amb l'ERP és `erp_id`, que sí que porta sempre l'identificador.
+ */
+function codiSiNoEsElNom(identificador: string, nom: string | null | undefined) {
+  const pla = (text: string) => text.trim().toLocaleLowerCase("ca");
+  return nom && pla(identificador) === pla(nom) ? null : identificador;
+}
+
 /** Els països arriben en anglès de l'ERP. Els d'aquí, en català; la resta, tal qual. */
 const PAISOS: Record<string, string> = {
   spain: "Espanya", france: "França", andorra: "Andorra", portugal: "Portugal", italy: "Itàlia", germany: "Alemanya",
@@ -102,7 +112,7 @@ async function grupsDeClient(erp: ConfigErp) {
   const grups = await llistaTot<GrupClient>(erp, "Customer Group", { camps: ["name", "customer_group_name", "is_group"] });
   const files: FilaImportada[] = grups
     .filter((grup) => !grup.is_group)
-    .map((grup) => ({ erp_id: grup.name, nom: net(grup.customer_group_name) ?? grup.name, codi_erp: grup.name, usat_crm: true }));
+    .map((grup) => ({ erp_id: grup.name, nom: net(grup.customer_group_name) ?? grup.name, codi_erp: codiSiNoEsElNom(grup.name, grup.customer_group_name), usat_crm: true }));
   return importa("crm_tipus_client", files, {
     adopta: (fila) => idPerCamp("crm_tipus_client", "nom", fila.nom),
     nomesEnCrear: ["usat_crm"],
@@ -113,7 +123,7 @@ async function comercials(erp: ConfigErp) {
   const persones = await llistaTot<Comercial>(erp, "Sales Person", { camps: ["name", "sales_person_name", "enabled", "is_group"] });
   const files: FilaImportada[] = persones
     .filter((persona) => !persona.is_group)
-    .map((persona) => ({ erp_id: persona.name, nom: net(persona.sales_person_name) ?? persona.name, codi_erp: persona.name }));
+    .map((persona) => ({ erp_id: persona.name, nom: net(persona.sales_person_name) ?? persona.name, codi_erp: codiSiNoEsElNom(persona.name, persona.sales_person_name) }));
   return importa("crm_agents", files, { adopta: (fila) => idPerCamp("crm_agents", "nom", fila.nom) });
 }
 
@@ -142,7 +152,7 @@ async function laboratoris(erp: ConfigErp) {
     const adreca = adreces.get(p.supplier_primary_address ?? "");
     return {
       erp_id: p.name,
-      codi_erp: p.name,
+      codi_erp: codiSiNoEsElNom(p.name, p.supplier_name),
       nom_comercial: net(p.supplier_name) ?? p.name,
       rao_social: net(p.supplier_name),
       nif: net(p.tax_id),
@@ -178,7 +188,7 @@ async function clients(erp: ConfigErp) {
     const agent = comercialDe.get(c.name);
     return {
       erp_id: c.name,
-      codi_erp: c.name,
+      codi_erp: codiSiNoEsElNom(c.name, c.customer_name),
       nom_comercial: net(c.customer_name) ?? c.name,
       rao_social: net(c.customer_name),
       nif: net(c.tax_id),
