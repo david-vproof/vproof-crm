@@ -1,0 +1,110 @@
+# Desplega el CRM a la mateixa VM de Google Cloud que l'ERP (ERPNext).
+#
+# Compila la imatge aquí, la copia a la VM i hi arrenca el contenidor
+# `vproof-crm` al port CRM_PORT (deploy/gcp/config.sh). L'ERP no es toca: ni
+# els seus contenidors ni el seu script d'arrencada. Les dades del CRM viuen al
+# volum `vproof-crm-dades` de la VM i sobreviuen als desplegaments.
+#
+# L'accés a Google Cloud és el mateix que el de l'ERP: identitat federada per a
+# qualsevol repositori de david-vproof, amb el compte github-deploy.
+#
+# La contrasenya inicial de l'administrador (admin@vproof.local): el secret
+# CRM_ADMIN_PASSWORD del repositori si n'hi ha; si no, se'n genera una el primer
+# cop i s'escriu al port sèrie de la VM (línia VPROOF_CRM_ADMIN).
+name: Desplega el CRM a Google Cloud
+
+on:
+  workflow_dispatch:
+    inputs:
+      nomes_estat:
+        description: "No despleguis: només ensenya l'estat del contenidor a la VM"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: desplegament-crm
+  cancel-in-progress: false
+
+jobs:
+  desplega:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/541693513802/locations/global/workloadIdentityPools/github/providers/github-oidc
+          service_account: github-deploy@vprooferp.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Accés per SSH a la VM
+        run: |
+          source deploy/gcp/config.sh
+          gcloud compute ssh "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --quiet \
+            --strict-host-key-checking=no --ssh-key-expire-after=2h \
+            --command "echo connectat a \$(hostname); sudo docker ps --format '{{.Names}}  {{.Status}}  {{.Ports}}'"
+
+      - name: Estat
+        if: ${{ inputs.nomes_estat }}
+        run: |
+          source deploy/gcp/config.sh
+          gcloud compute ssh "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --quiet --strict-host-key-checking=no \
+            --command "sudo docker ps -a --filter name=vproof-crm; sudo docker logs --tail 60 vproof-crm 2>&1 || true"
+
+      - name: Compila la imatge
+        if: ${{ !inputs.nomes_estat }}
+        run: |
+          docker build -t "vproof-crm:${GITHUB_SHA::12}" .
+          docker save "vproof-crm:${GITHUB_SHA::12}" | gzip > vproof-crm.tar.gz
+          ls -lh vproof-crm.tar.gz
+
+      - name: Copia i arrenca a la VM
+        if: ${{ !inputs.nomes_estat }}
+        env:
+          CRM_ADMIN_PASSWORD: ${{ secrets.CRM_ADMIN_PASSWORD }}
+        run: |
+          source deploy/gcp/config.sh
+          OPCIONS=(--zone "$ZONE" --project "$PROJECT_ID" --quiet --strict-host-key-checking=no)
+          gcloud compute scp vproof-crm.tar.gz deploy/gcp/remot.sh "$VM_NAME:/tmp/" "${OPCIONS[@]}"
+          gcloud compute ssh "$VM_NAME" "${OPCIONS[@]}" \
+            --command "ETIQUETA=${GITHUB_SHA::12} CRM_PORT=$CRM_PORT CRM_ADMIN_PASSWORD='${CRM_ADMIN_PASSWORD}' bash /tmp/remot.sh; codi=\$?; rm -f /tmp/remot.sh; exit \$codi"
+
+      - name: Obre el port del CRM
+        if: ${{ !inputs.nomes_estat }}
+        # Si el compte de desplegament no pot crear regles de tallafoc, el CRM corre igual: es diu què cal fer.
+        continue-on-error: true
+        run: |
+          source deploy/gcp/config.sh
+          XARXA="$(gcloud compute instances describe "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --format='value(networkInterfaces[0].network.basename())')"
+          gcloud compute instances add-tags "$VM_NAME" --tags vproof-crm --zone "$ZONE" --project "$PROJECT_ID"
+          if gcloud compute firewall-rules describe vproof-crm --project "$PROJECT_ID" >/dev/null 2>&1; then
+            echo "La regla vproof-crm ja hi és."
+          else
+            gcloud compute firewall-rules create vproof-crm --project "$PROJECT_ID" --network "$XARXA" \
+              --allow "tcp:$CRM_PORT" --target-tags vproof-crm --source-ranges 0.0.0.0/0 \
+              --description "vproof CRM (contenidor vproof-crm a la VM de l'ERP)" || {
+              echo "::warning::No s'ha pogut obrir el port $CRM_PORT. Des de Cloud Shell: gcloud compute firewall-rules create vproof-crm --project $PROJECT_ID --network $XARXA --allow tcp:$CRM_PORT --target-tags vproof-crm --source-ranges 0.0.0.0/0"
+              exit 1
+            }
+          fi
+
+      - name: Comprova des de fora
+        if: ${{ !inputs.nomes_estat }}
+        run: |
+          source deploy/gcp/config.sh
+          IP="$(gcloud compute instances describe "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --format='value(networkInterfaces[0].accessConfigs[0].natIP)')"
+          CODI=000
+          for _ in $(seq 1 10); do
+            CODI="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://$IP:$CRM_PORT/login" || true)"
+            [ "$CODI" = 200 ] && break
+            sleep 6
+          done
+          echo "http://$IP:$CRM_PORT → $CODI"
+          echo "### vproof CRM: http://$IP:$CRM_PORT (resposta $CODI)" >> "$GITHUB_STEP_SUMMARY"
+          [ "$CODI" = 200 ] || echo "::warning::Des de fora no respon: el port $CRM_PORT segurament no és obert al tallafoc."

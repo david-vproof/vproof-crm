@@ -93,7 +93,24 @@ al render de servidor, així que `components/grafics/Grafic.tsx` els carrega amb
 
 ## Desplegament
 
-Amb Docker, en qualsevol servidor:
+### A la VM de l'ERP (Google Cloud)
+
+El CRM corre a la mateixa VM que l'ERP (`erpnext`, projecte `vprooferp`,
+`europe-southwest1-a`), en un contenidor a part (`vproof-crm`) al port 3000.
+Es desplega amb el workflow **Desplega el CRM a Google Cloud**
+(`.github/workflows/desplega-gcp.yml`), a mà des de la pestanya Actions:
+compila la imatge, la copia a la VM per SSH i arrenca el contenidor. L'ERP no
+es toca. Les dades són al volum `vproof-crm-dades` de la VM i la configuració a
+`/var/lib/vproof-crm/env`, que es crea el primer cop.
+
+La contrasenya inicial d'`admin@vproof.local` és la del secret
+`CRM_ADMIN_PASSWORD` del repositori, si n'hi ha; si no, se'n genera una i
+s'escriu al port sèrie de la VM (consola de Google Cloud › VM › Registres ›
+Port sèrie 1, línia `VPROOF_CRM_ADMIN`).
+
+### En qualsevol servidor
+
+Amb Docker:
 
 ```bash
 cp .env.example .env          # omple AUTH_SECRET, PORTAL_USUARI i PORTAL_CONTRASENYA
