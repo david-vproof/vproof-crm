@@ -81,10 +81,13 @@ factures. És en una sola direcció i es fa cada 30 minuts o a mà des de
 Configuració. Detall i correspondència de camps a
 [`docs/FUNCIONALITATS.md`](docs/FUNCIONALITATS.md#7-connexió-amb-vprooferp-erpnext).
 
-Variables: `VPROOFERP_URL`, `VPROOFERP_API_KEY`, `VPROOFERP_API_SECRET` i,
-opcionalment, `VPROOFERP_HOST` (el site de Frappe, si l'adreça no ho és),
-`VPROOFERP_LLISTA_PREUS` (per defecte, «Standard Selling») i
-`VPROOFERP_SINCRO_MINUTS` (per defecte 30; 0 l'atura).
+La connexió (adreça, site, clau i secret d'API, llista de preus i minuts entre
+sincronitzacions) la posa l'administrador a **Configuració › Connexió amb
+l'ERP**. El que no s'hi posi surt de l'entorn: `VPROOFERP_URL`,
+`VPROOFERP_HOST` (el site de Frappe, si l'adreça no ho és),
+`VPROOFERP_API_KEY`, `VPROOFERP_API_SECRET`, `VPROOFERP_LLISTA_PREUS` (per
+defecte, «Standard Selling») i `VPROOFERP_SINCRO_MINUTS` (per defecte 30; 0
+l'atura).
 
 ## Tauler de CRM
 

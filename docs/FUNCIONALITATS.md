@@ -106,8 +106,11 @@ activitats, les característiques veterinàries dels productes… Les fitxes de
 l'ERP tenen bloquejats al formulari els camps que porta l'ERP. Les que l'ERP
 deixa de portar queden marcades com a absents, no s'esborren.
 
-**Credencials**: la clau d'API d'un usuari de l'ERP amb permís de lectura
-(rols Sales User, Stock User, Purchase User i Accounts User). Es posa com a
-secrets del repositori (`VPROOFERP_API_KEY` i `VPROOFERP_API_SECRET`) i el
-desplegament la copia a la configuració del CRM a la VM. El CRM parla amb l'ERP
-per la xarxa interna de Docker de la VM.
+**Connexió**: es posa a **Configuració › Connexió amb l'ERP** (només
+l'administrador): l'adreça, el site de Frappe, la clau i el secret d'API d'un
+usuari de l'ERP amb permís de lectura (rols Sales User, Stock User, Purchase
+User i Accounts User), la llista de preus i cada quants minuts se sincronitza.
+«Desa i prova la connexió» diu amb quin usuari s'entra. Es desa a la base de
+dades del CRM i el secret no es torna a ensenyar. A la VM de l'ERP, el
+desplegament ja deixa posada l'adreça interna (el CRM parla amb l'ERP per la
+xarxa de Docker): només cal posar-hi la clau i el secret.
