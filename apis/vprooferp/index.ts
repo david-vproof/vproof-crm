@@ -89,7 +89,8 @@ async function json<T>(config: ConfigErp, cami: string): Promise<T> {
     } catch {
       // No era JSON: es diu tal qual.
     }
-    throw new ErrorErp(`L'ERP ha respost HTTP ${estat} a ${cami.split("?")[0]}: ${detall}`, estat);
+    // Frappe posa etiquetes HTML als missatges («Permiso insuficiente para <strong>Item Price</strong>»).
+    throw new ErrorErp(`L'ERP ha respost HTTP ${estat} a ${decodeURIComponent(cami.split("?")[0])}: ${detall.replace(/<[^>]+>/g, "")}`, estat);
   }
   return JSON.parse(text) as T;
 }

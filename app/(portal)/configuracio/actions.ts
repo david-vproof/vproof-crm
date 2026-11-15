@@ -79,9 +79,10 @@ export async function sincronitzaAra(): Promise<EstatConfiguracio> {
     const resultat = await sincronitzaAmbErp("manual");
     revalidatePath("/configuracio");
     const errors = resultat.passos.filter((pas) => !pas.correcte);
-    return errors.length
-      ? { to: "error", missatge: `Feta amb errors: ${errors.map((pas) => `${pas.nom}: ${pas.error}`).join(" · ")}` }
-      : { to: "ok", missatge: "Sincronització feta." };
+    const avisos = resultat.passos.filter((pas) => pas.avis);
+    if (errors.length) return { to: "error", missatge: `Feta amb errors: ${errors.map((pas) => `${pas.nom}: ${pas.error}`).join(" · ")}` };
+    if (avisos.length) return { to: "error", missatge: `Feta, però amb avisos: ${avisos.map((pas) => `${pas.nom}: ${pas.avis}`).join(" · ")}` };
+    return { to: "ok", missatge: "Sincronització feta." };
   } catch (error) {
     return { to: "error", missatge: (error as Error).message };
   }

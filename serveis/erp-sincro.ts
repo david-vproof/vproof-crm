@@ -92,7 +92,11 @@ const anyActual = () => new Date().getFullYear();
 
 // ------------------------------------------------------------------ passos
 
-type Pas = { clau: string; nom: string; fes: (erp: ConfigErp, llistaPreus: string | null) => Promise<ResultatImportacio & { nota?: string }> };
+type Pas = {
+  clau: string;
+  nom: string;
+  fes: (erp: ConfigErp, llistaPreus: string | null) => Promise<ResultatImportacio & { nota?: string; avis?: string }>;
+};
 
 async function grupsDeClient(erp: ConfigErp) {
   const grups = await llistaTot<GrupClient>(erp, "Customer Group", { camps: ["name", "customer_group_name", "is_group"] });
@@ -240,15 +244,24 @@ function triaLlistaDePreus(preus: PreuArticle[], volguda: string | null) {
 const FOTOS_PER_PASSADA = 60;
 
 async function productes(erp: ConfigErp, llistaPreus: string | null) {
-  const [articles, defectes, proveidorsArticle, preus, estocs] = await Promise.all([
+  // Els preus i l'estoc poden no ser llegibles amb els permisos de l'usuari de l'ERP: llavors els
+  // productes es porten igual, sense tocar el preu o l'estoc que ja tenien, i es diu per què.
+  const oError = <T,>(promesa: Promise<T[]>) => promesa.catch((error: Error) => error);
+  const [articles, defectes, proveidorsArticle, preusLlegits, estocsLlegits] = await Promise.all([
     llistaTot<Article>(erp, "Item", { camps: ["name", "item_name", "item_group", "brand", "disabled", "is_sales_item", "image", "creation", "stock_uom"] }),
     llistaTot<ArticleDefecte>(erp, "Item Default", { camps: ["parent", "default_supplier"], pare: "Item" }).catch(() => [] as ArticleDefecte[]),
     llistaTot<ArticleProveidor>(erp, "Item Supplier", { camps: ["parent", "supplier", "supplier_part_no", "idx"], pare: "Item", ordre: "idx asc" }).catch(
       () => [] as ArticleProveidor[],
     ),
-    llistaTot<PreuArticle>(erp, "Item Price", { camps: ["item_code", "price_list", "price_list_rate"], filtres: [["selling", "=", 1]] }),
-    llistaTot<Magatzem>(erp, "Bin", { camps: ["item_code", "actual_qty", "reserved_qty"] }),
+    oError(llistaTot<PreuArticle>(erp, "Item Price", { camps: ["item_code", "price_list", "price_list_rate"], filtres: [["selling", "=", 1]] })),
+    oError(llistaTot<Magatzem>(erp, "Bin", { camps: ["item_code", "actual_qty", "reserved_qty"] })),
   ]);
+  const preus = Array.isArray(preusLlegits) ? preusLlegits : null;
+  const estocs = Array.isArray(estocsLlegits) ? estocsLlegits : null;
+  const avisos = [
+    preusLlegits instanceof Error ? `sense preus: ${preusLlegits.message}` : null,
+    estocsLlegits instanceof Error ? `sense estoc: ${estocsLlegits.message}` : null,
+  ].filter((avis): avis is string => Boolean(avis));
   const laboratoris = idsPerErpId("crm_proveidors");
   const proveidorDe = new Map<string, { supplier: string; referencia: string | null }>();
   for (const fila of defectes) if (fila.default_supplier && !proveidorDe.has(fila.parent)) proveidorDe.set(fila.parent, { supplier: fila.default_supplier, referencia: null });
@@ -258,10 +271,10 @@ async function productes(erp: ConfigErp, llistaPreus: string | null) {
     if (!previ) proveidorDe.set(fila.parent, { supplier: fila.supplier, referencia: net(fila.supplier_part_no) });
     else if (previ.supplier === fila.supplier && !previ.referencia) previ.referencia = net(fila.supplier_part_no);
   }
-  const llista = triaLlistaDePreus(preus, llistaPreus);
-  const preuDe = new Map(preus.filter((p) => p.price_list === llista).map((p) => [p.item_code, p.price_list_rate]));
+  const llista = preus ? triaLlistaDePreus(preus, llistaPreus) : null;
+  const preuDe = new Map((preus ?? []).filter((p) => p.price_list === llista).map((p) => [p.item_code, p.price_list_rate]));
   const estocDe = new Map<string, { actual: number; disponible: number }>();
-  for (const bin of estocs) {
+  for (const bin of estocs ?? []) {
     const estoc = estocDe.get(bin.item_code) ?? { actual: 0, disponible: 0 };
     estoc.actual += Number(bin.actual_qty) || 0;
     estoc.disponible += (Number(bin.actual_qty) || 0) - (Number(bin.reserved_qty) || 0);
@@ -279,9 +292,8 @@ async function productes(erp: ConfigErp, llistaPreus: string | null) {
       erp_familia: net(a.item_group),
       ...(proveidor ? { laboratori: laboratoris.get(proveidor.supplier) ?? undefined, referencia_proveidor: proveidor.referencia } : {}),
       historic: Boolean(a.disabled) || !a.is_sales_item,
-      preu: preuDe.get(a.name) ?? null,
-      estoc_actual: estoc?.actual ?? 0,
-      estoc_disponible: estoc?.disponible ?? 0,
+      ...(preus ? { preu: preuDe.get(a.name) ?? null } : {}),
+      ...(estocs ? { estoc_actual: estoc?.actual ?? 0, estoc_disponible: estoc?.disponible ?? 0 } : {}),
       data_alta: a.creation?.slice(0, 10) ?? null,
       erp_imatge: net(a.image),
     };
@@ -310,11 +322,11 @@ async function productes(erp: ConfigErp, llistaPreus: string | null) {
     }
   }
   const nota = [
-    llista ? `preus de «${llista}»` : "sense llista de preus de venda",
+    preus ? (llista ? `preus de «${llista}»` : "sense llista de preus de venda") : null,
     fotos ? `${fotos} fotos copiades` : null,
     fotosFallides ? `${fotosFallides} fotos que no s'han pogut baixar` : null,
   ].filter(Boolean).join(", ");
-  return { ...resultat, nota };
+  return { ...resultat, nota, avis: avisos.join(" · ") || undefined };
 }
 
 async function albarans(erp: ConfigErp) {
@@ -411,7 +423,8 @@ const PASSOS: Pas[] = [
 
 // ------------------------------------------------------------------ passada
 
-export type ResultatPas = { clau: string; nom: string; correcte: boolean; resultat?: ResultatImportacio; nota?: string; error?: string };
+/** `avis`: el pas ha anat bé, però s'ha saltat alguna dada (un permís que falta a l'ERP). */
+export type ResultatPas = { clau: string; nom: string; correcte: boolean; resultat?: ResultatImportacio; nota?: string; avis?: string; error?: string };
 export type ResultatSincro = { inici: string; fi: string; usuari: string | null; passos: ResultatPas[]; correcte: boolean };
 
 let enCurs: Promise<ResultatSincro> | null = null;
@@ -432,7 +445,7 @@ function resumDelPas(pas: ResultatPas) {
   if (!pas.correcte) return `${pas.nom}: error (${pas.error})`;
   const r = pas.resultat!;
   const parts = [`${r.llegits} llegits`, r.creats ? `${r.creats} nous` : null, r.actualitzats ? `${r.actualitzats} canviats` : null, r.absents ? `${r.absents} absents` : null];
-  return `${pas.nom}: ${parts.filter(Boolean).join(", ")}${pas.nota ? ` (${pas.nota})` : ""}`;
+  return `${pas.nom}: ${parts.filter(Boolean).join(", ")}${pas.nota ? ` (${pas.nota})` : ""}${pas.avis ? `. Avís: ${pas.avis}` : ""}`;
 }
 
 async function passada(desencadenant: "manual" | "programada"): Promise<ResultatSincro> {
@@ -447,8 +460,8 @@ async function passada(desencadenant: "manual" | "programada"): Promise<Resultat
     usuari = await usuariConnectat(erp);
     for (const pas of PASSOS) {
       try {
-        const { nota, ...resultat } = await pas.fes(erp, llistaPreus);
-        passos.push({ clau: pas.clau, nom: pas.nom, correcte: true, resultat, nota });
+        const { nota, avis, ...resultat } = await pas.fes(erp, llistaPreus);
+        passos.push({ clau: pas.clau, nom: pas.nom, correcte: true, resultat, nota, avis });
       } catch (error) {
         passos.push({ clau: pas.clau, nom: pas.nom, correcte: false, error: (error as Error).message });
       }
@@ -461,7 +474,7 @@ async function passada(desencadenant: "manual" | "programada"): Promise<Resultat
   const correcte = passos.every((pas) => pas.correcte);
   const suma = (camp: keyof ResultatImportacio) => passos.reduce((total, pas) => total + (pas.resultat?.[camp] ?? 0), 0);
   await actualitzaItem("crm_sync_execucions", registre, {
-    estat: correcte ? "correcte" : passos.some((pas) => pas.correcte) ? "parcial" : "error",
+    estat: correcte && !passos.some((pas) => pas.avis) ? "correcte" : passos.some((pas) => pas.correcte) ? "parcial" : "error",
     fi,
     llegits: suma("llegits"),
     creats: suma("creats"),
