@@ -10,7 +10,7 @@
  */
 import "server-only";
 
-import { llegeixFitxer, llistaAmbTotal, obteItem, type Condicio } from "@/apis/directus/crm";
+import { llegeixFitxer, llistaAmbTotal, obteItem, type Condicio } from "@/apis/sqlite/crm";
 import type { MidaImatge } from "@/domini/imatge-article";
 
 const COLLECCIO = "crm_articles";

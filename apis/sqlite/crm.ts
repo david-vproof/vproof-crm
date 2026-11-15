@@ -1,9 +1,9 @@
 /**
  * Lectura en cru de les col·leccions del CRM.
  *
- * Aquí no es transforma res: només s'hi demanen les dades amb el testimoni del
- * compte de màquina. Qui les converteix en el llenguatge del portal és
- * `serveis/crm.ts`.
+ * Aquí no es transforma res: només es demanen les dades a la base de dades
+ * (vegeu `consulta.ts`, que parla el llenguatge de consulta de sempre). Qui
+ * les converteix en el llenguatge del portal és `serveis/crm.ts`.
  */
 import "server-only";
 
@@ -11,10 +11,12 @@ import { ambAgentDe, condicioDAbast, esColleccioDeClients } from "@/domini/abast
 import { CAMPS_RESUM_FACTURACIO } from "@/domini/facturacio-tendencia";
 import { abastActual } from "@/lib/abast-actual";
 
-import { BASE, ErrorDirectus, TESTIMONI, demana, estaConfigurat } from "./client";
+import { ErrorDades } from "./client";
+import { executa } from "./consulta";
 
+/** La base de dades és local: sempre hi ha accés. Es conserva perquè els serveis ho pregunten. */
 export function teAccesCrm() {
-  return estaConfigurat() && TESTIMONI.length > 0;
+  return true;
 }
 
 export type FilaOportunitat = {
@@ -152,7 +154,7 @@ async function dinsDeLAbast(ruta: string, opcions: RequestInit): Promise<{ ruta:
       const resposta = await cridaCrua(`/items/${colleccio}?fields=id&limit=-1&filter=${filtre}`);
       const { data } = (await resposta.json()) as { data?: { id: string }[] };
       if ((data?.length ?? 0) < ids.length) {
-        throw new ErrorDirectus("credencials", "Aquesta fitxa no és de cap dels teus clients.", { estat: 403 });
+        throw new ErrorDades("credencials", "Aquesta fitxa no és de cap dels teus clients.", { estat: 403 });
       }
     }
   }
@@ -164,43 +166,31 @@ async function crida(ruta: string, opcions: RequestInit = {}) {
   return cridaCrua(dins.ruta, dins.body !== undefined ? { ...opcions, body: dins.body } : opcions);
 }
 
-/** La crida a Directus tal qual, sense passar per l'abast: només per a l'abast mateix. */
+/** La crida a la base de dades tal qual, sense passar per l'abast: només per a l'abast mateix. */
 async function cridaCrua(ruta: string, opcions: RequestInit = {}) {
-  if (!teAccesCrm()) {
-    throw new ErrorDirectus("configuracio", "Falten DIRECTUS_URL o DIRECTUS_TOKEN.");
-  }
-
-  // Un fitxer va en multipart, i aquell Content-Type (amb la frontera) el posa fetch.
-  const json: Record<string, string> = opcions.body instanceof FormData ? {} : { "Content-Type": "application/json" };
-  const resposta = await demana(ruta, {
-    ...opcions,
-    headers: { Authorization: `Bearer ${TESTIMONI}`, ...json, ...opcions.headers },
-  });
+  const resposta = await executa(ruta, opcions);
 
   if (!resposta.ok) {
     const cos = (await resposta.json().catch(() => ({}))) as { errors?: { message?: string }[] };
     const detall = cos.errors?.[0]?.message ?? "";
 
     if (resposta.status === 401 || resposta.status === 403) {
-      // Directus respon el mateix 403 si un camp no existeix que si no s'hi té
-      // permís. El text sí que ho distingeix, i val la pena fer-ho: si no, un
-      // model a mig provisionar enviaria a revisar permisos que estan bé.
-      // Un camp: «access field "x" in collection "y"»; més d'un: «access fields "x", "y" in collection "z"».
+      // Un camp que no és al model: el motor ho diu amb el mateix text que deia Directus.
       const camp = /access fields? ("[^"]+"(?:, "[^"]+")*) in collection "([^"]+)"/.exec(detall);
       if (camp) {
         const camps = Array.from(camp[1].matchAll(/"([^"]+)"/g), (m) => m[1]);
-        throw new ErrorDirectus(
+        throw new ErrorDades(
           "configuracio",
           `${camps.length === 1 ? "El camp" : "Els camps"} ${camps.map((c) => `«${c}»`).join(", ")} no ${camps.length === 1 ? "existeix" : "existeixen"} ` +
-            `a la col·lecció ${camp[2]} de Directus, o el portal no hi té permís. Executa scripts/crm-directus.mjs per completar el model.`,
+            `a la taula ${camp[2]}. Revisa apis/sqlite/model.ts.`,
           { estat: resposta.status, camp: camps[0] },
         );
       }
-      throw new ErrorDirectus("credencials", "El testimoni del portal no té accés a aquesta col·lecció.", { estat: resposta.status });
+      throw new ErrorDades("credencials", "Aquesta fitxa no existeix o no hi tens accés.", { estat: resposta.status });
     }
     // El codi HTTP hi va perquè qui escriu per lots pugui distingir un error de
-    // dades (4xx: la fila no val) d'una caiguda del servei (5xx: tornar-ho a provar).
-    throw new ErrorDirectus("servei", detall || `${BASE}${ruta} ha respost HTTP ${resposta.status}.`, { estat: resposta.status });
+    // dades (4xx: la fila no val) d'una fallada del servei (5xx).
+    throw new ErrorDades("servei", detall || `${ruta} ha respost HTTP ${resposta.status}.`, { estat: resposta.status });
   }
   return resposta;
 }
@@ -227,7 +217,7 @@ function filtre(condicions: Condicio[]) {
  * Les fitxes que porta algú, o ningú. Tothom veu tot el CRM, però el que té
  * comercial és de cadascú: una activitat amb comercial només la veu qui la
  * porta, i una sense comercial, tothom. Sense `qui` (credencials locals, que
- * no tenen id de Directus) no es filtra res.
+ * no tenen id de la base de dades) no es filtra res.
  */
 function deQui(camp: string, qui: string | null | undefined): Condicio[] {
   if (!qui || !camp) return [];
@@ -251,7 +241,7 @@ export async function llistaAmbTotal<T>(
     ids?: string[];
     /** Només les que porta algú, o ningú: vegeu `deQui`. */
     deQui?: { camp: string; id: string };
-    /** Condicions ja en el llenguatge de Directus, una per filtre de columna. */
+    /** Condicions ja en el llenguatge de la base de dades, una per filtre de columna. */
     condicions?: Condicio[];
   },
 ): Promise<Pagina<T>> {
@@ -268,7 +258,7 @@ export async function llistaAmbTotal<T>(
 
   const terme = opcions.cerca?.trim();
   if (terme && opcions.campsCerca?.length) {
-    // _icontains i no _contains: el de Directus distingeix majúscules i
+    // _icontains i no _contains: el de la base de dades distingeix majúscules i
     // «mas» no trobaria «Mas Rabassa».
     condicions.push({ _or: opcions.campsCerca.map((camp) => ({ [camp]: { _icontains: terme } })) });
   }
@@ -299,7 +289,7 @@ export async function agrupaPer(
 }
 
 /**
- * Es demana per filtre i no per /items/colleccio/id perquè Directus respon 403
+ * Es demana per filtre i no per /items/colleccio/id perquè la base de dades respon 403
  * tant si l'element no existeix com si no hi tens accés, i això confon una
  * fitxa esborrada amb un problema de permisos. Amb filtre, «no hi és» arriba
  * com una llista buida i el 403 torna a voler dir només una cosa.
@@ -319,7 +309,7 @@ export async function creaItem(colleccio: string, dades: Record<string, unknown>
 }
 
 /**
- * Crea diversos elements d'una tirada. Directus accepta un array al cos, i
+ * Crea diversos elements d'una tirada. La base de dades accepta un array al cos, i
  * així una tanda de vint activitats és una petició i no vint.
  */
 export async function creaItems(colleccio: string, files: Record<string, unknown>[]): Promise<number> {
@@ -337,7 +327,7 @@ export async function actualitzaItem(colleccio: string, id: string, dades: Recor
 
 /**
  * Actualitza diversos elements d'una tirada, cadascun amb el seu id dins de
- * les dades. Directus ho accepta com un array al cos del PATCH.
+ * les dades. La base de dades ho accepta com un array al cos del PATCH.
  */
 export async function actualitzaItems(colleccio: string, files: ({ id: string } & Record<string, unknown>)[]) {
   if (files.length === 0) return;
@@ -353,7 +343,7 @@ export async function llistaTot<T>(colleccio: string, camps: string[], ordre?: s
 }
 
 /**
- * Un singleton de Directus és una col·lecció amb un sol element: es llegeix
+ * Un singleton de la base de dades és una col·lecció amb un sol element: es llegeix
  * sense id i es desa amb PATCH, que el crea si encara no existeix.
  */
 export async function llegeixSingleton<T>(colleccio: string, camps: string[]): Promise<T | null> {
@@ -379,8 +369,8 @@ export async function idCarpeta(nom: string): Promise<string | null> {
 }
 
 /**
- * Puja un fitxer a Directus i en torna l'id. Els camps van abans del fitxer:
- * Directus només llegeix els que arriben primer.
+ * Puja un fitxer a la base de dades i en torna l'id. Els camps van abans del fitxer:
+ * la base de dades només llegeix els que arriben primer.
  */
 export async function pujaFitxer(fitxer: { nom: string; tipus: string; dades: Uint8Array<ArrayBuffer>; titol?: string; carpeta?: string | null }) {
   const formulari = new FormData();
@@ -388,7 +378,7 @@ export async function pujaFitxer(fitxer: { nom: string; tipus: string; dades: Ui
   if (fitxer.titol) formulari.append("title", fitxer.titol);
   formulari.append("file", new Blob([fitxer.dades], { type: fitxer.tipus }), fitxer.nom);
   const { data } = (await (await crida("/files?fields=id", { method: "POST", body: formulari })).json()) as { data?: { id: string } };
-  if (!data?.id) throw new ErrorDirectus("servei", `Directus no ha tornat l'id de ${fitxer.nom}.`);
+  if (!data?.id) throw new ErrorDades("servei", `La base de dades no ha tornat l'id de ${fitxer.nom}.`);
   return data.id;
 }
 
@@ -397,7 +387,7 @@ export async function esborraFitxer(id: string) {
 }
 
 /**
- * Un fitxer tal com el serveix Directus, per passar-lo al navegador sense que
+ * Un fitxer tal com el serveix la base de dades, per passar-lo al navegador sense que
  * aquest hi parli. `transformacio` són els paràmetres d'imatge de /assets
  * (amplada, alçada, format…).
  */
@@ -406,7 +396,7 @@ export async function llegeixFitxer(id: string, transformacio: Record<string, st
   return crida(`/assets/${encodeURIComponent(id)}${parametres ? `?${parametres}` : ""}`);
 }
 
-/** Esborra diversos elements d'una tirada: Directus accepta la llista d'ids al cos del DELETE. */
+/** Esborra diversos elements d'una tirada: la base de dades accepta la llista d'ids al cos del DELETE. */
 export async function esborraItems(colleccio: string, ids: string[]) {
   if (ids.length === 0) return;
   await crida(`/items/${colleccio}`, { method: "DELETE", body: JSON.stringify(ids) });
@@ -620,7 +610,7 @@ type FilaAgregada = {
 };
 
 /**
- * Recompte i darrera data d'activitat per compte, agregat per Directus. Es
+ * Recompte i darrera data d'activitat per compte, agregat per la base de dades. Es
  * demana així i no portant-se totes les activitats perquè és el que més creix
  * d'un CRM i aquí només en cal el resum.
  */
@@ -638,7 +628,7 @@ export async function activitatsPerCompte(): Promise<Map<string, { quantes: numb
 }
 
 /**
- * Quantes activitats té cada compte en un tram, agregat per Directus. Són les
+ * Quantes activitats té cada compte en un tram, agregat per la base de dades. Són les
  * de tothom, no les de qui mira: la periodicitat és del client, no del comercial.
  * Amb `client`, només les d'aquell.
  */

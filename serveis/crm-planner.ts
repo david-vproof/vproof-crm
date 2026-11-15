@@ -7,7 +7,7 @@
  */
 import "server-only";
 
-import { llistaActivitatsEntre } from "@/apis/directus/crm";
+import { llistaActivitatsEntre } from "@/apis/sqlite/crm";
 import { activitatTancada, esLletra } from "@/domini/crm-fitxes";
 import {
   COLOR_SENSE_SEGMENT,

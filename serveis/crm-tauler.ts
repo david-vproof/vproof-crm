@@ -5,10 +5,10 @@
  */
 import "server-only";
 
-import { activitatsPerClientEntre, darreraActivitatPerClient, llista, llistaAmbTotal, llistaTot, type Condicio } from "@/apis/directus/crm";
+import { activitatsPerClientEntre, darreraActivitatPerClient, llista, llistaAmbTotal, llistaTot, type Condicio } from "@/apis/sqlite/crm";
 import { ZONA } from "@/domini/crm-planner";
 import type { ActivitatTauler, AgentTauler, ClientTauler, LeadTauler, MesFacturat, OportunitatTauler, TascaTauler, ViTauler } from "@/domini/crm-tauler";
-import { ESTAT_CLIENT_BAIXA } from "@/domini/factusol-vocabulari";
+import { ESTAT_CLIENT_BAIXA } from "@/domini/estats-client";
 import { tipusActivitat } from "@/serveis/crm-tipus-activitat";
 
 export type DadesTauler = {

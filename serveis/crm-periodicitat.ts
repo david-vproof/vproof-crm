@@ -5,7 +5,7 @@
  */
 import "server-only";
 
-import { activitatsPerClientEntre } from "@/apis/directus/crm";
+import { activitatsPerClientEntre } from "@/apis/sqlite/crm";
 import { seguimentDe, type Seguiment } from "@/domini/crm-periodicitat";
 import { avuiLocal, instantDeLocal } from "@/domini/crm-planner";
 

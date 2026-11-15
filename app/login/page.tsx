@@ -1,7 +1,6 @@
 import Image from "next/image";
 
 import { Marca } from "@/components/Marca";
-import { origenIdentitat } from "@/serveis/identitat";
 
 import { FormulariLogin } from "./FormulariLogin";
 
@@ -18,7 +17,7 @@ export default async function PaginaLogin({ searchParams }: { searchParams: Prom
           <h1 className="font-display text-[40px] leading-[1.1] tracking-[-0.01em]">Benvingut de nou</h1>
           <p className="mt-2 text-[15px] text-muted">Accedeix al portal de gestió comercial.</p>
 
-          <FormulariLogin des={des} ambCorreu={origenIdentitat() === "directus"} />
+          <FormulariLogin des={des} ambCorreu />
 
         </div>
 

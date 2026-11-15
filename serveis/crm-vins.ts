@@ -8,14 +8,12 @@
  */
 import "server-only";
 
-import { creaItems, esborraItems, llistaActivitatsEntre, llistaAmbTotal, type Condicio } from "@/apis/directus/crm";
-import { llistaEstoc, preusDeTarifa } from "@/apis/factusol";
+import { creaItems, esborraItems, llistaActivitatsEntre, llistaAmbTotal, type Condicio } from "@/apis/sqlite/crm";
 import { margesDelDia } from "@/domini/crm-avui";
 import { clauDeValor } from "@/domini/cataleg-articles";
 import { MAXIM_VINS_PER_ACTIVITAT, viDeCataleg, type ClientOLead, type Compres, type Tastos, type ViDeCataleg } from "@/domini/cistella-vins";
-import { agregaEstoc, type Estocs } from "@/domini/estoc-vins";
-import { TARIFA_SENSE_CLIENT } from "@/domini/preu-factusol";
-import { preusPerVi, type Preus } from "@/domini/preus-vins";
+import { estocsDeProductes, type EstocDeProducte, type Estocs } from "@/domini/estoc-vins";
+import { preusDeProductes, type Preus } from "@/domini/preus-vins";
 import { ARTICLES_ACTIUS, ARTICLES_VIGENTS, catalegArticles, historicsEntre, urlImatge, type AbastCataleg } from "@/serveis/articles";
 
 const ARTICLES = "crm_articles";
@@ -129,47 +127,28 @@ export async function vinsHistoricsEntre(ids: string[]): Promise<ViDeCataleg[]> 
 }
 
 /**
- * L'estoc de tot el catàleg, en viu de FactuSol (vegeu `domini/estoc-vins.ts`):
- * per vi, la suma i el desglòs per magatzem. Els històrics també: n'hi ha que
- * encara en tenen, i si no, el selector diria que no. Si l'ERP no respon o no
- * hi ha credencials, l'error puja i el selector ho diu.
+ * L'estoc de tot el catàleg (vegeu `domini/estoc-vins.ts`): per vi, el que
+ * l'ERP hi ha deixat. Els històrics també: n'hi ha que encara en tenen.
  */
 export async function estocDelCataleg(): Promise<Estocs> {
-  const [{ files }, { estoc, magatzems }] = await Promise.all([
-    llistaAmbTotal<{ id: string; codi_erp: string | null }>(ARTICLES, { camps: ["id", "codi_erp"], limit: -1, condicions: [ARTICLES_VIGENTS] }),
-    llistaEstoc(),
-  ]);
-  const idPerCodi = new Map(files.flatMap((fila) => (fila.codi_erp?.trim() ? [[fila.codi_erp.trim(), fila.id] as [string, string]] : [])));
-  return agregaEstoc(estoc, magatzems, idPerCodi);
+  const { files } = await llistaAmbTotal<EstocDeProducte>(ARTICLES, {
+    camps: ["id", "estoc_actual", "estoc_disponible"],
+    limit: -1,
+    condicions: [ARTICLES_VIGENTS],
+  });
+  return estocsDeProductes(files);
 }
-
-/** Els preus llegits, amb l'hora: FactuSol no els canvia a cada minut, i els selectors els demanen sovint. */
-let memoriaPreus: { valor: PreusDelCataleg; expira: number } | null = null;
-const PREUS_VALEN_MS = 10 * 60 * 1000;
 
 export type PreusDelCataleg = { preus: Preus; tarifa: string };
 
-/**
- * El preu de tot el catàleg, històrics inclosos, a la tarifa de venda al major,
- * sense IVA, en viu de FactuSol (vegeu `domini/preus-vins.ts`), amb el nom de la
- * tarifa per dir d'on surt. Es recorda deu minuts. Si l'ERP no respon o no hi ha
- * credencials, l'error puja i els selectors surten sense preus.
- */
+/** El preu de venda de tot el catàleg, històrics inclosos, sense IVA: el que l'ERP deixa a cada producte. */
 export async function preusDelCataleg(): Promise<PreusDelCataleg> {
-  if (memoriaPreus && memoriaPreus.expira > Date.now()) return memoriaPreus.valor;
-  const [{ files }, deTarifa] = await Promise.all([
-    llistaAmbTotal<{ id: string; codi_erp: string | null }>(ARTICLES, { camps: ["id", "codi_erp"], limit: -1, condicions: [ARTICLES_VIGENTS] }),
-    preusDeTarifa(TARIFA_SENSE_CLIENT),
-  ]);
-  const idPerCodi = new Map(files.flatMap((fila) => (fila.codi_erp?.trim() ? [[fila.codi_erp.trim(), fila.id] as [string, string]] : [])));
-  // «TARIFA VENDA AL MAJOR» → «Venda al major»: el mot «tarifa» ja va al davant on s'ensenya.
-  const nom = (deTarifa.tarifa.nom ?? "").replace(/^tarifa\s+/i, "").trim();
-  const valor = {
-    preus: preusPerVi(deTarifa.preus, idPerCodi),
-    tarifa: `Tarifa ${deTarifa.tarifa.codi}${nom ? ` · ${nom.charAt(0).toLocaleUpperCase("ca") + nom.slice(1).toLocaleLowerCase("ca")}` : ""}`,
-  };
-  memoriaPreus = { valor, expira: Date.now() + PREUS_VALEN_MS };
-  return valor;
+  const { files } = await llistaAmbTotal<{ id: string; preu: number | string | null }>(ARTICLES, {
+    camps: ["id", "preu"],
+    limit: -1,
+    condicions: [ARTICLES_VIGENTS],
+  });
+  return { preus: preusDeProductes(files), tarifa: "Preu de venda" };
 }
 
 /** Quants clients es poden mirar d'un cop: un segment sencer hi cap. */

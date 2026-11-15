@@ -6,8 +6,8 @@ import "server-only";
 
 import { cache } from "react";
 
-import { ErrorDirectus } from "@/apis/directus/client";
-import { actualitzaItems, agrupaPer, creaItems, esborraItems, llistaTot } from "@/apis/directus/crm";
+import { ErrorDades } from "@/apis/sqlite/client";
+import { actualitzaItems, agrupaPer, creaItems, esborraItems, llistaTot } from "@/apis/sqlite/crm";
 import { FITXES, type ClauFitxa, type Fitxa } from "@/domini/crm-fitxes";
 import {
   TIPUS_BASE,
@@ -74,7 +74,7 @@ export const tipusActivitat = cache(async (): Promise<DefinicioTipus[]> => {
     const llista = await llistaTipusActivitat();
     return llista.length > 0 ? llista : TIPUS_BASE;
   } catch (error) {
-    if (error instanceof ErrorDirectus && error.estat === 403) return TIPUS_BASE;
+    if (error instanceof ErrorDades && error.estat === 403) return TIPUS_BASE;
     throw error;
   }
 });

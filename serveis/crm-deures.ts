@@ -23,7 +23,7 @@ import {
   obteItem,
   type FilaDeure,
   type FilaToDo,
-} from "@/apis/directus/crm";
+} from "@/apis/sqlite/crm";
 import { llegeixDeures, ordenaDeures, type Deure } from "@/domini/crm-deures";
 import { FITXES, PENDENT, activitatTancada, esLletra, esResultatTancament } from "@/domini/crm-fitxes";
 import { avuiLocal, momentLocal } from "@/domini/crm-planner";

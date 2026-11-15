@@ -4,7 +4,7 @@
  */
 import "server-only";
 
-import { idCarpeta, llegeixFitxer, obteItem, pujaFitxer } from "@/apis/directus/crm";
+import { idCarpeta, llegeixFitxer, obteItem, pujaFitxer } from "@/apis/sqlite/crm";
 import { FITXES, esVisiblePer, idDeRelacio } from "@/domini/crm-fitxes";
 
 /** La carpeta de Directus on van. La crea `scripts/crm-directus.mjs`; si no hi és, van a l'arrel. */

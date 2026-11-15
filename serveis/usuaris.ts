@@ -7,8 +7,8 @@
  */
 import "server-only";
 
-import { ErrorDirectus } from "@/apis/directus";
-import { llistaTot } from "@/apis/directus/crm";
+import { ErrorDades } from "@/apis/sqlite";
+import { llistaTot } from "@/apis/sqlite/crm";
 import {
   actualitzaUsuari,
   creaRol,
@@ -18,7 +18,7 @@ import {
   type Administrador,
   type FilaRol,
   type FilaUsuari,
-} from "@/apis/directus/usuaris";
+} from "@/apis/sqlite/usuaris";
 
 /** El rol dels comptes de màquina, tal com el crea scripts/crm-acces.mjs. */
 const ROL_MAQUINA = "Portal";
@@ -53,7 +53,7 @@ export class ErrorUsuaris extends Error {
 }
 
 function tradueixError(error: unknown): never {
-  if (error instanceof ErrorDirectus) throw new ErrorUsuaris(error.message);
+  if (error instanceof ErrorDades) throw new ErrorUsuaris(error.message);
   throw error;
 }
 
@@ -125,7 +125,7 @@ export type DadesUsuari = {
 
 /** La contrasenya que no és correcta és la de l'administrador, no la del compte que toca. */
 function ambContrasenyaDeLAdministrador(error: unknown): never {
-  if (error instanceof ErrorDirectus && error.motiu === "credencials" && error.message === "Les credencials no són correctes.") {
+  if (error instanceof ErrorDades && error.motiu === "credencials" && error.message === "Les credencials no són correctes.") {
     throw new ErrorUsuaris("La teva contrasenya no és correcta.");
   }
   tradueixError(error);

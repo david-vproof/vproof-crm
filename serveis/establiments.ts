@@ -10,7 +10,7 @@
  */
 import "server-only";
 
-import { actualitzaItem, llistaAmbTotal, type Condicio } from "@/apis/directus/crm";
+import { actualitzaItem, llistaAmbTotal, type Condicio } from "@/apis/sqlite/crm";
 
 export const COLLECCIO_ESTABLIMENTS = "crm_establiments";
 

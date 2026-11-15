@@ -8,7 +8,7 @@ import "server-only";
 
 import {
   type Condicio, type Pagina, actualitzaItem, actualitzaItems, agrupaPer, creaItem, creaItems, darreraActivitatPerClient, esborraFitxer, esborraItem, llistaAmbTotal, obteItem,
-} from "@/apis/directus/crm";
+} from "@/apis/sqlite/crm";
 import { canvisDeClient, type FilaDelLead } from "@/domini/crm-conversio";
 import { motiuFotoNoValida, nomTreuFoto } from "@/domini/foto-activitat";
 import { senseAbast } from "@/lib/abast-actual";

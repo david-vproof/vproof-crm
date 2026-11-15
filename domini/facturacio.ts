@@ -1,16 +1,9 @@
 /**
- * La facturació dels clients: què es porta de FactuSol i quines xifres se
- * n'ensenyen. Tot és càlcul pur.
+ * La facturació dels clients: quines xifres se n'ensenyen. Tot és càlcul pur.
  *
- * FactuSol té una base de dades per exercici, així que la facturació es llegeix
- * any per any. Es guarda per client i mes —la base imposable i quantes
- * factures— i les xifres de la fitxa es calculen en el moment: així «fins al
- * mes passat» avança sol quan canvia el mes, sense tornar a sincronitzar.
- *
- * A l'any en curs, la base també porta els albarans encara no facturats: el que
- * s'ha servit i potser no es factura fins més endavant, o mai. Els exercicis
- * anteriors només porten factures, i cada passada ho torna a calcular tot, així
- * que quan l'any tanca els seus mesos es queden sols amb el que es va facturar.
+ * Es guarda per client i mes —la base imposable i quantes factures— i les
+ * xifres de la fitxa es calculen en el moment: així «fins al mes passat»
+ * avança sol quan canvia el mes. Les dades les portarà l'ERP.
  */
 import { ZONA } from "./crm-planner";
 import { tendenciaDe, type ResumClient } from "./facturacio-tendencia";
@@ -22,13 +15,6 @@ export const NOM_MES = [
   "gener", "febrer", "març", "abril", "maig", "juny", "juliol", "agost", "setembre", "octubre", "novembre", "desembre",
 ];
 
-/** Una fila de F_FAC agrupada per client i mes. */
-export type FilaFacturacioErp = { CLIFAC: number; MES: number; N: number; BASE: number };
-
-/** Els albarans de F_ALB sense facturar, agrupats per client i mes. */
-export type FilaAlbaransErp = { CLIALB: number; MES: number; BASE: number };
-
-/** Un mes facturat d'un client, tal com es desa a `crm_facturacio`. */
 export type MesFacturat = { codi_client_erp: number; exercici: number; mes: number; base: number; factures: number };
 
 export type FilaFacturacio = MesFacturat & { id: string; client: string | null };
@@ -47,98 +33,6 @@ export function exercicisDeFacturacio(ara: Date) {
 }
 
 const centims = (valor: number) => Math.round(valor * 100) / 100;
-
-/** Els mesos d'un exercici a partir de F_FAC agrupada. Les factures sense client no compten. */
-export function mesosDeFactusol(exercici: number, files: FilaFacturacioErp[]): MesFacturat[] {
-  return files
-    .filter((fila) => Number(fila.CLIFAC) > 0 && Number(fila.MES) >= 1 && Number(fila.MES) <= 12)
-    .map((fila) => ({
-      codi_client_erp: Number(fila.CLIFAC),
-      exercici,
-      mes: Number(fila.MES),
-      base: centims(Number(fila.BASE) || 0),
-      factures: Number(fila.N) || 0,
-    }));
-}
-
-const clau = (fila: { codi_client_erp: number; exercici: number; mes: number }) =>
-  `${Number(fila.codi_client_erp)}|${Number(fila.exercici)}|${Number(fila.mes)}`;
-
-/**
- * Hi suma els albarans encara no facturats, cadascun al mes de l'albarà. Un mes
- * amb albarans i cap factura també surt, amb `factures` a zero.
- */
-export function ambAlbaransPendents(exercici: number, mesos: MesFacturat[], albarans: FilaAlbaransErp[]): MesFacturat[] {
-  const perMes = new Map(mesos.map((mes) => [clau(mes), mes]));
-  const pendents = mesosDeFactusol(exercici, albarans.map((fila) => ({ CLIFAC: fila.CLIALB, MES: fila.MES, N: 0, BASE: fila.BASE })));
-  for (const pendent of pendents) {
-    const facturat = perMes.get(clau(pendent));
-    perMes.set(clau(pendent), facturat ? { ...facturat, base: centims(facturat.base + pendent.base) } : pendent);
-  }
-  return [...perMes.values()];
-}
-
-export type DiferenciesFacturacio = {
-  crear: (MesFacturat & { client: string })[];
-  actualitzar: { id: string; base: number; factures: number; client: string }[];
-  esborrar: string[];
-  iguals: number;
-};
-
-/**
- * Compara el que diu l'ERP amb el que hi ha a Directus.
- *
- * `clients` va del codi d'ERP a l'id de la fitxa del client: el mes d'un client
- * que no és al CRM (un de baixa, posem) no es desa, i si ja hi era, s'esborra.
- *
- * `exercicisLlegits` són els que han respost: les files d'un exercici que no
- * s'ha pogut llegir es deixen com estan, perquè no se sap si encara hi són. Les
- * d'exercicis anteriors a `primerExercici`, que ja queden fora, s'esborren.
- */
-export function diferenciesFacturacio(
-  erp: MesFacturat[],
-  directus: FilaFacturacio[],
-  clients: Map<number, string>,
-  exercicisLlegits: number[],
-  primerExercici: number,
-): DiferenciesFacturacio {
-  const existents = new Map<string, FilaFacturacio>();
-  const esborrar: string[] = [];
-  for (const fila of directus) {
-    const k = clau(fila);
-    // Un mes repetit a Directus només pot ser un error: se'n queda un.
-    if (existents.has(k)) esborrar.push(fila.id);
-    else existents.set(k, fila);
-  }
-
-  const crear: DiferenciesFacturacio["crear"] = [];
-  const actualitzar: DiferenciesFacturacio["actualitzar"] = [];
-  const vistos = new Set<string>();
-  let iguals = 0;
-
-  for (const mes of erp) {
-    const client = clients.get(mes.codi_client_erp);
-    if (!client) continue;
-    const k = clau(mes);
-    vistos.add(k);
-    const actual = existents.get(k);
-    if (!actual) {
-      crear.push({ ...mes, client });
-    } else if (centims(Number(actual.base)) === mes.base && Number(actual.factures) === mes.factures && actual.client === client) {
-      iguals += 1;
-    } else {
-      actualitzar.push({ id: actual.id, base: mes.base, factures: mes.factures, client });
-    }
-  }
-
-  for (const [k, fila] of existents) {
-    if (vistos.has(k)) continue;
-    const exercici = Number(fila.exercici);
-    if (exercici < primerExercici || exercicisLlegits.includes(exercici)) esborrar.push(fila.id);
-  }
-
-  return { crear, actualitzar, esborrar, iguals };
-}
 
 export type ExerciciResumit = {
   exercici: number;

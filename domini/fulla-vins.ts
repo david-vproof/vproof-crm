@@ -8,7 +8,8 @@
  * espai per a observacions.
  */
 import { clauDeValor, nomDeFormat, nomDeTipus } from "./cataleg-articles";
-import type { PreuDeFactusol } from "./preu-factusol";
+/** El preu d'un vi a la fulla: el de venda sense IVA i, si n'hi ha, el descompte en percentatge. */
+export type PreuDeLinia = { preu: number; descompte: number };
 
 /** Un vi tal com surt a la fulla. La foto va a part: és un fitxer, no text. */
 export type ViDeFulla = {
@@ -84,7 +85,7 @@ export function nomSenseAnyada(nom: string, anyada: string | null) {
   return nom.replace(new RegExp(`[\\s(]*${any}[)\\s]*$`), "").trim() || nom;
 }
 
-export function viDeFulla(article: ArticleDeFulla, preu: PreuDeFactusol | null): ViDeFulla {
+export function viDeFulla(article: ArticleDeFulla, preu: PreuDeLinia | null): ViDeFulla {
   const anyada = (article.camp_programable_2 ?? "").trim() || null;
   return {
     id: article.id,

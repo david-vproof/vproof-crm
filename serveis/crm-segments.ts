@@ -7,7 +7,7 @@
  */
 import "server-only";
 
-import { activitatsPerCompte, llistaAmbTotal, oportunitatsObertesPerCompte } from "@/apis/directus/crm";
+import { activitatsPerCompte, llistaAmbTotal, oportunitatsObertesPerCompte } from "@/apis/sqlite/crm";
 import { FITXES, condicionsExcloses } from "@/domini/crm-fitxes";
 import { CAMPS_RESUM_FACTURACIO } from "@/domini/facturacio-tendencia";
 import { nomDeLloc } from "@/lib/format";

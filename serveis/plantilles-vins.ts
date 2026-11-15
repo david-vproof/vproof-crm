@@ -7,7 +7,7 @@
  */
 import "server-only";
 
-import { actualitzaItem, creaItem, creaItems, esborraItem, esborraItems, llistaAmbTotal, obteItem } from "@/apis/directus/crm";
+import { actualitzaItem, creaItem, creaItems, esborraItem, esborraItems, llistaAmbTotal, obteItem } from "@/apis/sqlite/crm";
 import {
   MAXIM_VINS_PER_PLANTILLA, llegeixCriteris, type CriterisVins, type LiniaPlantilla, type Plantilla, type ResumPlantilla,
 } from "@/domini/cistella-vins";

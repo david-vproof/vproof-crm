@@ -4,25 +4,14 @@ import { revalidatePath } from "next/cache";
 
 import { ORDRE_FRANGES, type Franja } from "@/domini/crm-categoria";
 import { llegeixTipusEnviats } from "@/domini/crm-tipus-activitat";
-import { HORA_PER_DEFECTE, PERIODICITATS, type Programacio, type Taula, FITXA_TAULA, TAULES } from "@/domini/sincronitzacio";
 import { potVeureTot } from "@/lib/sessio-actual";
-import { provaConnexio as provaServei } from "@/serveis/configuracio";
 import { ErrorCategoria, desaFranges } from "@/serveis/crm-categoria";
 import { ErrorTipusActivitat, desaTipusActivitat } from "@/serveis/crm-tipus-activitat";
-import { desaProgramacions as desaProgramacionsServei } from "@/serveis/sincronitzacio";
 
 export type EstatConfiguracio = { to?: "ok" | "error"; missatge?: string };
 
 /** La Configuració és de qui ho veu tot; un comercial no hi arriba pel menú, però una acció es pot cridar igualment. */
 const SENSE_PERMIS: EstatConfiguracio = { to: "error", missatge: "No tens permís per canviar la configuració." };
-
-export async function provaConnexio(): Promise<EstatConfiguracio> {
-  if (!(await potVeureTot())) return SENSE_PERMIS;
-  const prova = await provaServei();
-  return prova.correcte
-    ? { to: "ok", missatge: prova.missatge }
-    : { to: "error", missatge: prova.missatge };
-}
 
 /** Desa les franges de la categoria i la recalcula a tots els clients. */
 export async function desaCategoria(_previ: EstatConfiguracio, formulari: FormData): Promise<EstatConfiguracio> {
@@ -77,44 +66,4 @@ export async function desaTipus(_previ: EstatConfiguracio, formulari: FormData):
     if (error instanceof ErrorTipusActivitat) return { to: "error", missatge: error.message };
     return { to: "error", missatge: `No s'ha pogut desar: ${(error as Error).message}` };
   }
-}
-
-/**
- * La programació de totes les taules de cop, del formulari únic de la
- * pestanya de sincronització: `<taula>_activa`, `<taula>_periodicitat` i
- * `<taula>_hora` per a cadascuna.
- */
-export async function desaProgramacions(_previ: EstatConfiguracio, formulari: FormData): Promise<EstatConfiguracio> {
-  if (!(await potVeureTot())) return SENSE_PERMIS;
-  const programacions = {} as Record<Taula, Programacio>;
-  for (const taula of TAULES) {
-    const minuts = Number(formulari.get(`${taula}_periodicitat`));
-    const hora = String(formulari.get(`${taula}_hora`) ?? "").trim();
-    if (!PERIODICITATS.some((p) => p.minuts === minuts)) {
-      return { to: "error", missatge: `${FITXA_TAULA[taula].etiqueta}: tria una periodicitat de la llista.` };
-    }
-    if (hora && !/^\d{2}:\d{2}$/.test(hora)) {
-      return { to: "error", missatge: `${FITXA_TAULA[taula].etiqueta}: l'hora ha de tenir el format HH:MM.` };
-    }
-    programacions[taula] = {
-      activa: formulari.get(`${taula}_activa`) === "on",
-      periodicitatMinuts: minuts,
-      hora: hora || HORA_PER_DEFECTE,
-    };
-  }
-
-  try {
-    await desaProgramacionsServei(programacions);
-  } catch (error) {
-    return { to: "error", missatge: `No s'ha pogut desar: ${(error as Error).message}` };
-  }
-  revalidatePath("/configuracio");
-  const actives = TAULES.filter((taula) => programacions[taula].activa);
-  return {
-    to: "ok",
-    missatge:
-      actives.length === 0
-        ? "Programació desada: cap sincronització automàtica."
-        : `Programació desada. El portal farà sol ${actives.map((taula) => FITXA_TAULA[taula].plural).join(", ")}.`,
-  };
 }

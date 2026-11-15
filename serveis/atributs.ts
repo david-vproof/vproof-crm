@@ -4,7 +4,7 @@
  */
 import "server-only";
 
-import { agrupaPer, creaItems, esborraItem, llistaAmbTotal, obteItem } from "@/apis/directus/crm";
+import { agrupaPer, creaItems, esborraItem, llistaAmbTotal, obteItem } from "@/apis/sqlite/crm";
 import { type Atribut, mateixAtribut, netejaAtribut } from "@/domini/atributs";
 
 const COLLECCIO = "crm_client_atributs";

@@ -10,7 +10,7 @@
  */
 import "server-only";
 
-import { actualitzaItems, agrupaPer, creaItems, llistaTot, type Condicio } from "@/apis/directus/crm";
+import { actualitzaItems, agrupaPer, creaItems, llistaTot, type Condicio } from "@/apis/sqlite/crm";
 import { FITXES, condicionsExcloses } from "@/domini/crm-fitxes";
 import { ORDRE_FRANGES, llegeixFranges, categoriaDe, validaFranges, type Franja } from "@/domini/crm-categoria";
 

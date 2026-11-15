@@ -9,7 +9,7 @@
  */
 import "server-only";
 
-import { agrupaPer, llistaAmbTotal, obteItem, type Condicio } from "@/apis/directus/crm";
+import { agrupaPer, llistaAmbTotal, obteItem, type Condicio } from "@/apis/sqlite/crm";
 import { FITXES } from "@/domini/crm-fitxes";
 import { CAMPS_ORDRE_CELLERS } from "@/domini/llistats-erp";
 import type { Ordre } from "@/domini/ordre-llistat";

@@ -5,7 +5,7 @@
  */
 import "server-only";
 
-import { llistaAmbTotal } from "@/apis/directus/crm";
+import { llistaAmbTotal } from "@/apis/sqlite/crm";
 import type { AlbaraDeFitxa } from "@/domini/albarans";
 
 const COLLECCIO = "crm_albarans";

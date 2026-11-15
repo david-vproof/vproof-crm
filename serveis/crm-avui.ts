@@ -15,7 +15,7 @@ import {
   llistaTasquesDelDia,
   type FilaAgenda,
   type FilaTasca,
-} from "@/apis/directus/crm";
+} from "@/apis/sqlite/crm";
 import {
   araAqui,
   construeixAgenda,

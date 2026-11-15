@@ -1,10 +1,9 @@
 /**
- * El preu dels vins als selectors: el de la tarifa de venda al major de
- * FactuSol, sense IVA, que és el que paga la majoria de clients (vegeu
- * `domini/preu-factusol.ts`). Ve en viu de l'ERP, com l'estoc, a part del
- * catàleg: per vi, un preu, i un criteri per quedar-se entre dos preus.
+ * El preu dels vins als selectors: el preu de venda sense IVA que l'ERP deixa a
+ * cada producte. Va a part del catàleg: per vi, un preu, i un criteri per
+ * quedar-se entre dos preus.
  *
- * Lògica pura: el servei llegeix FactuSol i el navegador en fa el criteri.
+ * Lògica pura: el servei el llegeix i el navegador en fa el criteri.
  */
 
 /** Per vi (id d'article), el preu de la tarifa sense IVA. Un vi que no hi és no té preu a la tarifa. */
@@ -42,16 +41,12 @@ export function passaFiltrePreu(id: string, preus: Preus | null, filtre: FiltreP
   return (minim === null || preu >= minim) && (maxim === null || preu <= maxim);
 }
 
-/**
- * Dels preus per CODART de FactuSol als preus per vi del portal. `idPerCodi`
- * diu quin article és cada CODART; els que no hi són no compten. Un preu a zero
- * tampoc: a la tarifa vol dir que no en té, i alguns històrics hi són així.
- */
-export function preusPerVi(perCodi: Record<string, number>, idPerCodi: Map<string, string>): Preus {
+/** Els preus per vi a partir de la columna `preu` dels productes: els que no en tenen no hi surten. */
+export function preusDeProductes(files: { id: string; preu: number | string | null }[]): Preus {
   const preus: Preus = {};
-  for (const [codi, preu] of Object.entries(perCodi)) {
-    const id = idPerCodi.get(codi.trim());
-    if (id && Number.isFinite(preu) && preu > 0) preus[id] = preu;
+  for (const fila of files) {
+    const preu = Number(fila.preu);
+    if (fila.preu !== null && fila.preu !== "" && Number.isFinite(preu)) preus[fila.id] = preu;
   }
   return preus;
 }

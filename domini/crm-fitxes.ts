@@ -7,7 +7,7 @@
 import { TENDENCIES } from "./facturacio-tendencia";
 import { PERIODICITATS, PERIODICITATS_CURTES, SEGUIMENTS } from "./crm-periodicitat";
 import { TIPUS_BASE, VISITA_CELLERS_A_CLIENT, VISITA_CLIENTS_A_CELLER, opcionsDeTipus, valorsAmb } from "./crm-tipus-activitat";
-import { ESTATS_CLIENT_CURTS, ESTAT_CLIENT_BAIXA, OPCIONS_ESTAT_CLIENT } from "./factusol-vocabulari";
+import { ESTATS_CLIENT_CURTS, ESTAT_CLIENT_BAIXA, OPCIONS_ESTAT_CLIENT } from "./estats-client";
 
 export type TipusCamp =
   | "text"

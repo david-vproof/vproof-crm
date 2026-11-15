@@ -1,22 +1,11 @@
 /**
  * L'estoc dels vins, per al selector de vins.
  *
- * Ve de FactuSol en viu, no de la sincronització: canvia amb cada albarà i la
- * passada va a hores. FactuSol el té a F_STO, una fila per article i
- * magatzem, amb dues xifres: l'actual (ACTSTO, el que hi ha físicament) i el
- * disponible (DISSTO, l'actual menys el que ja està compromès en comandes).
- * Els magatzems són a F_ALM; els de la bodega porten un número davant del
- * nom («1 GENERAL», «8 SANT BARTOMEU DE GRAU»), que els ordena.
- *
- * Lògica pura: s'agrega aquí i el navegador en fa el criteri i la marca.
+ * El deixa l'ERP a cada producte, amb dues xifres: l'actual (el que hi ha
+ * físicament) i el disponible (l'actual menys el que ja està compromès en
+ * comandes). Lògica pura: s'agrega aquí i el navegador en fa el criteri i la
+ * marca.
  */
-import { nomDeLloc } from "@/lib/format";
-
-/** Una fila de F_STO: l'article, el magatzem i les dues xifres. */
-export type EstocErp = { ARTSTO: string; ALMSTO: string; ACTSTO: number | string | null; DISSTO: number | string | null };
-
-/** Una fila de F_ALM: el codi i el nom del magatzem. */
-export type MagatzemErp = { CODALM: string; NOMALM: string | null };
 
 /** L'estoc d'un vi en un magatzem. */
 export type EstocMagatzem = { codi: string; nom: string; actual: number; disponible: number };
@@ -41,48 +30,21 @@ const numero = (valor: unknown) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-/**
- * El nom d'un magatzem tal com s'ensenya: sense el número de davant i com a
- * nom propi («8 SANT BARTOMEU DE GRAU» → «Sant Bartomeu de Grau»). Si no té
- * nom, el codi.
- */
-export function nomDeMagatzem(magatzem: MagatzemErp) {
-  const net = (magatzem.NOMALM ?? "").replace(/^\s*\d+\s*/, "").trim();
-  return net ? nomDeLloc(net) : magatzem.CODALM.trim();
-}
-
-/** L'ordre dels magatzems: el número de davant del nom, i després el nom. */
-function ordreDeMagatzem(magatzem: MagatzemErp) {
-  const numero = /^\s*(\d+)/.exec(magatzem.NOMALM ?? "");
-  return numero ? Number(numero[1]) : Number.MAX_SAFE_INTEGER;
-}
+/** Una fila de producte amb l'estoc que hi ha deixat l'ERP: l'actual i el disponible. */
+export type EstocDeProducte = { id: string; estoc_actual: number | string | null; estoc_disponible: number | string | null };
 
 /**
- * De les files de F_STO a l'estoc per vi. `idPerCodi` diu quin article del
- * portal és cada CODART; les files d'articles que no hi són (descatalogats) no
- * compten. Els magatzems on un vi té les dues xifres a zero no surten al
- * desglòs: només hi ha els que diuen alguna cosa.
+ * De les columnes d'estoc dels productes a l'estoc per vi. Tot és d'un sol
+ * magatzem, el general, fins que l'ERP en porti el desglòs. Els que tenen les
+ * dues xifres buides o a zero no hi surten: no en tenim enlloc.
  */
-export function agregaEstoc(files: EstocErp[], magatzems: MagatzemErp[], idPerCodi: Map<string, string>): Estocs {
-  const ordenats = [...magatzems].sort((a, b) => ordreDeMagatzem(a) - ordreDeMagatzem(b) || nomDeMagatzem(a).localeCompare(nomDeMagatzem(b), "ca"));
-  const posicio = new Map(ordenats.map((magatzem, i) => [magatzem.CODALM.trim(), i]));
-  const noms = new Map(ordenats.map((magatzem) => [magatzem.CODALM.trim(), nomDeMagatzem(magatzem)]));
-
+export function estocsDeProductes(files: EstocDeProducte[]): Estocs {
   const estocs: Estocs = {};
   for (const fila of files) {
-    const id = idPerCodi.get(String(fila.ARTSTO ?? "").trim());
-    if (!id) continue;
-    const actual = numero(fila.ACTSTO);
-    const disponible = numero(fila.DISSTO);
+    const actual = numero(fila.estoc_actual);
+    const disponible = fila.estoc_disponible === null || fila.estoc_disponible === "" ? actual : numero(fila.estoc_disponible);
     if (actual === 0 && disponible === 0) continue;
-    const codi = String(fila.ALMSTO ?? "").trim();
-    const estoc = (estocs[id] ??= { actual: 0, disponible: 0, magatzems: [] });
-    estoc.actual += actual;
-    estoc.disponible += disponible;
-    estoc.magatzems.push({ codi, nom: noms.get(codi) ?? codi, actual, disponible });
-  }
-  for (const estoc of Object.values(estocs)) {
-    estoc.magatzems.sort((a, b) => (posicio.get(a.codi) ?? Number.MAX_SAFE_INTEGER) - (posicio.get(b.codi) ?? Number.MAX_SAFE_INTEGER));
+    estocs[fila.id] = { actual, disponible, magatzems: [{ codi: "general", nom: "General", actual, disponible }] };
   }
   return estocs;
 }

@@ -15,7 +15,7 @@
 import "server-only";
 
 import { geocodifica, type Coordenades } from "@/apis/geocodificacio";
-import { actualitzaItem, llistaAmbTotal } from "@/apis/directus/crm";
+import { actualitzaItem, llistaAmbTotal } from "@/apis/sqlite/crm";
 import { FITXES, condicionsExcloses, esLletra } from "@/domini/crm-fitxes";
 import type { PuntCompte } from "@/domini/crm-mapa";
 import { COLOR_SENSE_SEGMENT, SENSE_SEGMENT } from "@/domini/crm-planner";

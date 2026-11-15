@@ -6,8 +6,8 @@
  */
 import "server-only";
 
-import { ErrorDirectus } from "@/apis/directus/client";
-import { llegeixCrm, teAccesCrm, type CrmEnCru, type FilaActivitat, type FilaOportunitat, type FilaTasca } from "@/apis/directus/crm";
+import { ErrorDades } from "@/apis/sqlite/client";
+import { llegeixCrm, teAccesCrm, type CrmEnCru, type FilaActivitat, type FilaOportunitat, type FilaTasca } from "@/apis/sqlite/crm";
 import {
   ETAPES,
   PROBABILITAT,
@@ -178,7 +178,7 @@ export async function crmDelPortal(): Promise<FontCrm> {
       avis: buit ? "El CRM de Directus encara no té cap oportunitat ni cap activitat registrada." : null,
     };
   } catch (error) {
-    if (error instanceof ErrorDirectus) {
+    if (error instanceof ErrorDades) {
       return { crm: CRM_BUIT, nomAgent: identitat, nomCanal: (codi) => codi, avis: error.message };
     }
     throw error;

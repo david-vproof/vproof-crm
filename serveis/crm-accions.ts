@@ -8,7 +8,7 @@
  */
 import "server-only";
 
-import { creaItems } from "@/apis/directus/crm";
+import { creaItems } from "@/apis/sqlite/crm";
 import { FITXES } from "@/domini/crm-fitxes";
 import { instantDeLocal } from "@/domini/crm-planner";
 import { comptesPerSegmentar } from "@/serveis/crm-segments";

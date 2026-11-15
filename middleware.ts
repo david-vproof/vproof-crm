@@ -67,6 +67,8 @@ export async function middleware(peticio: NextRequest) {
 }
 
 export const config = {
+  // Al runtime de Node: la sessió es comprova contra la base de dades SQLite, que no és a l'Edge.
+  runtime: "nodejs",
   // S'exclouen els assets, les rutes internes de Next i el que el sistema
   // demana sense galeta en instal·lar l'app: el manifest i les icones.
   matcher: [

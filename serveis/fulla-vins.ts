@@ -9,10 +9,8 @@
  */
 import "server-only";
 
-import { llegeixFitxer, llistaAmbTotal, obteItem } from "@/apis/directus/crm";
-import { contacteUsuari } from "@/apis/directus/usuaris";
-import { condicionsDePreu } from "@/apis/factusol";
-import { obtenirCredencials } from "@/apis/factusol/client";
+import { llegeixFitxer, llistaAmbTotal, obteItem } from "@/apis/sqlite/crm";
+import { contacteUsuari } from "@/apis/sqlite/usuaris";
 import { FITXES, esVisiblePer } from "@/domini/crm-fitxes";
 import {
   type AjustDeVi,
@@ -20,12 +18,12 @@ import {
   CONTACTE_BODEGA,
   type ContacteDeFulla,
   type OrdreDeFulla,
+  type PreuDeLinia,
   type ViDeFulla,
   ambAjust,
   ordenaVins,
   viDeFulla,
 } from "@/domini/fulla-vins";
-import { type PreuDeFactusol, TARIFA_SENSE_CLIENT, percentatgeDeTipus, preuDeFactusol } from "@/domini/preu-factusol";
 import { vinsDeLActivitat } from "@/serveis/crm-vins";
 
 type Activitat = {
@@ -37,7 +35,7 @@ type Activitat = {
   lead: { id: string; nom: string | null } | null;
 };
 
-type ArticleLlegit = ArticleDeFulla & { codi_erp: string | null; imatge: string | null };
+type ArticleLlegit = ArticleDeFulla & { codi_erp: string | null; imatge: string | null; preu: number | string | null };
 
 /**
  * Una foto per al PDF: el PDF només entén JPEG i PNG, i en PNG es conserva el
@@ -65,7 +63,7 @@ export type DadesFulla = {
 };
 
 const CAMPS_ARTICLE = [
-  "id", "codi_erp", "nom", "familia", "garantia", "imatge",
+  "id", "codi_erp", "nom", "familia", "garantia", "imatge", "preu",
   "camp_programable_2", "camp_programable_3", "camp_programable_4", "camp_programable_5",
 ];
 
@@ -188,46 +186,25 @@ async function fullaDeVins(ids: string[], destinatari: Destinatari, data: string
 
   const avisos: string[] = [];
   const contacte = await contacteDeQuiLaTreu(opcions.jo, avisos);
-  const preus = new Map<string, PreuDeFactusol>();
-  let tarifa: DadesFulla["tarifa"] = null;
+  const preus = new Map<string, PreuDeLinia>();
+  const tarifa: DadesFulla["tarifa"] = null;
 
   const ordre = opcions.ordre ?? "color";
   if (opcions.ambPreus || ordre === "color") {
-    if (!obtenirCredencials()) {
-      avisos.push("Sense preus: el servei no té les credencials de FactuSol.");
-    } else {
-      try {
-        const condicions = await condicionsDePreu(
-          destinatari.codiErp,
-          articles.map((article) => article.codi_erp ?? ""),
-          TARIFA_SENSE_CLIENT,
-        );
-        tarifa = condicions.tarifa;
-        for (const article of articles) {
-          const codi = (article.codi_erp ?? "").trim();
-          const preu = preuDeFactusol({
-            pvp: condicions.pvp[codi] ?? null,
-            ivaInclos: condicions.tarifa.ivaInclos,
-            percentatgeIva: percentatgeDeTipus(condicions.tipusIva[codi] ?? 0, condicions.percentatgesIva),
-            especial: condicions.especials[codi] ?? null,
-            descompteClient: condicions.descompteClient,
-          });
-          if (preu) preus.set(article.id, preu);
-        }
-        const sensePreu = articles.length - preus.size;
-        if (sensePreu > 0) {
-          avisos.push(`${sensePreu} ${sensePreu === 1 ? "vi no té" : "vins no tenen"} preu a la tarifa ${tarifa.codi} de FactuSol.`);
-        }
-      } catch (error) {
-        avisos.push(`Sense preus: FactuSol no els ha donat (${(error as Error).message}).`);
-      }
+    for (const article of articles) {
+      const preu = Number(article.preu);
+      if (article.preu !== null && article.preu !== "" && Number.isFinite(preu)) preus.set(article.id, { preu, descompte: 0 });
+    }
+    const sensePreu = articles.length - preus.size;
+    if (opcions.ambPreus && sensePreu > 0) {
+      avisos.push(`${sensePreu} ${sensePreu === 1 ? "vi no té" : "vins no tenen"} preu de venda.`);
     }
   }
 
   const fotos = opcions.ambFotos === false ? articles.map(() => null) : await Promise.all(articles.map((article) => foto(article.imatge)));
   // Els retocs del comercial van abans d'ordenar: un preu posat a mà compta per a l'ordre.
   // Sense preus a la fulla només hi compten les observacions: el preu buit del
-  // modal no ha d'esborrar el de FactuSol, que és el que ordena.
+  // modal no ha d'esborrar el del producte, que és el que ordena.
   const vins = articles.map((article, i) => {
     const ajust = opcions.ajustos?.[article.id];
     return {
