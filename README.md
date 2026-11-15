@@ -101,7 +101,12 @@ al render de servidor, així que `components/grafics/Grafic.tsx` els carrega amb
 ### A la VM de l'ERP (Google Cloud)
 
 El CRM corre a la mateixa VM que l'ERP (`erpnext`, projecte `vprooferp`,
-`europe-southwest1-a`), en un contenidor a part (`vproof-crm`) al port 3000.
+`europe-southwest1-a`), en un contenidor a part (`vproof-crm`), i s'hi entra pel
+Caddy de l'ERP amb HTTPS: **https://crm.34-175-54-50.sslip.io** (sslip.io
+resol el nom a la IP de la VM; amb un domini propi, es posa a `CRM_HOST`). Al
+Caddyfile de l'ERP (`/opt/erpnext/Caddyfile`) s'hi afegeix només el bloc del
+CRM, entre marques, i el temporitzador `vproof-crm-proxy.timer` de la VM el
+torna a posar si un desplegament de l'ERP el reescriu.
 Es desplega amb el workflow **Desplega el CRM a Google Cloud**
 (`.github/workflows/desplega-gcp.yml`), a mà des de la pestanya Actions:
 compila la imatge, la copia a la VM per SSH i arrenca el contenidor. L'ERP no

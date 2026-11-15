@@ -1,8 +1,10 @@
 # Desplega el CRM a la mateixa VM de Google Cloud que l'ERP (ERPNext).
 #
 # Compila la imatge aquí, la copia a la VM i hi arrenca el contenidor
-# `vproof-crm` al port CRM_PORT (deploy/gcp/config.sh). L'ERP no es toca: ni
-# els seus contenidors ni el seu script d'arrencada. Les dades del CRM viuen al
+# `vproof-crm`. S'hi entra pel Caddy de l'ERP (ports 80 i 443) amb el nom
+# CRM_HOST: per defecte, crm.<ip-amb-guions>.sslip.io, que resol sol a la IP de
+# la VM. Els contenidors de l'ERP no es toquen; al seu Caddyfile s'hi afegeix
+# només el bloc del CRM, entre marques (deploy/gcp/proxy.sh). Les dades del CRM viuen al
 # volum `vproof-crm-dades` de la VM i sobreviuen als desplegaments.
 #
 # L'accés a Google Cloud és el mateix que el de l'ERP: identitat federada per a
@@ -81,40 +83,23 @@ jobs:
           source deploy/gcp/config.sh
           # La clau SSH d'aquesta execució caduca sola: no se n'acumulen a les metadades del projecte.
           OPCIONS=(--zone "$ZONE" --project "$PROJECT_ID" --quiet --strict-host-key-checking=no --ssh-key-expire-after=2h)
-          gcloud compute scp vproof-crm.tar.gz deploy/gcp/remot.sh "$VM_NAME:/tmp/" "${OPCIONS[@]}"
+          IP="$(gcloud compute instances describe "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --format='value(networkInterfaces[0].accessConfigs[0].natIP)')"
+          CRM_HOST="${CRM_HOST:-crm.${IP//./-}.sslip.io}"
+          echo "CRM_HOST=$CRM_HOST" >> "$GITHUB_ENV"
+          gcloud compute scp vproof-crm.tar.gz deploy/gcp/remot.sh deploy/gcp/proxy.sh "$VM_NAME:/tmp/" "${OPCIONS[@]}"
           gcloud compute ssh "$VM_NAME" "${OPCIONS[@]}" \
-            --command "ETIQUETA=${GITHUB_SHA::12} CRM_PORT=$CRM_PORT CRM_ADMIN_PASSWORD='${CRM_ADMIN_PASSWORD}' VPROOFERP_API_KEY='${VPROOFERP_API_KEY}' VPROOFERP_API_SECRET='${VPROOFERP_API_SECRET}' bash /tmp/remot.sh; codi=\$?; rm -f /tmp/remot.sh; exit \$codi"
-
-      - name: Obre el port del CRM
-        if: ${{ !inputs.nomes_estat }}
-        # Si el compte de desplegament no pot crear regles de tallafoc, el CRM corre igual: es diu què cal fer.
-        continue-on-error: true
-        run: |
-          source deploy/gcp/config.sh
-          XARXA="$(gcloud compute instances describe "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --format='value(networkInterfaces[0].network.basename())')"
-          gcloud compute instances add-tags "$VM_NAME" --tags vproof-crm --zone "$ZONE" --project "$PROJECT_ID"
-          if gcloud compute firewall-rules describe vproof-crm --project "$PROJECT_ID" >/dev/null 2>&1; then
-            echo "La regla vproof-crm ja hi és."
-          else
-            gcloud compute firewall-rules create vproof-crm --project "$PROJECT_ID" --network "$XARXA" \
-              --allow "tcp:$CRM_PORT" --target-tags vproof-crm --source-ranges 0.0.0.0/0 \
-              --description "vproof CRM (contenidor vproof-crm a la VM de l'ERP)" || {
-              echo "::warning::No s'ha pogut obrir el port $CRM_PORT. Des de Cloud Shell: gcloud compute firewall-rules create vproof-crm --project $PROJECT_ID --network $XARXA --allow tcp:$CRM_PORT --target-tags vproof-crm --source-ranges 0.0.0.0/0"
-              exit 1
-            }
-          fi
+            --command "ETIQUETA=${GITHUB_SHA::12} CRM_PORT=$CRM_PORT CRM_HOST=$CRM_HOST CRM_ADMIN_PASSWORD='${CRM_ADMIN_PASSWORD}' VPROOFERP_API_KEY='${VPROOFERP_API_KEY}' VPROOFERP_API_SECRET='${VPROOFERP_API_SECRET}' bash /tmp/remot.sh; codi=\$?; rm -f /tmp/remot.sh; exit \$codi"
 
       - name: Comprova des de fora
         if: ${{ !inputs.nomes_estat }}
         run: |
-          source deploy/gcp/config.sh
-          IP="$(gcloud compute instances describe "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --format='value(networkInterfaces[0].accessConfigs[0].natIP)')"
+          # El certificat el demana Caddy la primera vegada: pot trigar un minut.
           CODI=000
-          for _ in $(seq 1 10); do
-            CODI="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://$IP:$CRM_PORT/login" || true)"
+          for _ in $(seq 1 20); do
+            CODI="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "https://$CRM_HOST/login" || true)"
             [ "$CODI" = 200 ] && break
             sleep 6
           done
-          echo "http://$IP:$CRM_PORT → $CODI"
-          echo "### vproof CRM: http://$IP:$CRM_PORT (resposta $CODI)" >> "$GITHUB_STEP_SUMMARY"
-          [ "$CODI" = 200 ] || echo "::warning::Des de fora no respon: el port $CRM_PORT segurament no és obert al tallafoc."
+          echo "https://$CRM_HOST → $CODI"
+          echo "### vproof CRM: https://$CRM_HOST (resposta $CODI)" >> "$GITHUB_STEP_SUMMARY"
+          [ "$CODI" = 200 ] || { echo "::error::Des de fora no respon."; exit 1; }

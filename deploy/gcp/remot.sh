@@ -5,7 +5,8 @@
 # No toca res de l'ERP: el CRM és un contenidor a part, amb el seu volum de
 # dades (`vproof-crm-dades`) i la seva configuració a /var/lib/vproof-crm/env.
 #
-# Entrada (variables d'entorn): ETIQUETA (la de la imatge), CRM_PORT i,
+# Entrada (variables d'entorn): ETIQUETA (la de la imatge), CRM_PORT, CRM_HOST
+# (el nom pel qual s'entra, a través del Caddy de l'ERP) i,
 # opcionalment, CRM_ADMIN_PASSWORD, VPROOFERP_API_KEY i VPROOFERP_API_SECRET.
 # Sense CRM_ADMIN_PASSWORD, el primer cop se'n genera una
 # d'aleatòria i s'escriu al port sèrie de la VM, com fa l'ERP amb la seva.
@@ -68,7 +69,7 @@ echo "▸ Arrencant el contenidor"
 sudo docker rm -f vproof-crm >/dev/null 2>&1 || true
 sudo docker run -d --name vproof-crm --restart unless-stopped \
   ${XARXA:+--network "$XARXA"} \
-  -p "$CRM_PORT:3000" \
+  -p "127.0.0.1:$CRM_PORT:3000" \
   --env-file "$DIR/env" \
   -v vproof-crm-dades:/app/dades \
   "vproof-crm:$ETIQUETA" >/dev/null
@@ -86,3 +87,21 @@ echo "  /login respon $CODI"
 sudo docker images vproof-crm --format '{{.Tag}}' | grep -vx "$ETIQUETA" | xargs -r -I{} sudo docker rmi "vproof-crm:{}" >/dev/null 2>&1 || true
 
 [ "$CODI" = 200 ] || { sudo docker logs --tail 60 vproof-crm; exit 1; }
+
+# --- Proxy -------------------------------------------------------------------
+# S'entra al CRM pel Caddy de l'ERP (ports 80 i 443), amb el nom CRM_HOST.
+# proxy.sh hi afegeix el bloc del CRM, i un temporitzador el manté.
+if [ -n "${CRM_HOST:-}" ]; then
+  echo "▸ Proxy: $CRM_HOST"
+  sudo install -m 0755 /tmp/proxy.sh /usr/local/sbin/vproof-crm-proxy
+  sudo mkdir -p /etc/vproof-crm
+  printf 'CRM_HOST=%s\n' "$CRM_HOST" | sudo tee /etc/vproof-crm/proxy.env >/dev/null
+  printf '[Unit]\nDescription=vproof CRM: manté el CRM al proxy de l%sERP\nAfter=docker.service\n\n[Service]\nType=oneshot\nExecStart=/usr/local/sbin/vproof-crm-proxy\n' "'" |
+    sudo tee /etc/systemd/system/vproof-crm-proxy.service >/dev/null
+  printf '[Unit]\nDescription=vproof CRM: comprova el proxy cada cinc minuts\n\n[Timer]\nOnBootSec=3min\nOnUnitActiveSec=5min\n\n[Install]\nWantedBy=timers.target\n' |
+    sudo tee /etc/systemd/system/vproof-crm-proxy.timer >/dev/null
+  sudo systemctl daemon-reload
+  sudo systemctl enable --now vproof-crm-proxy.timer >/dev/null 2>&1
+  sudo /usr/local/sbin/vproof-crm-proxy
+fi
+rm -f /tmp/proxy.sh
