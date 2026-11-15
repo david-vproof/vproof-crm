@@ -3,6 +3,10 @@
 # --- Dependències -----------------------------------------------------------
 FROM node:22-slim AS deps
 WORKDIR /app
+# better-sqlite3 és un mòdul natiu: si npm el compila, cal Python i un compilador.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci
 
