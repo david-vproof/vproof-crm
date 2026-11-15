@@ -8,7 +8,8 @@
  * capçalera Host. Per això es fa servir `node:http` i no `fetch`, que no deixa
  * canviar el Host.
  *
- * Variables: VPROOFERP_URL, VPROOFERP_API_KEY, VPROOFERP_API_SECRET i,
+ * La connexió es desa a Configuració (vegeu `serveis/erp.ts`) i, si no, surt de
+ * l'entorn: VPROOFERP_URL, VPROOFERP_API_KEY, VPROOFERP_API_SECRET i,
  * opcionalment, VPROOFERP_HOST (el nom del site, si l'adreça no ho és).
  */
 import "server-only";
@@ -17,6 +18,9 @@ import http from "node:http";
 import https from "node:https";
 
 export type ConfigErp = { url: URL; host: string | null; clau: string; secret: string };
+
+/** Les dades d'una connexió, tal com es desen o arriben de l'entorn. */
+export type DadesConnexio = { url: string | null; host: string | null; clau: string | null; secret: string | null };
 
 export class ErrorErp extends Error {
   constructor(
@@ -28,14 +32,17 @@ export class ErrorErp extends Error {
   }
 }
 
-/** La configuració de l'entorn, o null si falta res: llavors no hi ha connexió. */
-export function configErp(): ConfigErp | null {
-  const url = process.env.VPROOFERP_URL?.trim();
-  const clau = process.env.VPROOFERP_API_KEY?.trim();
-  const secret = process.env.VPROOFERP_API_SECRET?.trim();
-  if (!url || !clau || !secret) return null;
+/** El que diu l'entorn del servei: VPROOFERP_URL, VPROOFERP_HOST, VPROOFERP_API_KEY i VPROOFERP_API_SECRET. */
+export function connexioDeLEntorn(): DadesConnexio {
+  const valor = (nom: string) => process.env[nom]?.trim() || null;
+  return { url: valor("VPROOFERP_URL"), host: valor("VPROOFERP_HOST"), clau: valor("VPROOFERP_API_KEY"), secret: valor("VPROOFERP_API_SECRET") };
+}
+
+/** Una connexió a punt per fer servir, o null si falta res o l'adreça no és vàlida. */
+export function configDe(dades: DadesConnexio): ConfigErp | null {
+  if (!dades.url || !dades.clau || !dades.secret) return null;
   try {
-    return { url: new URL(url), host: process.env.VPROOFERP_HOST?.trim() || null, clau, secret };
+    return { url: new URL(dades.url), host: dades.host || null, clau: dades.clau, secret: dades.secret };
   } catch {
     return null;
   }

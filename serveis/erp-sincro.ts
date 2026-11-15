@@ -20,7 +20,8 @@ import "server-only";
 import { actualitzaCamps, idPerCamp, idsPerErpId, importa, valorsPerErpId, type FilaImportada, type ResultatImportacio } from "@/apis/sqlite/importa";
 import { creaItem, actualitzaItem, llistaAmbTotal } from "@/apis/sqlite/crm";
 import { pujaFitxer } from "@/apis/sqlite/crm";
-import { baixaFitxer, configErp, llistaTot, usuariConnectat, type ConfigErp } from "@/apis/vprooferp";
+import { baixaFitxer, llistaTot, usuariConnectat, type ConfigErp } from "@/apis/vprooferp";
+import { configuracioErp } from "@/serveis/erp";
 import { senseAbast } from "@/lib/abast-actual";
 import { recalculaResumsDeClients } from "@/serveis/facturacio";
 
@@ -91,7 +92,7 @@ const anyActual = () => new Date().getFullYear();
 
 // ------------------------------------------------------------------ passos
 
-type Pas = { clau: string; nom: string; fes: (erp: ConfigErp) => Promise<ResultatImportacio & { nota?: string }> };
+type Pas = { clau: string; nom: string; fes: (erp: ConfigErp, llistaPreus: string | null) => Promise<ResultatImportacio & { nota?: string }> };
 
 async function grupsDeClient(erp: ConfigErp) {
   const grups = await llistaTot<GrupClient>(erp, "Customer Group", { camps: ["name", "customer_group_name", "is_group"] });
@@ -227,9 +228,8 @@ async function establiments(erp: ConfigErp) {
   });
 }
 
-/** La llista de preus de venda: VPROOFERP_LLISTA_PREUS, o «Standard Selling», o la que més articles té. */
-function triaLlistaDePreus(preus: PreuArticle[]) {
-  const volguda = process.env.VPROOFERP_LLISTA_PREUS?.trim();
+/** La llista de preus de venda: la de Configuració, o «Standard Selling», o la que més articles té. */
+function triaLlistaDePreus(preus: PreuArticle[], volguda: string | null) {
   if (volguda) return volguda;
   const quantes = new Map<string, number>();
   for (const preu of preus) quantes.set(preu.price_list, (quantes.get(preu.price_list) ?? 0) + 1);
@@ -239,7 +239,7 @@ function triaLlistaDePreus(preus: PreuArticle[]) {
 
 const FOTOS_PER_PASSADA = 60;
 
-async function productes(erp: ConfigErp) {
+async function productes(erp: ConfigErp, llistaPreus: string | null) {
   const [articles, defectes, proveidorsArticle, preus, estocs] = await Promise.all([
     llistaTot<Article>(erp, "Item", { camps: ["name", "item_name", "item_group", "brand", "disabled", "is_sales_item", "image", "creation", "stock_uom"] }),
     llistaTot<ArticleDefecte>(erp, "Item Default", { camps: ["parent", "default_supplier"], pare: "Item" }).catch(() => [] as ArticleDefecte[]),
@@ -258,7 +258,7 @@ async function productes(erp: ConfigErp) {
     if (!previ) proveidorDe.set(fila.parent, { supplier: fila.supplier, referencia: net(fila.supplier_part_no) });
     else if (previ.supplier === fila.supplier && !previ.referencia) previ.referencia = net(fila.supplier_part_no);
   }
-  const llista = triaLlistaDePreus(preus);
+  const llista = triaLlistaDePreus(preus, llistaPreus);
   const preuDe = new Map(preus.filter((p) => p.price_list === llista).map((p) => [p.item_code, p.price_list_rate]));
   const estocDe = new Map<string, { actual: number; disponible: number }>();
   for (const bin of estocs) {
@@ -436,9 +436,9 @@ function resumDelPas(pas: ResultatPas) {
 }
 
 async function passada(desencadenant: "manual" | "programada"): Promise<ResultatSincro> {
-  const erp = configErp();
+  const { config: erp, llistaPreus } = await configuracioErp();
   const inici = new Date().toISOString();
-  if (!erp) throw new Error("Falta la connexió amb l'ERP: VPROOFERP_URL, VPROOFERP_API_KEY i VPROOFERP_API_SECRET.");
+  if (!erp) throw new Error("Falta la connexió amb l'ERP: l'adreça, la clau o el secret d'API (Configuració › Connexió amb l'ERP).");
 
   const registre = await creaItem("crm_sync_execucions", { taula: "erp", desencadenant, estat: "en_curs", inici });
   const passos: ResultatPas[] = [];
@@ -447,7 +447,7 @@ async function passada(desencadenant: "manual" | "programada"): Promise<Resultat
     usuari = await usuariConnectat(erp);
     for (const pas of PASSOS) {
       try {
-        const { nota, ...resultat } = await pas.fes(erp);
+        const { nota, ...resultat } = await pas.fes(erp, llistaPreus);
         passos.push({ clau: pas.clau, nom: pas.nom, correcte: true, resultat, nota });
       } catch (error) {
         passos.push({ clau: pas.clau, nom: pas.nom, correcte: false, error: (error as Error).message });

@@ -40,9 +40,9 @@ fi
 
 # --- Connexió amb l'ERP ------------------------------------------------------
 # El CRM parla amb l'ERP per la xarxa interna de Docker: s'uneix a la xarxa
-# del frontend de l'ERP i hi entra amb el nom del site a la capçalera Host. La
-# clau d'API la porta el workflow (secrets VPROOFERP_API_KEY i
-# VPROOFERP_API_SECRET del repositori) i només es desa a $DIR/env.
+# del frontend de l'ERP i hi entra amb el nom del site a la capçalera Host.
+# L'adreça interna es deixa a $DIR/env; la clau d'API es posa a Configuració
+# del CRM (o, si n'hi ha, arriba dels secrets VPROOFERP_API_* del repositori).
 FRONTEND="$(sudo docker ps --format '{{.Names}}' | grep -E '(^|-)frontend(-|$)' | head -1 || true)"
 BACKEND="$(sudo docker ps --format '{{.Names}}' | grep -E '(^|-)backend(-|$)' | head -1 || true)"
 XARXA=""
@@ -50,16 +50,18 @@ if [ -n "$FRONTEND" ] && [ -n "$BACKEND" ]; then
   XARXA="$(sudo docker inspect -f '{{range $nom, $x := .NetworkSettings.Networks}}{{$nom}} {{end}}' "$FRONTEND" | awk '{print $1}')"
   SITE="$(sudo docker exec -w /home/frappe/frappe-bench/sites "$BACKEND" sh -c 'for d in */site_config.json; do echo "${d%/site_config.json}"; done' 2>/dev/null | head -1 || true)"
   echo "▸ ERP: frontend $FRONTEND, xarxa $XARXA, site ${SITE:-?}"
-  if [ -n "${VPROOFERP_API_KEY:-}" ] && [ -n "${VPROOFERP_API_SECRET:-}" ] && [ -n "$SITE" ]; then
-    # Es reescriuen sempre: si la clau canvia als secrets, el CRM fa servir la nova.
-    sudo sed -i '/^VPROOFERP_\(URL\|HOST\|API_KEY\|API_SECRET\)=/d' "$DIR/env"
-    printf 'VPROOFERP_URL=http://%s:8080\nVPROOFERP_HOST=%s\nVPROOFERP_API_KEY=%s\nVPROOFERP_API_SECRET=%s\n' \
-      "$FRONTEND" "$SITE" "$VPROOFERP_API_KEY" "$VPROOFERP_API_SECRET" | sudo tee -a "$DIR/env" >/dev/null
-    echo "  Connexió amb l'ERP configurada."
-  elif sudo grep -q '^VPROOFERP_API_SECRET=' "$DIR/env"; then
-    echo "  Es manté la connexió amb l'ERP que ja hi havia."
+  if [ -n "$SITE" ]; then
+    # L'adreça interna de l'ERP, sempre al dia: al formulari de Configuració ja hi surt i només cal la clau.
+    sudo sed -i '/^VPROOFERP_\(URL\|HOST\)=/d' "$DIR/env"
+    printf 'VPROOFERP_URL=http://%s:8080\nVPROOFERP_HOST=%s\n' "$FRONTEND" "$SITE" | sudo tee -a "$DIR/env" >/dev/null
+  fi
+  if [ -n "${VPROOFERP_API_KEY:-}" ] && [ -n "${VPROOFERP_API_SECRET:-}" ]; then
+    # Si n'hi ha als secrets del repositori. Si no, la clau es posa a Configuració › Connexió amb l'ERP.
+    sudo sed -i '/^VPROOFERP_API_\(KEY\|SECRET\)=/d' "$DIR/env"
+    printf 'VPROOFERP_API_KEY=%s\nVPROOFERP_API_SECRET=%s\n' "$VPROOFERP_API_KEY" "$VPROOFERP_API_SECRET" | sudo tee -a "$DIR/env" >/dev/null
+    echo "  Clau d'API de l'ERP des dels secrets del repositori."
   else
-    echo "  Sense clau d'API de l'ERP (secrets VPROOFERP_API_KEY i VPROOFERP_API_SECRET): el CRM arrenca sense sincronització."
+    echo "  La clau d'API de l'ERP es posa a Configuració › Connexió amb l'ERP."
   fi
 else
   echo "▸ No he trobat els contenidors de l'ERP: el CRM arrenca sense connexió."

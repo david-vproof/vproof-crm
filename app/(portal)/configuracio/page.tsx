@@ -4,10 +4,13 @@ import { Capcalera, EstatBuit, Etiqueta, Plafo } from "@/components/UI";
 import { dataHoraCurta } from "@/lib/format";
 import { clientsPerCategoria, frangesDeCategoria } from "@/serveis/crm-categoria";
 import { llistaTipusActivitat, usosDelsTipus } from "@/serveis/crm-tipus-activitat";
-import { estatErp } from "@/serveis/erp";
+import { connexioPerAlFormulari, estatErp } from "@/serveis/erp";
+import { esAdministrador } from "@/lib/sessio";
+import { sessioActual } from "@/lib/sessio-actual";
 import { darreresSincros, hiHaSincroEnCurs } from "@/serveis/erp-sincro";
 
 import { BotoSincronitza } from "./BotoSincronitza";
+import { FormulariConnexioErp } from "./FormulariConnexioErp";
 
 import { FormulariCategoria } from "./FormulariCategoria";
 import { FormulariTipusActivitat } from "./FormulariTipusActivitat";
@@ -155,7 +158,7 @@ async function PlafoTipusActivitat() {
 
 /** La connexió amb vprooferp: l'estat, la sincronització a mà i com han anat les darreres passades. */
 async function SeccioErp() {
-  const estat = estatErp();
+  const [estat, connexio, sessio] = await Promise.all([estatErp(), connexioPerAlFormulari(), sessioActual()]);
   let passades: Awaited<ReturnType<typeof darreresSincros>> = [];
   let error: string | null = null;
   try {
@@ -179,6 +182,14 @@ async function SeccioErp() {
             <BotoSincronitza enCurs={hiHaSincroEnCurs()} />
           </div>
         ) : null}
+      </Plafo>
+
+      <Plafo titol="Connexió">
+        <p className="mb-4 text-[13.5px] leading-relaxed text-muted">
+          A l&apos;ERP, la clau és la d&apos;un usuari amb permís de lectura (rols Sales User, Stock User, Purchase User i
+          Accounts User): a la seva fitxa, «API Access» › «Generate Keys». El secret només es veu un cop, en generar-lo.
+        </p>
+        <FormulariConnexioErp inicials={connexio} potEditar={esAdministrador(sessio)} />
       </Plafo>
 
       <Plafo titol="Darreres sincronitzacions">

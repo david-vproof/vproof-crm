@@ -352,6 +352,19 @@ export const MODEL: Record<string, DefinicioTaula> = {
       date_updated: { tipus: "instant" },
     },
   },
+  crm_connexio_erp: {
+    singleton: true,
+    camps: {
+      url: { tipus: "text" },
+      host: { tipus: "text" },
+      api_key: { tipus: "text" },
+      api_secret: { tipus: "text" },
+      llista_preus: { tipus: "text" },
+      minuts: { tipus: "enter" },
+      date_created: { tipus: "instant" },
+      date_updated: { tipus: "instant" },
+    },
+  },
   crm_sync_execucions: {
     camps: {
       taula: { tipus: "text" },

@@ -8,6 +8,9 @@ import { potVeureTot } from "@/lib/sessio-actual";
 import { ErrorCategoria, desaFranges } from "@/serveis/crm-categoria";
 import { ErrorTipusActivitat, desaTipusActivitat } from "@/serveis/crm-tipus-activitat";
 import { sincronitzaAmbErp } from "@/serveis/erp-sincro";
+import { ErrorConnexioErp, desaConnexioErp, provaConnexioErp } from "@/serveis/erp";
+import { esAdministrador } from "@/lib/sessio";
+import { sessioActual } from "@/lib/sessio-actual";
 
 export type EstatConfiguracio = { to?: "ok" | "error"; missatge?: string };
 
@@ -81,5 +84,31 @@ export async function sincronitzaAra(): Promise<EstatConfiguracio> {
       : { to: "ok", missatge: "Sincronització feta." };
   } catch (error) {
     return { to: "error", missatge: (error as Error).message };
+  }
+}
+
+/** Desa la connexió amb l'ERP i la prova. Només l'administrador: hi ha una clau d'API pel mig. */
+export async function desaConnexio(_previ: EstatConfiguracio, formulari: FormData): Promise<EstatConfiguracio> {
+  if (!esAdministrador(await sessioActual())) return { to: "error", missatge: "Només un administrador pot canviar la connexió amb l'ERP." };
+  const text = (camp: string) => String(formulari.get(camp) ?? "");
+  try {
+    await desaConnexioErp({
+      url: text("url"),
+      host: text("host"),
+      clau: text("clau"),
+      secret: text("secret"),
+      llistaPreus: text("llista_preus"),
+      minuts: Number(text("minuts") || 0),
+    });
+  } catch (error) {
+    if (error instanceof ErrorConnexioErp) return { to: "error", missatge: error.message };
+    return { to: "error", missatge: `No s'ha pogut desar: ${(error as Error).message}` };
+  }
+  revalidatePath("/configuracio");
+  try {
+    const usuari = await provaConnexioErp();
+    return { to: "ok", missatge: `Desat. Connexió correcta: s'entra a l'ERP com a ${usuari}. La primera sincronització es fa en un minut, o ara amb «Sincronitza ara».` };
+  } catch (error) {
+    return { to: "error", missatge: `Desat, però la connexió no funciona: ${(error as Error).message}` };
   }
 }

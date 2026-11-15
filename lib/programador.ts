@@ -2,16 +2,15 @@
  * El rellotge del portal. El Next corre en un procés permanent, així que les
  * tasques periòdiques viuen aquí dins:
  *
- * - la sincronització amb l'ERP (vprooferp), cada VPROOFERP_SINCRO_MINUTS
- *   minuts (30 per defecte), si la connexió està configurada;
+ * - la sincronització amb l'ERP (vprooferp), cada tants minuts com digui
+ *   Configuració (30 per defecte), si la connexió està configurada;
  * - situar al mapa els clients i establiments sense coordenades, cada quart
  *   d'hora i després de cada sincronització.
  *
  * S'arrenca un sol cop per procés des de `instrumentation.ts`.
  */
-import { configErp } from "@/apis/vprooferp";
 import { ubicaTotsElsPendents } from "@/serveis/crm-mapa";
-import { minutsEntreSincros } from "@/serveis/erp";
+import { configuracioErp } from "@/serveis/erp";
 import { sincronitzaAmbErp } from "@/serveis/erp-sincro";
 
 const CADA_MS = 60_000;
@@ -32,16 +31,13 @@ export function arrencaProgramador() {
   global.__programadorPortal = setInterval(() => void tic(), CADA_MS);
   // Que el rellotge no impedeixi aturar el procés.
   global.__programadorPortal.unref?.();
-  console.log(
-    `[programador] en marxa: ubicació de clients cada quart d'hora` +
-      (configErp() && minutsEntreSincros() > 0 ? ` i sincronització amb l'ERP cada ${minutsEntreSincros()} minuts.` : "; sense sincronització amb l'ERP."),
-  );
+  console.log("[programador] en marxa: sincronització amb l'ERP si està configurada, i ubicació de clients cada quart d'hora.");
 }
 
 async function tic() {
-  const minuts = minutsEntreSincros();
+  const { config, minuts } = await configuracioErp();
   let sincronitzat = false;
-  if (configErp() && minuts > 0 && Date.now() >= properaSincro) {
+  if (config && minuts > 0 && Date.now() >= properaSincro) {
     properaSincro = Date.now() + minuts * 60_000;
     try {
       const resultat = await sincronitzaAmbErp("programada");
