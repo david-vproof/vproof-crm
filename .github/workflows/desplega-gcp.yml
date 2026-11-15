@@ -102,7 +102,9 @@ jobs:
           # El certificat el demana Caddy la primera vegada: pot trigar un minut.
           CODI=000
           for _ in $(seq 1 20); do
-            CODI="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "https://$CRM_HOST/login" || true)"
+            CODI="$(curl -s -o /tmp/crm.html -w '%{http_code}' --max-time 15 "https://$CRM_HOST/login" || true)"
+            # Ha de ser la pàgina del CRM, no la de l'ERP: totes dues responen 200.
+            if [ "$CODI" = 200 ] && ! grep -q "vproof CRM" /tmp/crm.html; then CODI="200 però no és el CRM ($(grep -o '<title>[^<]*' /tmp/crm.html | head -1))"; fi
             [ "$CODI" = 200 ] && break
             sleep 6
           done
