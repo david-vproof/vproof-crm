@@ -14,7 +14,7 @@ const CORREU_VALID = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Crea o desa un usuari. La comprovació de rol d'aquí és la primera porta; la
- * darrera és Directus, que rep el canvi amb les credencials de l'administrador.
+ * darrera és la base de dades, que rep el canvi amb les credencials de l'administrador.
  */
 export async function desaUsuariAccio(_previ: EstatFormulariUsuari, dades: FormData): Promise<EstatFormulariUsuari> {
   const sessio = await sessioActual();
@@ -63,12 +63,12 @@ export async function desaUsuariAccio(_previ: EstatFormulariUsuari, dades: FormD
 
   const admin = { correu: sessio.usuari, contrasenya: contrasenyaAdmin };
 
-  // El rol Manager es pot triar encara que a Directus no existeixi: es crea en aquest mateix desar.
+  // El rol Manager es pot triar encara que a la base de dades no existeixi: es crea en aquest mateix desar.
   let idRol = rol;
   if (rol === ROL_MANAGER_NOU) {
     try {
       const creat = await creaRolManager(admin);
-      if (!creat.id) return { error: "Directus no ha tornat l'id del rol Manager creat." };
+      if (!creat.id) return { error: "La base de dades no ha tornat l'id del rol Manager creat." };
       idRol = creat.id;
     } catch (error) {
       if (error instanceof ErrorUsuaris) return { error: error.message };
@@ -92,7 +92,7 @@ export async function desaUsuariAccio(_previ: EstatFormulariUsuari, dades: FormD
   redirect(`/usuaris?fet=${id ? "desat" : "creat"}`);
 }
 
-/** Crea el rol Manager a Directus en nom de l'administrador, amb la seva contrasenya. */
+/** Crea el rol Manager a la base de dades en nom de l'administrador, amb la seva contrasenya. */
 export async function creaRolManagerAccio(_previ: EstatFormulariUsuari, dades: FormData): Promise<EstatFormulariUsuari> {
   const sessio = await sessioActual();
   if (!sessio) redirect("/login?des=%2Fusuaris");

@@ -25,11 +25,11 @@ export function Etiqueta({
   to = "neutre",
 }: {
   children: ReactNode;
-  to?: "neutre" | "vi" | "verd" | "ambre" | "blau";
+  to?: "neutre" | "marca" | "verd" | "ambre" | "blau";
 }) {
   const tons = {
     neutre: "bg-parchment text-muted",
-    vi: "bg-wine-tint text-wine-deep",
+    marca: "bg-marca-clar text-marca-fosc",
     verd: "bg-emerald-50 text-emerald-700",
     // Ha acabat, però no del tot bé: alguna fila s'ha quedat sense copiar.
     ambre: "bg-amber-50 text-amber-800",

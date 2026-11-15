@@ -69,7 +69,7 @@ export async function TaulerCrm() {
         <Kpi etiqueta="Cicle de venda" valor={`${Math.round(resum.cicle)} dies`} detall="mitjana de les guanyades" />
 
         <Kpi etiqueta="Leads nous" valor={nombre(resum.leads30)} detall="darrers 30 dies" />
-        <Kpi etiqueta="Visites i tastos" valor={nombre(resum.visites30)} detall="darrers 30 dies" />
+        <Kpi etiqueta="Visites i presentacions" valor={nombre(resum.visites30)} detall="darrers 30 dies" />
         <Kpi etiqueta="Activitat total" valor={nombre(resum.activitats30)} detall="contactes en 30 dies" />
         <Kpi
           etiqueta="Contactes per oportunitat"

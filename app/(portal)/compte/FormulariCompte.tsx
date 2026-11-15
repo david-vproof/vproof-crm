@@ -45,7 +45,7 @@ export function FormulariCompte({ perfil, potCanviarTelefon }: { perfil: PerfilU
           <div className="space-y-1.5">
             <Camp etiqueta="Telèfon" nom="telefon" type="tel" defaultValue={perfil.telefon} autoComplete="tel" disabled={!potCanviarTelefon} />
             <p className="text-[12.5px] text-muted">
-              {potCanviarTelefon ? "Surt al peu de la fulla de vins, amb el correu." : "Surt al peu de la fulla de vins, amb el correu. El canvia un administrador."}
+              {potCanviarTelefon ? "Surt al peu de la fulla de productes, amb el correu." : "Surt al peu de la fulla de productes, amb el correu. El canvia un administrador."}
             </p>
           </div>
         </div>
@@ -64,7 +64,7 @@ export function FormulariCompte({ perfil, potCanviarTelefon }: { perfil: PerfilU
         </div>
 
         {estat.error ? (
-          <p role="alert" className="mt-4 rounded-lg bg-wine-tint px-3.5 py-2.5 text-[13px] text-wine-deep">
+          <p role="alert" className="mt-4 rounded-lg bg-marca-clar px-3.5 py-2.5 text-[13px] text-marca-fosc">
             {estat.error}
           </p>
         ) : null}

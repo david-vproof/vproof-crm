@@ -26,7 +26,7 @@ export async function activitatsDEnguany(ara = new Date(), client?: string): Pro
   return { dia, fetes: await activitatsPerClientEntre(desde, ara.toISOString(), client) };
 }
 
-/** Com va un sol client. Sense periodicitat no es demana res a Directus. */
+/** Com va un sol client. Sense periodicitat no es demana res a la base de dades. */
 export async function seguimentDelClient(id: string, periodicitat: unknown, ara = new Date()): Promise<Seguiment | null> {
   if (!seguimentDe(periodicitat, 0, avuiLocal(ara))) return null;
   const { dia, fetes } = await activitatsDEnguany(ara, id);

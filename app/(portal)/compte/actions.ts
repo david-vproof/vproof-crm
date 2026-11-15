@@ -17,7 +17,7 @@ export async function desaCompteAccio(_previ: EstatCompte, dades: FormData): Pro
   const nom = String(dades.get("nom") ?? "").trim();
   const cognoms = String(dades.get("cognoms") ?? "").trim();
   const correu = String(dades.get("correu") ?? "").trim().toLowerCase();
-  // Directus només deixa escriure aquest camp a l'administrador: per a la resta no s'envia, i el perfil es pot desar igual.
+  // la base de dades només deixa escriure aquest camp a l'administrador: per a la resta no s'envia, i el perfil es pot desar igual.
   const telefon = esAdministrador(sessio) ? String(dades.get("telefon") ?? "").trim() || null : undefined;
   const contrasenyaActual = String(dades.get("contrasenya_actual") ?? "");
   const nova = String(dades.get("contrasenya_nova") ?? "");

@@ -1,5 +1,5 @@
 /**
- * Model de la taula F_CLI de FactuSol.
+ * Model de la taula F_CLI de l'ERP.
  *
  * Només s'hi recullen les columnes que el portal fa servir: la taula real en
  * té 200. Es conserven els noms originals perquè les consultes SQL enviades a
@@ -31,7 +31,7 @@ export type Client = {
   FALCLI: string; // Data d'alta (ISO)
   FUMCLI: string; // Data del darrer moviment (ISO)
   OBSCLI: string; // Observacions
-  // Compte bancari, trossejat tal com el desa FactuSol
+  // Compte bancari, trossejat tal com el desa l'ERP
   PBACLI: string; // Codi IBAN de país
   DBACLI: string; // Dígits de control de l'IBAN
   ENTCLI: string; // Entitat
@@ -82,7 +82,7 @@ export type LlistaClientsResum = {
 };
 
 /**
- * Model de la taula F_PRO de FactuSol: proveïdors i creditors.
+ * Model de la taula F_PRO de l'ERP: proveïdors i creditors.
  *
  * Com amb F_CLI, només hi ha les columnes que el portal fa servir (la taula
  * real en té 104) i es conserven els noms originals. Els camps s'han triat
@@ -108,7 +108,7 @@ export type Proveidor = {
   FPAPRO: string; // Forma de pagament (codi de F_FPA)
   RETPRO: number; // Retenció IRPF en percentatge
   DP1PRO: number; // Descompte en percentatge
-  HOMPRO: number; // «Proveedor homologado» d'Otros datos: 1 són els cellers de qui es compra
+  HOMPRO: number; // «Proveedor homologado» d'Otros datos: 1 són els laboratoris de qui es compra
   ESTPRO: number; // 0 = actiu, 1 = bloquejat; la instal·lació també en té 3
   FALPRO: string; // Data d'alta (ISO)
   FUMPRO: string; // Data del darrer moviment (ISO)
@@ -136,8 +136,8 @@ export type LlistaProveidorsResum = {
 };
 
 /**
- * Model de la taula F_ART de FactuSol: els articles, que a la bodega són els
- * vins. Com amb F_CLI i F_PRO, només hi ha les columnes que el portal fa servir.
+ * Model de la taula F_ART de l'ERP: els articles, que a l'empresa són els
+ * productes. Com amb F_CLI i F_PRO, només hi ha les columnes que el portal fa servir.
  * A diferència dels altres dos, el codi és de text.
  */
 export type Article = {
@@ -145,12 +145,12 @@ export type Article = {
   DESART: string; // Descripció
   FAMART: string; // Família (codi de F_FAM)
   EANART: string; // Codi de barres
-  PHAART: number; // Proveïdor habitual (codi de F_PRO): el celler
+  PHAART: number; // Proveïdor habitual (codi de F_PRO): el laboratori
   REFART: string; // Referència del proveïdor
   FALART: string; // Data d'alta (ISO)
   IMGART: string; // Nom del fitxer de la foto, amb la data: canvia quan canvia la foto
   GARART: string; // Garantia
-  // Camps programables: el títol de cadascun el posa la bodega a FactuSol
+  // Camps programables: el títol de cadascun el posa l'empresa a l'ERP
   CP1ART: string;
   CP2ART: string;
   CP3ART: string;

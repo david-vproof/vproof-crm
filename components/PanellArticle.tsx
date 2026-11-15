@@ -27,10 +27,13 @@ export function PanellArticle({ article, tancar }: { article: FitxaArticle; tanc
         <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
           <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-[0.08em] text-muted">
-              Article · <span className="font-mono normal-case tracking-normal">{article.codi_erp}</span>
+              Producte · <span className="font-mono normal-case tracking-normal">{article.codi_erp}</span>
             </p>
             <h2 className="mt-0.5 font-display text-[22px] leading-tight">{nom}</h2>
           </div>
+          <Link href={`/crm?v=productes&r=${encodeURIComponent(article.id)}`} className="btn-compacte shrink-0">
+            Edita
+          </Link>
           <Link
             href={tancar}
             scroll={false}
@@ -45,19 +48,19 @@ export function PanellArticle({ article, tancar }: { article: FitxaArticle; tanc
           <FotoGranArticle key={gran ?? article.id} petita={urlImatge(article, "petita")} gran={gran} nom={nom} />
 
           <dl className="space-y-2.5">
-            <Dada etiqueta="Tipus" valor={nomDeTipus(article.familia)} />
-            <Dada etiqueta="Varietat" valor={article.garantia} />
-            <Dada etiqueta="Productor" valor={article.camp_programable_1} />
-            <Dada etiqueta="Anyada" valor={article.camp_programable_2} />
-            <Dada etiqueta="Regió" valor={article.camp_programable_4} />
-            <Dada etiqueta="Zona" valor={article.camp_programable_3} />
+            <Dada etiqueta="Categoria" valor={nomDeTipus(article.familia)} />
+            <Dada etiqueta="Principi actiu" valor={article.garantia} />
+            <Dada etiqueta="Espècie" valor={article.camp_programable_1} />
+            <Dada etiqueta="Forma farmacèutica" valor={article.camp_programable_2} />
+            <Dada etiqueta="Via d'administració" valor={article.camp_programable_3} />
+            <Dada etiqueta="Prescripció" valor={article.camp_programable_4} />
             <Dada etiqueta="Format" valor={nomDeFormat(article.camp_programable_5)} />
             <Dada
-              etiqueta="Proveïdor"
+              etiqueta="Laboratori"
               valor={
-                article.celler ? (
-                  <Link href={`/cellers/${article.celler.id}`} className="transition hover:text-wine">
-                    {article.celler.nom_comercial ?? "Sense nom"}
+                article.laboratori ? (
+                  <Link href={`/laboratoris/${article.laboratori.id}`} className="transition hover:text-marca">
+                    {article.laboratori.nom_comercial ?? "Sense nom"}
                   </Link>
                 ) : (
                   ""
@@ -65,8 +68,8 @@ export function PanellArticle({ article, tancar }: { article: FitxaArticle; tanc
               }
             />
             <Dada etiqueta="Codi de barres" valor={article.codi_barres ? <span className="font-mono">{article.codi_barres}</span> : ""} />
-            <Dada etiqueta="Ref. proveïdor" valor={article.referencia_proveidor} />
-            <Dada etiqueta="Alta a FactuSol" valor={dataCurta(article.data_alta ?? undefined)} />
+            <Dada etiqueta="Ref. del laboratori" valor={article.referencia_proveidor} />
+            <Dada etiqueta="Data d'alta" valor={dataCurta(article.data_alta ?? undefined)} />
           </dl>
         </div>
       </aside>

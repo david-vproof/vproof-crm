@@ -46,7 +46,7 @@ async function fotoReduida(original: File) {
 }
 
 const BOTO =
-  "cursor-pointer items-center rounded-lg border border-line bg-white px-3 py-1.5 text-[13px] transition hover:border-ink focus-within:border-wine focus-within:ring-4 focus-within:ring-wine/10 has-disabled:cursor-default has-disabled:opacity-50";
+  "cursor-pointer items-center rounded-lg border border-line bg-white px-3 py-1.5 text-[13px] transition hover:border-ink focus-within:border-marca focus-within:ring-4 focus-within:ring-marca/10 has-disabled:cursor-default has-disabled:opacity-50";
 
 /**
  * La foto d'una activitat. A les pantalles tàctils es pot fer amb la càmera o
@@ -135,14 +135,14 @@ export function CampFoto({
           <span className="hidden pointer-coarse:inline">Tria de la galeria</span>
         </label>
         {vista ? (
-          <button type="button" onClick={treu} disabled={bloquejat} className="text-[13px] text-muted transition hover:text-wine disabled:opacity-50">
+          <button type="button" onClick={treu} disabled={bloquejat} className="text-[13px] text-muted transition hover:text-marca disabled:opacity-50">
             Treu la foto
           </button>
         ) : null}
       </div>
 
       {error ? (
-        <p role="alert" className="text-[12px] text-wine-deep">
+        <p role="alert" className="text-[12px] text-marca-fosc">
           {error}
         </p>
       ) : null}

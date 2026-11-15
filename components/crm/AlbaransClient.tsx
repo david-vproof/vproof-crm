@@ -33,7 +33,7 @@ export function AlbaransClient({
         <p className="mt-2 text-[13px] text-muted">No s&apos;han pogut llegir els albarans.</p>
       ) : dades.files.length === 0 ? (
         <p className="mt-2 text-[13px] text-muted">
-          FactuSol no té cap albarà d&apos;aquest client {ANYS_ENRERE_ALBARANS === 1 ? "d'aquest any ni del passat" : "dels darrers exercicis"}.
+          L&apos;ERP no té cap albarà d&apos;aquest client {ANYS_ENRERE_ALBARANS === 1 ? "d'aquest any ni del passat" : "dels darrers exercicis"}.
         </p>
       ) : (
         <>
@@ -82,7 +82,7 @@ export function AlbaransClient({
       )}
 
       <p className="mt-3 text-[12px] text-muted">
-        Albarans de FactuSol d&apos;aquest any i {ANYS_ENRERE_ALBARANS === 1 ? "del passat" : `dels ${ANYS_ENRERE_ALBARANS} anteriors`},
+        Albarans de l&apos;ERP d&apos;aquest any i {ANYS_ENRERE_ALBARANS === 1 ? "del passat" : `dels ${ANYS_ENRERE_ALBARANS} anteriors`},
         amb els imports sense IVA. Es posen al dia amb la sincronització d&apos;albarans.
       </p>
     </section>

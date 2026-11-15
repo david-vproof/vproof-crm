@@ -68,7 +68,7 @@ async function esdevenimentsEntre(desde: string, fins: string, comercial: string
       hora: moment.hora,
       tipus: nomDelTipus(definicions, fila.tipus ?? ""),
       titol: fila.assumpte ?? "Sense assumpte",
-      compte: fila.client?.nom_comercial ?? fila.lead?.nom ?? fila.celler?.nom_comercial ?? "",
+      compte: fila.client?.nom_comercial ?? fila.lead?.nom ?? fila.laboratori?.nom_comercial ?? "",
       categoria: esLletra(fila.client?.categoria) ? fila.client.categoria : null,
       potencial: esLletra(fila.client?.potencial) ? fila.client.potencial : null,
       resultat: fila.resultat ?? "",

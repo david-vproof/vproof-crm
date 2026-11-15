@@ -18,12 +18,12 @@ export const sessioActual = cache(async (): Promise<Sessio | null> => {
 /**
  * Què veu i què toca qui té la sessió oberta. L'administrador i el manager ho
  * veuen tot; la resta, només els clients del seu agent comercial i el que en
- * penja, i sense agent, cap (vegeu `domini/abast.ts`). Sense id de Directus
+ * penja, i sense agent, cap (vegeu `domini/abast.ts`). Sense id de la base de dades
  * (les credencials locals) tampoc es filtra: val més veure-ho tot que una
  * pantalla buida sense explicació.
  */
 export type Abast = AbastDades & {
-  /** L'id de Directus de qui té la sessió: el que queda estampat a les fitxes que crea. */
+  /** L'id de la base de dades de qui té la sessió: el que queda estampat a les fitxes que crea. */
   jo: string | null;
   /**
    * El filtre d'abans per comercial («cada u només les activitats que porta»).
@@ -32,7 +32,7 @@ export type Abast = AbastDades & {
    * conserva, sempre null, perquè qui el rep no hagi de canviar.
    */
   deQui: null;
-  /** El codi d'agent de FactuSol (AGECLI), per filtrar el que es llegeix de l'ERP en directe. */
+  /** El codi d'agent de l'ERP (AGECLI), per filtrar el que es llegeix de l'ERP en directe. */
   codiAgent: number | null;
   /** No ho veu tot i no té agent: no veu cap client. Per dir-li-ho. */
   senseAgent: boolean;

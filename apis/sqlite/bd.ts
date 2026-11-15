@@ -5,7 +5,8 @@
  * (`model.ts`): es creen les taules que falten i s'hi afegeixen les columnes
  * noves. No s'esborra mai res: una columna que ja no és al model s'hi queda.
  * També s'hi posen les dades de partida si la taula és buida: els rols, el
- * primer administrador, els tipus d'activitat i les franges de categoria.
+ * primer administrador, els tipus d'activitat, els tipus de client i les
+ * franges de categoria.
  *
  * El fitxer és a `SQLITE_RUTA` (per defecte `dades/vproof-crm.sqlite`); al
  * costat, a `fitxers/`, hi van les fotos i els documents que s'hi pugen.
@@ -17,6 +18,8 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 
 import Database from "better-sqlite3";
+
+import { TIPUS_BASE } from "@/domini/crm-tipus-activitat";
 
 import { MODEL, type DefinicioCamp } from "./model";
 import { xifraContrasenya } from "./contrasenyes";
@@ -46,7 +49,7 @@ function valorPerDefecte(camp: DefinicioCamp) {
   const valor = camp.perDefecte;
   if (typeof valor === "boolean") return ` DEFAULT ${valor ? 1 : 0}`;
   if (typeof valor === "number") return ` DEFAULT ${valor}`;
-  // Els enters i els decimals del model de Directus arribaven a vegades com a text («100»).
+  // Els enters i els decimals del model de la base de dades arribaven a vegades com a text («100»).
   if ((camp.tipus === "enter" || camp.tipus === "decimal") && Number.isFinite(Number(valor))) return ` DEFAULT ${Number(valor)}`;
   return ` DEFAULT '${String(valor).replace(/'/g, "''")}'`;
 }
@@ -80,6 +83,16 @@ const ROLS_DE_PARTIDA = [
   { name: "Comercial", description: "Veu els clients del seu agent.", icon: "badge" },
 ];
 
+/** Els tipus de client d'una distribuïdora de producte sanitari veterinari. Es canvien a Configuració › Tipus de client. */
+const TIPUS_CLIENT_DE_PARTIDA = [
+  "Clínica veterinària",
+  "Hospital veterinari",
+  "Botiga d'animals",
+  "Explotació ramadera",
+  "Distribuïdor",
+  "Altres",
+];
+
 /** Les dades sense les quals el portal no arrenca bé. Només s'hi posen si la taula és buida. */
 function dadesDePartida(bd: BaseDades) {
   const buida = (taula: string) => (bd.prepare(`SELECT COUNT(*) AS n FROM ${q(taula)}`).get() as { n: number }).n === 0;
@@ -100,6 +113,20 @@ function dadesDePartida(bd: BaseDades) {
     if (!process.env.PORTAL_CONTRASENYA) {
       console.warn(`[sqlite] S'ha creat l'usuari «${correu}» amb la contrasenya per defecte. Canvia-la a «El meu compte».`);
     }
+  }
+
+  if (buida("crm_tipus_activitat")) {
+    const insereix = bd.prepare(
+      "INSERT INTO crm_tipus_activitat (id, nom, valor, visita, amb_productes, amb_laboratori, actiu, ordre, date_created) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)",
+    );
+    TIPUS_BASE.forEach((tipus, i) =>
+      insereix.run(randomUUID(), tipus.nom, tipus.valor, tipus.visita ? 1 : 0, tipus.ambProductes ? 1 : 0, tipus.ambLaboratori ? 1 : 0, (i + 1) * 10, ara),
+    );
+  }
+
+  if (buida("crm_tipus_client")) {
+    const insereix = bd.prepare("INSERT INTO crm_tipus_client (id, nom, codi_erp, usat_crm, font, date_created) VALUES (?, ?, ?, 1, 'portal', ?)");
+    TIPUS_CLIENT_DE_PARTIDA.forEach((nom, i) => insereix.run(randomUUID(), nom, i + 1, ara));
   }
 
   if (buida("crm_categories")) {

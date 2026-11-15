@@ -6,7 +6,7 @@ import { Kpi, TargetaGrafic } from "@/components/grafics/Targeta";
 import { EstatBuit } from "@/components/UI";
 import {
   bonsClientsSenseVisita, clientsQuePerden, leadsSenseMoure, oportunitatsATancar, perAgent, perCategoria, perClau, resumMacro,
-  seriesMensuals, toDosVencuts, vinsDestacats, visitesDeLaSetmana, type ClientDAtencio,
+  seriesMensuals, toDosVencuts, productesDestacats, visitesDeLaSetmana, type ClientDAtencio,
 } from "@/domini/crm-tauler";
 import { NOM_MES } from "@/domini/facturacio";
 import { dataCurta, euros } from "@/lib/format";
@@ -34,14 +34,14 @@ export async function TaulerNegoci({ totes, agent }: { totes: boolean; agent: st
     );
   }
 
-  const { avui, clients, activitats, oportunitats, tasques, leads, mesos, vins, agents, fetesEnguany, darreraActivitat } = dades;
+  const { avui, clients, activitats, oportunitats, tasques, leads, mesos, productes, agents, fetesEnguany, darreraActivitat } = dades;
   const macro = resumMacro(clients, oportunitats, fetesEnguany, avui);
   const mensual = seriesMensuals(mesos, macro.exercici);
   const categories = perCategoria(clients);
   const equip = perAgent(clients, activitats, oportunitats, agents, avui);
   const comarques = perClau(clients, (c) => c.comarca);
   const tipus = perClau(clients, (c) => c.tipus, 6);
-  const { servits, tastatsSenseCompra } = vinsDestacats(vins);
+  const { servits, presentatsSenseCompra } = productesDestacats(productes);
   const perden = clientsQuePerden(clients, darreraActivitat, avui);
   const refredats = bonsClientsSenseVisita(clients, darreraActivitat, avui);
   const aTancar = oportunitatsATancar(oportunitats, avui);
@@ -57,7 +57,7 @@ export async function TaulerNegoci({ totes, agent }: { totes: boolean; agent: st
       <section className="space-y-3">
         <Capcalera
           titol={agentTriat ? `La cartera de ${agentTriat.nom}` : "La casa"}
-          nota={`Facturació sense IVA de FactuSol, ${periode}, contra el mateix període de l'any passat. Enguany hi compten els albarans encara no facturats.`}
+          nota={`Facturació sense IVA de l'ERP, ${periode}, contra el mateix període de l'any passat. Enguany hi compten els albarans encara no facturats.`}
           dreta={
             totes ? (
               <TriaComercial
@@ -112,7 +112,7 @@ export async function TaulerNegoci({ totes, agent }: { totes: boolean; agent: st
                 {equip.map((fila) => (
                   <tr key={fila.id ?? "sense"} className={fila.id ? "" : "text-muted"}>
                     <td className="py-2 pr-3 font-medium">
-                      {totes && fila.id ? <Link href={`/crm?v=tauler&c=${fila.id}`} className="hover:text-wine">{fila.nom}</Link> : fila.nom}
+                      {totes && fila.id ? <Link href={`/crm?v=tauler&c=${fila.id}`} className="hover:text-marca">{fila.nom}</Link> : fila.nom}
                     </td>
                     <td className="py-2 pr-3 text-right tabular-nums">{nombre(fila.clients)}</td>
                     <td className="py-2 pr-3 text-right tabular-nums">{nombre(fila.compren)}</td>
@@ -127,7 +127,7 @@ export async function TaulerNegoci({ totes, agent }: { totes: boolean; agent: st
           </div>
           {equip.some((f) => f.id === null) ? (
             <p className="mt-2 text-[12.5px] text-muted">
-              Els clients sense agent no els veu cap comercial al portal: val la pena assignar-los a FactuSol.
+              Els clients sense agent no els veu cap comercial al portal: val la pena assignar-los a l&apos;ERP.
             </p>
           ) : null}
         </TargetaGrafic>
@@ -135,16 +135,16 @@ export async function TaulerNegoci({ totes, agent }: { totes: boolean; agent: st
           <TargetaGrafic titol="Per comarca" subtitol="Les vuit que més facturen, i la resta agrupada">
             <GraficRanquing files={comarques} />
           </TargetaGrafic>
-          <TargetaGrafic titol="Per tipus de client" subtitol="Restaurants, botigues, distribuïdors… segons FactuSol">
+          <TargetaGrafic titol="Per tipus de client" subtitol="Clíniques, botigues, explotacions…">
             <GraficRanquing files={tipus} />
           </TargetaGrafic>
         </div>
         <div className="grid gap-3 xl:grid-cols-2">
-          <TargetaGrafic titol="Vins més servits" subtitol={`Línies d'albarà del ${macro.exercici}`}>
-            <Ranquing files={servits.map((vi) => ({ id: vi.id, nom: vi.nom, valor: vi.linies, etiqueta: `${nombre(vi.linies)} línies` }))} buit="Cap albarà enguany." />
+          <TargetaGrafic titol="Productes més servits" subtitol={`Línies d'albarà del ${macro.exercici}`}>
+            <Ranquing files={servits.map((producte) => ({ id: producte.id, nom: producte.nom, valor: producte.linies, etiqueta: `${nombre(producte.linies)} línies` }))} buit="Cap albarà enguany." />
           </TargetaGrafic>
-          <TargetaGrafic titol="Tastats i encara no servits" subtitol="Han sortit en activitats però no en cap albarà enguany: oportunitat de vendre">
-            <Ranquing files={tastatsSenseCompra.map((vi) => ({ id: vi.id, nom: vi.nom, valor: vi.tastos, etiqueta: `${nombre(vi.tastos)} ${vi.tastos === 1 ? "tast" : "tastos"}` }))} buit="Tot el que s'ha tastat ja s'ha servit." />
+          <TargetaGrafic titol="Presentats i encara no servits" subtitol="Han sortit en activitats però no en cap albarà enguany: oportunitat de vendre">
+            <Ranquing files={presentatsSenseCompra.map((producte) => ({ id: producte.id, nom: producte.nom, valor: producte.presentacions, etiqueta: `${nombre(producte.presentacions)} ${producte.presentacions === 1 ? "presentació" : "presentacions"}` }))} buit="Tot el que s'ha presentat ja s'ha servit." />
           </TargetaGrafic>
         </div>
       </section>
@@ -177,12 +177,12 @@ export async function TaulerNegoci({ totes, agent }: { totes: boolean; agent: st
                 {aTancar.slice(0, 8).map((o) => (
                   <li key={o.id} className="flex items-baseline justify-between gap-3 py-2">
                     <span className="min-w-0">
-                      <Link href={`/crm?v=oportunitats&r=${o.id}`} className="font-medium hover:text-wine">{o.titol ?? "Sense títol"}</Link>
+                      <Link href={`/crm?v=oportunitats&r=${o.id}`} className="font-medium hover:text-marca">{o.titol ?? "Sense títol"}</Link>
                       <span className="block text-[12.5px] text-muted">{o.client?.nom ?? o.lead?.nom ?? ""} · {o.etapa ?? "sense etapa"}</span>
                     </span>
                     <span className="shrink-0 text-right tabular-nums">
                       {euros(o.valor)}
-                      <span className={`block text-[12px] ${(o.tancamentPrevist ?? "") < avui ? "text-wine" : "text-muted"}`}>{dataCurta(o.tancamentPrevist ?? undefined)}</span>
+                      <span className={`block text-[12px] ${(o.tancamentPrevist ?? "") < avui ? "text-marca" : "text-muted"}`}>{dataCurta(o.tancamentPrevist ?? undefined)}</span>
                     </span>
                   </li>
                 ))}
@@ -196,7 +196,7 @@ export async function TaulerNegoci({ totes, agent }: { totes: boolean; agent: st
               <ul className="divide-y divide-line/70 text-[13px]">
                 {leadsQuiets.slice(0, 8).map((l) => (
                   <li key={l.id} className="flex items-baseline justify-between gap-3 py-2">
-                    <Link href={`/crm?v=leads&r=${l.id}`} className="min-w-0 font-medium hover:text-wine">{l.nom ?? "Sense nom"}</Link>
+                    <Link href={`/crm?v=leads&r=${l.id}`} className="min-w-0 font-medium hover:text-marca">{l.nom ?? "Sense nom"}</Link>
                     <span className="shrink-0 text-[12.5px] text-muted">{l.poblacio ?? ""} · {dataCurta(l.dataAlta ?? undefined)}</span>
                   </li>
                 ))}
@@ -211,10 +211,10 @@ export async function TaulerNegoci({ totes, agent }: { totes: boolean; agent: st
                 {vencuts.slice(0, 10).map((t) => (
                   <li key={t.id} className="flex items-baseline justify-between gap-3 border-b border-line/70 py-2">
                     <span className="min-w-0">
-                      <Link href="/crm?v=deures" className="font-medium hover:text-wine">{t.titol ?? "Sense títol"}</Link>
+                      <Link href="/crm?v=deures" className="font-medium hover:text-marca">{t.titol ?? "Sense títol"}</Link>
                       <span className="block text-[12.5px] text-muted">{t.client?.nom ?? t.lead?.nom ?? ""}</span>
                     </span>
-                    <span className="shrink-0 text-[12px] text-wine">{dataCurta(t.venciment ?? undefined)}</span>
+                    <span className="shrink-0 text-[12px] text-marca">{dataCurta(t.venciment ?? undefined)}</span>
                   </li>
                 ))}
               </ul>
@@ -240,14 +240,14 @@ function Capcalera({ titol, nota, dreta }: { titol: string; nota: string; dreta?
 
 function Variacio({ valor }: { valor: number | null }) {
   if (valor === null) return <span className="text-muted">—</span>;
-  return <span className={`tabular-nums ${valor >= 0 ? "text-emerald-700" : "text-wine"}`}>{valor >= 0 ? "↑" : "↓"} {Math.abs(valor).toFixed(1).replace(".", ",")} %</span>;
+  return <span className={`tabular-nums ${valor >= 0 ? "text-emerald-700" : "text-marca"}`}>{valor >= 0 ? "↑" : "↓"} {Math.abs(valor).toFixed(1).replace(".", ",")} %</span>;
 }
 
 function Buit({ text }: { text: string }) {
   return <p className="rounded-lg border border-dashed border-line px-3 py-4 text-center text-[12.5px] text-muted">{text}</p>;
 }
 
-/** Una llista amb barres proporcionals: vins, bàsicament. */
+/** Una llista amb barres proporcionals: productes, bàsicament. */
 function Ranquing({ files, buit }: { files: { id: string; nom: string; valor: number; etiqueta: string }[]; buit: string }) {
   if (files.length === 0) return <Buit text={buit} />;
   const maxim = Math.max(...files.map((f) => f.valor), 1);
@@ -257,7 +257,7 @@ function Ranquing({ files, buit }: { files: { id: string; nom: string; valor: nu
         <li key={fila.id} className="grid grid-cols-[1.5ch_1fr_auto] items-center gap-x-2">
           <span className="text-[12px] tabular-nums text-muted">{i + 1}</span>
           <span className="relative min-w-0 truncate py-0.5">
-            <span className="absolute inset-y-0 left-0 rounded bg-wine-tint" style={{ width: `${(fila.valor / maxim) * 100}%` }} />
+            <span className="absolute inset-y-0 left-0 rounded bg-marca-clar" style={{ width: `${(fila.valor / maxim) * 100}%` }} />
             <span className="relative pl-1.5">{fila.nom}</span>
           </span>
           <span className="text-[12.5px] tabular-nums text-muted">{fila.etiqueta}</span>
@@ -277,7 +277,7 @@ function LlistaClients({ titol, subtitol, files, buit }: { titol: string; subtit
           {files.map((c) => (
             <li key={c.id} className="flex items-baseline justify-between gap-3 py-2">
               <span className="min-w-0">
-                <Link href={rutaDelClient(c.id)} className="font-medium hover:text-wine">{c.nom}</Link>
+                <Link href={rutaDelClient(c.id)} className="font-medium hover:text-marca">{c.nom}</Link>
                 <span className="block text-[12.5px] text-muted">
                   {c.categoria ? `Categoria ${c.categoria} · ` : ""}
                   {c.diesSenseVisita === null ? "cap activitat registrada" : `darrera activitat fa ${c.diesSenseVisita} dies`}

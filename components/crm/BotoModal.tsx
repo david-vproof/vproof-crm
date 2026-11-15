@@ -106,7 +106,7 @@ export function BotoModal({
             <div className="scroll-slim min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
 
             <footer className="border-t border-line px-5 py-3 text-right">
-              <Link href={enllac.href} onClick={() => setObert(false)} className="text-[13px] text-wine transition hover:underline">
+              <Link href={enllac.href} onClick={() => setObert(false)} className="text-[13px] text-marca transition hover:underline">
                 {enllac.text} →
               </Link>
             </footer>

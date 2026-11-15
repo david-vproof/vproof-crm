@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #17100f;
-  --color-ink-soft: #241a19;
-  --color-cream: #faf7f4;
-  --color-parchment: #f2ece7;
-  --color-wine: #8c2f45;
-  --color-wine-deep: #6d2235;
-  --color-wine-tint: #f6e9ec;
-  --color-line: #e7ded8;
-  --color-muted: #857878;
+  --color-ink: #0f1f1d;
+  --color-ink-soft: #1b2b29;
+  --color-cream: #f7faf9;
+  --color-parchment: #edf3f2;
+  --color-marca: #0f766e;
+  --color-marca-fosc: #115e59;
+  --color-marca-clar: #e6f4f1;
+  --color-line: #dbe5e3;
+  --color-muted: #6b7b79;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-display), ui-serif, Georgia, serif;
@@ -38,7 +38,7 @@
     -webkit-font-smoothing: antialiased;
   }
   ::selection {
-    background: var(--color-wine);
+    background: var(--color-marca);
     color: #fff;
   }
 }
@@ -47,7 +47,7 @@
   .field {
     @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-[15px]
            outline-none transition placeholder:text-muted/60
-           focus:border-wine focus:ring-4 focus:ring-wine/10
+           focus:border-marca focus:ring-4 focus:ring-marca/10
            disabled:cursor-not-allowed disabled:bg-parchment/50 disabled:text-muted;
   }
   .btn-primary {
@@ -67,7 +67,7 @@
   .field-compacte {
     @apply w-full rounded-lg border border-line bg-white px-3 py-1.5 text-[13.5px]
            outline-none transition placeholder:text-muted/60
-           focus:border-wine focus:ring-4 focus:ring-wine/10;
+           focus:border-marca focus:ring-4 focus:ring-marca/10;
   }
 }
 
@@ -92,7 +92,7 @@
 /* La barra d'una fase de la sincronització de què no se sap el total: es mou
    perquè es vegi que la cosa no està encallada, encara que no digui quant falta. */
 .barra-indeterminada {
-  background-image: linear-gradient(90deg, transparent 0%, var(--color-wine) 50%, transparent 100%);
+  background-image: linear-gradient(90deg, transparent 0%, var(--color-marca) 50%, transparent 100%);
   background-size: 40% 100%;
   background-repeat: no-repeat;
   animation: barra-indeterminada 1.4s ease-in-out infinite;

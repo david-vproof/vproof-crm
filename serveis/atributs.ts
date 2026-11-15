@@ -1,6 +1,6 @@
 /**
  * Els atributs dels clients (vegeu `domini/atributs.ts`), a `crm_client_atributs`.
- * Són del CRM i no de FactuSol: la sincronització no els toca.
+ * Són del CRM i no de l'ERP: la sincronització no els toca.
  */
 import "server-only";
 

@@ -6,7 +6,7 @@
  *   quants clients compren, quants són nous, quants van a menys, el pipeline
  *   i si les visites van al dia.
  * - **Meso**: on i amb qui. Per agent comercial, per comarca, per tipus de
- *   client, per categoria (A–E) i per vi.
+ *   client, per categoria (A–E) i per producte.
  * - **Micro**: què toca fer avui. Clients que perden, bons clients sense
  *   visita, oportunitats a punt de tancar, leads sense moure, To-Do vençuts.
  *
@@ -67,7 +67,7 @@ export type LeadTauler = { id: string; nom: string | null; dataAlta: string | nu
 
 export type MesFacturat = { exercici: number; mes: number; base: number };
 
-export type ViTauler = { id: string; nom: string; linies: number; tastos: number };
+export type ProducteTauler = { id: string; nom: string; linies: number; presentacions: number };
 
 export type AgentTauler = { id: string; nom: string };
 
@@ -239,11 +239,11 @@ export function perClau(clients: ClientTauler[], clau: (client: ClientTauler) =>
   return [...files.slice(0, maxim), { nom: `Altres (${resta.length})`, clients: suma(resta.map((f) => f.clients)), facturacio, variacio: null }];
 }
 
-/** Els vins més servits enguany (línies d'albarà), i els tastats que encara no s'han servit. */
-export function vinsDestacats(vins: ViTauler[], maxim = 10) {
-  const servits = vins.filter((vi) => vi.linies > 0).sort((a, b) => b.linies - a.linies).slice(0, maxim);
-  const tastatsSenseCompra = vins.filter((vi) => vi.tastos > 0 && vi.linies === 0).sort((a, b) => b.tastos - a.tastos).slice(0, maxim);
-  return { servits, tastatsSenseCompra };
+/** Els productes més servits enguany (línies d'albarà), i els presentats que encara no s'han servit. */
+export function productesDestacats(productes: ProducteTauler[], maxim = 10) {
+  const servits = productes.filter((producte) => producte.linies > 0).sort((a, b) => b.linies - a.linies).slice(0, maxim);
+  const presentatsSenseCompra = productes.filter((producte) => producte.presentacions > 0 && producte.linies === 0).sort((a, b) => b.presentacions - a.presentacions).slice(0, maxim);
+  return { servits, presentatsSenseCompra };
 }
 
 // ------------------------------------------------------------------- micro

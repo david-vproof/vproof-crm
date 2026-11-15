@@ -17,13 +17,13 @@ const display = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Wine Backend",
-  description: "Portal de gestió comercial per a distribució de vi",
-  applicationName: "Wine Backend",
+  title: "vproof CRM",
+  description: "Portal de gestió comercial per a distribució de producte",
+  applicationName: "vproof CRM",
   // Afegida a la pantalla d'inici d'iOS s'obre a pantalla completa, amb aquest
   // nom i la barra d'estat del color de la capçalera. El manifest surt de
   // `app/manifest.ts` i les icones, de `app/icon.tsx` i `app/apple-icon.tsx`.
-  appleWebApp: { capable: true, title: "Wine Backend", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "vproof CRM", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -36,7 +36,7 @@ export const viewport: Viewport = {
   // A Android, el teclat encongeix la pantalla en comptes de tapar-la: la
   // capçalera es queda al seu lloc i el panell es desplaça fins al camp.
   interactiveWidget: "resizes-content",
-  themeColor: "#faf7f4",
+  themeColor: "#f7faf9",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

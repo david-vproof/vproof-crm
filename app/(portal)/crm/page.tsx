@@ -11,7 +11,7 @@ import { TaulerNegoci } from "@/components/crm/TaulerNegoci";
 import { VistaAvui } from "@/components/crm/VistaAvui";
 import { VistaMapa } from "@/components/crm/VistaMapa";
 import { VistaSegments } from "@/components/crm/VistaSegments";
-import { VinsTastatsClient } from "@/components/crm/VinsTastatsClient";
+import { ProductesPresentatsClient } from "@/components/crm/ProductesPresentatsClient";
 import { VistaToDo, responsableDelsToDo } from "@/components/crm/VistaToDo";
 import { Paginacio } from "@/components/Paginacio";
 import { EstatBuit } from "@/components/UI";
@@ -30,9 +30,9 @@ import {
   comptaFitxes, llistaFitxa, obteFitxa, opcionsDeRelacions, type OpcionsRelacio, type ValorsFitxa,
 } from "@/serveis/crm-manteniment";
 import { fitxaViva } from "@/serveis/crm-tipus-activitat";
-import { vinsTastatsDelLead } from "@/serveis/crm-vins";
+import { productesPresentatsDelLead } from "@/serveis/crm-productes";
 
-export const metadata = { title: "CRM · Wine Backend" };
+export const metadata = { title: "CRM · vproof CRM" };
 
 type Parametres = {
   searchParams: Promise<{
@@ -46,7 +46,7 @@ type Parametres = {
   }>;
 };
 
-/** L'espai de treball ha de sortir encara que Directus no respongui. */
+/** L'espai de treball ha de sortir encara que la base de dades no respongui. */
 async function comptadorsSegurs(comercial: string | null) {
   try {
     return await comptaFitxes(comercial);
@@ -80,8 +80,8 @@ export default async function PaginaCrm({ searchParams }: Parametres) {
     pv = "", s = "", seg = "", c = "", torna = "", ap = "", pf = "", g = "", fets = "",
   } = params as Record<string, string | undefined>;
 
-  // Els cellers tenen pantalla pròpia, com els clients: els enllaços vells hi porten.
-  if (v === "proveidors") redirect(r ? `/cellers/${encodeURIComponent(r)}` : "/cellers");
+  // Els laboratoris tenen pantalla pròpia: el llistat és allà. Aquí només se'n crea o se n'edita la fitxa.
+  if (v === "proveidors" && !r) redirect("/laboratoris");
 
   // Els clients abans es deien «comptes» a l'adreça: els enllaços vells hi porten igual, amb la resta de l'adreça.
   if (v === "comptes") {
@@ -218,12 +218,13 @@ const DESCRIPCIONS_FITXA: Record<ClauFitxa, string> = {
   leads: "Qui encara no compra i podria comprar.",
   clients: "Els clients del CRM: qui ja compra o hi té relació.",
   oportunitats: "El que hi ha obert i en quin punt és.",
-  proveidors: "De qui es compra el vi: els proveïdors de FactuSol.",
+  proveidors: "Els laboratoris: de qui es compra el producte.",
   contactes: "Amb qui es parla a cada client.",
   activitats: "Trucades, visites i tasques, fetes i pendents.",
   segments: "Grups de clients segons criteris, per planificar-hi rondes i activitats.",
-  tipus_client: "Els tipus de client de FactuSol.",
-  agents: "Els agents comercials de FactuSol.",
+  tipus_client: "Clínica veterinària, hospital, botiga d'animals, explotació ramadera…",
+  agents: "Els agents comercials. Cada usuari del portal pot ser-ne un, i veu els clients del seu agent.",
+  productes: "El catàleg de productes sanitaris veterinaris, amb el preu i l'estoc.",
 };
 
 function capcaleraDeLaVista(
@@ -311,7 +312,7 @@ async function VistaFitxes({
         </div>
 
         {fitxa.nomesLectura ? (
-          <span className="text-[13px] text-muted">Els manté FactuSol</span>
+          <span className="text-[13px] text-muted">Els manté l&apos;ERP</span>
         ) : (
           <Link href={clau === "clients" ? rutaDelClient("nou") : base({ r: "nou" })} className="btn-compacte">
             + {textAlta(fitxa)}
@@ -344,13 +345,13 @@ async function VistaFitxes({
                 : cerca
                   ? "Prova amb un altre terme de cerca."
                   : fitxa.nomesLectura
-                    ? "Arribaran amb la propera sincronització amb FactuSol."
+                    ? "Arribaran de l'ERP quan estigui connectat."
                     : `Comença amb el botó «${textAlta(fitxa)}».`
             }
           />
           {filtrat || cerca ? (
             <p className="mt-3 text-center">
-              <Link href={restaura} className="text-[13px] text-wine underline underline-offset-2">
+              <Link href={restaura} className="text-[13px] text-marca underline underline-offset-2">
                 Restaura els filtres
               </Link>
             </p>
@@ -438,7 +439,7 @@ async function Panell({
   const base = (extra: Record<string, string>) => enllac(extra, true);
   const tancar = clau === "activitats" && tornaSegur ? tornaSegur : enllac({}, false);
 
-  // Les fitxes de FactuSol no s'esborren: les manté l'ERP.
+  // Les fitxes de l'ERP no s'esborren: les manté l'ERP.
   const esborrable: Esborrable | null =
     esNova || fitxa.nomesLectura || veDeFactusol(fitxa, valors)
       ? null
@@ -474,7 +475,7 @@ async function Panell({
       edicio={edicio}
       resum={
         enllacAmo && fitxaAmo ? (
-          <Link href={enllacAmo.href} scroll={false} className="inline-flex max-w-full items-center gap-1.5 rounded-md text-wine hover:underline">
+          <Link href={enllacAmo.href} scroll={false} className="inline-flex max-w-full items-center gap-1.5 rounded-md text-marca hover:underline">
             <span className="text-muted">{fitxaAmo.singular}</span>
             <span className="truncate font-medium">{enllacAmo.nom}</span>
             <span aria-hidden>→</span>
@@ -489,7 +490,7 @@ async function Panell({
           <DeuresDeLActivitat id={esNova ? "" : registre} valors={valors} opcions={opcions} />
         ) : null}
         {clau === "leads" && !esNova ? (
-          <VinsDelLead id={registre} client={idDeRelacio(valors.client)} comercial={comercial} torna={base({ r: registre })} />
+          <ProductesDelLead id={registre} client={idDeRelacio(valors.client)} comercial={comercial} torna={base({ r: registre })} />
         ) : null}
       </div>
     </PanellFitxa>
@@ -497,36 +498,36 @@ async function Panell({
 }
 
 /**
- * Els vins d'un lead, a la seva fitxa: els que ha tastat i, per triar-ne de
- * nous, una activitat amb vins ja lligada al lead. Els vins sempre van amb una
- * activitat (`crm_activitats_vins`), i així quan el lead es converteix tot
+ * Els productes d'un lead, a la seva fitxa: els que ha presentat i, per triar-ne de
+ * nous, una activitat amb productes ja lligada al lead. Els productes sempre van amb una
+ * activitat (`crm_activitats_productes`), i així quan el lead es converteix tot
  * passa al client (vegeu `passaDelLeadAlClient`). Un lead ja convertit no en
  * tria més: el que es tasti d'ara endavant s'apunta al client.
  */
-async function VinsDelLead({ id, client, comercial, torna }: { id: string; client: string; comercial: string | null; torna: string }) {
-  const vins = await vinsTastatsDelLead(id).catch(() => null);
+async function ProductesDelLead({ id, client, comercial, torna }: { id: string; client: string; comercial: string | null; torna: string }) {
+  const productes = await productesPresentatsDelLead(id).catch(() => null);
   const activitat = (extra: Record<string, string>) => `/crm?${new URLSearchParams({ v: "activitats", ...extra, torna })}`;
 
   return (
-    <section aria-labelledby={`vins-lead-${id}`} className="space-y-2 border-t border-line pt-4">
+    <section aria-labelledby={`productes-lead-${id}`} className="space-y-2 border-t border-line pt-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id={`vins-lead-${id}`} className="text-[12px] font-medium text-muted">
-          Vins
+        <h3 id={`productes-lead-${id}`} className="text-[12px] font-medium text-muted">
+          Productes
         </h3>
         {client ? (
-          <Link href={rutaDelClient(client, { t: "vins" })} scroll={false} className="text-[12.5px] text-wine hover:underline">
+          <Link href={rutaDelClient(client, { t: "productes" })} scroll={false} className="text-[12.5px] text-marca hover:underline">
             Ja és client: mira&apos;ls a la seva fitxa →
           </Link>
         ) : (
-          <Link href={activitat({ r: "nou", pre: `lead:${id},tipus:visita_amb_vi` })} scroll={false} className="btn-compacte">
-            Tria vins per a una visita
+          <Link href={activitat({ r: "nou", pre: `lead:${id},tipus:visita_amb_productes` })} scroll={false} className="btn-compacte">
+            Tria productes per a una visita
           </Link>
         )}
       </div>
-      {vins ? (
-        <VinsTastatsClient vins={vins} comercial={comercial} qui="lead" enllacActivitat={({ id: oberta }) => activitat({ r: oberta })} />
+      {productes ? (
+        <ProductesPresentatsClient productes={productes} comercial={comercial} qui="lead" enllacActivitat={({ id: oberta }) => activitat({ r: oberta })} />
       ) : (
-        <p className="text-[13px] text-muted">No s&apos;han pogut llegir els vins d&apos;aquest lead.</p>
+        <p className="text-[13px] text-muted">No s&apos;han pogut llegir els productes d&apos;aquest lead.</p>
       )}
     </section>
   );
@@ -559,7 +560,7 @@ async function DeuresDeLActivitat({
   try {
     deures = await deuresDeLaFitxa(amo, id);
   } catch {
-    // Un tall amb Directus no ha de deixar la fitxa sense poder-se desar.
+    // Un tall amb la base de dades no ha de deixar la fitxa sense poder-se desar.
     return null;
   }
   // Al tancament es veuen els atributs del client i se n'hi afegeixen. Un lead encara no en té.

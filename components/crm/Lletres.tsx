@@ -1,12 +1,12 @@
 import { esLletra, type Lletra } from "@/domini/crm-fitxes";
 
-/** Un to per lletra, d'A (verd) a E (vi): el mateix semàfor que a Directus. */
+/** Un to per lletra, d'A (verd) a E (vermell): el mateix semàfor que a la base de dades. */
 export const TO_LLETRA: Record<Lletra, string> = {
   A: "bg-emerald-50 text-emerald-700",
   B: "bg-sky-50 text-sky-700",
   C: "bg-amber-50 text-amber-700",
   D: "bg-orange-50 text-orange-700",
-  E: "bg-wine-tint text-wine-deep",
+  E: "bg-marca-clar text-marca-fosc",
 };
 
 /** Els dos camps que van amb l'escala, en l'ordre en què es llegeixen: primer la categoria, després el potencial. */

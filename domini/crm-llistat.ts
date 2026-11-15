@@ -56,7 +56,7 @@ export type ColumnaLlistat = {
   /** A partir de quina amplada surt a la taula. */
   desDe?: "xl" | "2xl";
   definicio: Camp | undefined;
-  /** Les opcions (id, text) del desplegable d'una relació amb un catàleg: surten de Directus. */
+  /** Les opcions (id, text) del desplegable d'una relació amb un catàleg: surten de la base de dades. */
   opcions?: [string, string][];
   /** Els valors existents que el filtre de text ofereix desplegats: vegeu `Camp.suggeriments`. */
   suggeriments?: string[];

@@ -5,7 +5,7 @@
  *
  * El fa servir qualsevol llistat que no sigui una fitxa del CRM (aquelles
  * tenen el seu a `crm-llistat.ts`, lligat a la definició de la fitxa): les
- * pantalles de l'ERP, que llegeixen de FactuSol o de la seva còpia.
+ * pantalles de l'ERP, que llegeixen de l'ERP o de la seva còpia.
  */
 
 export type Ordre = { camp: string; descendent: boolean };

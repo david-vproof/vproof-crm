@@ -72,7 +72,7 @@ function NumeroDia({ dia }: { dia: DiaPlanner }) {
   return (
     <span
       className={`grid size-6 shrink-0 place-items-center rounded-full text-[12px] tabular-nums ${
-        dia.avui ? "bg-wine font-semibold text-cream" : dia.delMes ? "font-medium text-ink" : "text-muted/50"
+        dia.avui ? "bg-marca font-semibold text-cream" : dia.delMes ? "font-medium text-ink" : "text-muted/50"
       }`}
     >
       {dia.numero}
@@ -89,8 +89,8 @@ function BotoDia({ dia, triat, alTriar, className, children }: { dia: DiaPlanner
       aria-pressed={triat}
       aria-label={`${etiquetaDia(dia.clau)}: ${dia.total} ${dia.total === 1 ? "visita" : "visites"}`}
       title={dia.total === 0 ? "Cap visita aquest dia" : undefined}
-      className={`${className} text-left transition-colors hover:bg-wine-tint/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wine/40 ${
-        triat ? "!bg-wine-tint/60 shadow-[inset_0_0_0_2px_#8c2f45]" : ""
+      className={`${className} text-left transition-colors hover:bg-marca-clar/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marca/40 ${
+        triat ? "!bg-marca-clar/60 shadow-[inset_0_0_0_2px_#0f766e]" : ""
       }`}
     >
       {children}
@@ -222,7 +222,7 @@ export function ModalAgendaDies({ obert, triat, alTriar, alTancar }: { obert: bo
 
         <div className="scroll-slim min-h-0 flex-1 overflow-y-auto p-4">
           {error ? (
-            <p role="alert" className="py-6 text-center text-[13px] text-wine-deep">
+            <p role="alert" className="py-6 text-center text-[13px] text-marca-fosc">
               {error}
             </p>
           ) : !dades ? (

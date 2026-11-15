@@ -10,7 +10,7 @@ export const FONS_VISITA: Record<TramVisita, string> = {
   0: "bg-emerald-50/80",
   1: "bg-amber-50/70",
   2: "bg-orange-100/60",
-  3: "bg-wine-tint/45",
+  3: "bg-marca-clar/45",
 };
 
 /** Els mateixos colors, sense transparència, perquè a la mostra de la llegenda es vegin. */
@@ -18,7 +18,7 @@ const MOSTRA_VISITA: Record<TramVisita, string> = {
   0: "bg-emerald-100",
   1: "bg-amber-100",
   2: "bg-orange-200",
-  3: "bg-wine-tint",
+  3: "bg-marca-clar",
 };
 
 /** Què vol dir cada color de fons de la llista de clients. */

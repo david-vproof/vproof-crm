@@ -7,7 +7,7 @@ const TO: Record<string, { etiqueta: string; barra: string }> = {
   complert: { etiqueta: "bg-emerald-100 text-emerald-800", barra: "bg-emerald-600" },
   al_dia: { etiqueta: "bg-emerald-50 text-emerald-700", barra: "bg-emerald-600" },
   a_prop: { etiqueta: "bg-amber-50 text-amber-700", barra: "bg-amber-500" },
-  endarrerit: { etiqueta: "bg-wine-tint text-wine-deep", barra: "bg-wine" },
+  endarrerit: { etiqueta: "bg-marca-clar text-marca-fosc", barra: "bg-marca" },
 };
 
 function llegeix(dades: Record<string, unknown> | undefined): Seguiment | null {

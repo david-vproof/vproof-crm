@@ -1,13 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { abastDeLaSessio } from "@/lib/sessio-actual";
-import { clientsDelDia } from "@/serveis/crm-vins";
+import { clientsDelDia } from "@/serveis/crm-productes";
 
 const DIA = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
  * Els clients que es visiten un dia (`?dia=AAAA-MM-DD`), per al selector de
- * vins: els de les activitats del dia que veu qui té la sessió oberta.
+ * productes: els de les activitats del dia que veu qui té la sessió oberta.
  */
 export async function GET(peticio: NextRequest) {
   const dia = peticio.nextUrl.searchParams.get("dia") ?? "";

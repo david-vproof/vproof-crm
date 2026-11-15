@@ -44,7 +44,7 @@ export function Kpi({
       <p className="mt-2 text-[26px] font-medium leading-none tracking-[-0.02em] tabular-nums">{valor}</p>
       <div className="mt-2 flex items-center gap-2 text-[12.5px]">
         {typeof variacio === "number" ? (
-          <span className={`tabular-nums ${puja ? "text-emerald-700" : "text-wine"}`}>
+          <span className={`tabular-nums ${puja ? "text-emerald-700" : "text-marca"}`}>
             {puja ? "↑" : "↓"} {Math.abs(variacio).toFixed(1).replace(".", ",")} %
           </span>
         ) : null}

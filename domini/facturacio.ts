@@ -19,7 +19,7 @@ export type MesFacturat = { codi_client_erp: number; exercici: number; mes: numb
 
 export type FilaFacturacio = MesFacturat & { id: string; client: string | null };
 
-/** L'any i el mes d'avui al fus de la bodega. */
+/** L'any i el mes d'avui al fus de l'empresa. */
 export function avuiLocal(ara: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: ZONA, year: "numeric", month: "2-digit" }).formatToParts(ara);
   const de = (tipus: string) => Number(parts.find((part) => part.type === tipus)?.value);

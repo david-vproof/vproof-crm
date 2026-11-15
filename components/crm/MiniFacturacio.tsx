@@ -7,9 +7,9 @@ const EUROS = new Intl.NumberFormat("ca-ES", { style: "currency", currency: "EUR
 const TO: Record<string, { etiqueta: string; barra: string }> = {
   creix: { etiqueta: "bg-emerald-50 text-emerald-700", barra: "bg-emerald-600" },
   estable: { etiqueta: "bg-amber-50 text-amber-700", barra: "bg-amber-500" },
-  baixa: { etiqueta: "bg-wine-tint text-wine-deep", barra: "bg-wine" },
+  baixa: { etiqueta: "bg-marca-clar text-marca-fosc", barra: "bg-marca" },
   nou: { etiqueta: "bg-sky-50 text-sky-700", barra: "bg-sky-600" },
-  perdut: { etiqueta: "bg-parchment text-wine-deep", barra: "bg-wine" },
+  perdut: { etiqueta: "bg-parchment text-marca-fosc", barra: "bg-marca" },
   sense: { etiqueta: "bg-parchment text-muted", barra: "bg-muted" },
 };
 
@@ -21,7 +21,7 @@ const TO: Record<string, { etiqueta: string; barra: string }> = {
 const FONS_TENDENCIA: Record<string, string> = {
   creix: "bg-emerald-50/80",
   estable: "bg-amber-50/70",
-  baixa: "bg-wine-tint/45",
+  baixa: "bg-marca-clar/45",
   nou: "bg-sky-50/80",
   perdut: "bg-parchment/70",
   sense: "",

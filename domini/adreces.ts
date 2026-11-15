@@ -1,7 +1,7 @@
 /**
  * L'adreça d'un compte tal com la vol un geocodificador.
  *
- * Les adreces de FactuSol porten el que calgui per trobar la porta: «PLAÇA
+ * Les adreces de l'ERP porten el que calgui per trobar la porta: «PLAÇA
  * BELL-LLOC 4 BX 3», «C/ ALSINA, 3 1 B.», «AVENIDA DE COVIBAR, 8 1 - LOCAL 5.»
  * Nominatim no entén el pis ni la porta: amb tot això al darrere no troba res,
  * i el compte acabava al mig del codi postal. Aquí se'n treu el soroll i queda
@@ -35,7 +35,7 @@ export function nomDeVia(via: string) {
 }
 
 /**
- * Les abreviatures del tipus de via que FactuSol porta al davant («C/», «PZ»,
+ * Les abreviatures del tipus de via que l'ERP porta al davant («C/», «PZ»,
  * «PGE.», «AV/», i també «C\» amb la barra del revés, que algú tecleja),
  * desplegades: Nominatim cerca pel nom i una «C» sola no li diu res. Només si
  * l'abreviatura va seguida d'un separador: «CARRER» o «CL. Major» no s'han de

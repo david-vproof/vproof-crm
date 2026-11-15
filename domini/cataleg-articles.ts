@@ -1,13 +1,14 @@
 /**
- * El catàleg d'articles: com es filtra i què se n'ensenya. Lògica pura, sense
- * Directus: la pantalla porta tots els articles actius d'un cop (uns centenars)
- * i aquí es filtren, es compten i es paginen.
+ * El catàleg de productes: com es filtra i què se n'ensenya. Lògica pura: la
+ * pantalla porta tots els productes actius d'un cop (uns centenars) i aquí es
+ * filtren, es compten i es paginen.
  *
- * Les característiques són els camps de la fitxa d'article de FactuSol, que la
- * bodega fa servir així (mirat a les dades): la família és el tipus de vi, la
- * garantia és la varietat, i els cinc camps programables són productor,
- * anyada, zona, regió i format. Si la bodega els canvia d'ús, només cal tocar
- * `CARACTERISTIQUES`.
+ * Les característiques d'un producte sanitari veterinari són camps de la fitxa
+ * d'article (`crm_articles`): la família és la categoria (antiparasitari,
+ * antibiòtic, vacuna…), la «garantia» és el principi actiu, i els cinc camps
+ * programables són l'espècie de destí, la forma farmacèutica, la via
+ * d'administració, la prescripció i el format. Si l'ERP els fa servir d'una
+ * altra manera, només cal tocar `CARACTERISTIQUES` i `CAMPS_DEL_PRODUCTE`.
  */
 
 /** El que el catàleg necessita de cada article. `FitxaArticle` de `serveis/articles.ts` hi encaixa. */
@@ -24,17 +25,17 @@ export type ArticleDeCataleg = {
   camp_programable_3: string | null;
   camp_programable_4: string | null;
   camp_programable_5: string | null;
-  celler: { id: string; nom_comercial: string | null } | null;
-  /** Descatalogat o no disponible a FactuSol. Sense el camp, es considera actiu. */
+  laboratori: { id: string; nom_comercial: string | null } | null;
+  /** Descatalogat o no disponible. Sense el camp, es considera actiu. */
   historic?: boolean;
 };
 
-/** Per comparar: sense majúscules, accents ni espais de sobres. «Xarel·lo» i «XAREL.LO» no, però «Garnatxa» i «garnatxa» sí. */
+/** Per comparar: sense majúscules, accents ni espais de sobres. «Amoxicil·lina» i «amoxicil·lina» són el mateix. */
 export function clauDeValor(valor: string) {
   return valor.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 }
 
-/** «ESCUMOS BLANC» → «Escumos blanc». La família arriba en majúscules de FactuSol. */
+/** «ANTIPARASITARI EXTERN» → «Antiparasitari extern». La família pot arribar en majúscules de l'ERP. */
 export function nomDeTipus(valor: string | null) {
   const net = (valor ?? "").trim();
   if (!net) return null;
@@ -42,27 +43,29 @@ export function nomDeTipus(valor: string | null) {
   return minuscules.charAt(0).toLocaleUpperCase("ca") + minuscules.slice(1);
 }
 
-/** «75cl», «75 CL» i «75 cl» són el mateix: «75 cl». Els litres, amb L majúscula: «1,5 L». */
+/** «100ml», «100 ML» i «100 ml» són el mateix: «100 ml». Els litres, amb L majúscula: «1,5 L»; els quilos, «kg». */
 export function nomDeFormat(valor: string | null) {
   const net = (valor ?? "").trim();
   if (!net) return null;
-  const mida = /^(\d+(?:[.,]\d+)?)\s*(ml|cl|l)$/i.exec(net);
+  const mida = /^(\d+(?:[.,]\d+)?)\s*(ml|cl|l|mg|g|kg|u|ut|uts|unitats|comprimits|comp)\.?$/i.exec(net);
   if (!mida) return net;
-  const unitat = mida[2].toLowerCase() === "l" ? "L" : mida[2].toLowerCase();
+  const brut = mida[2].toLowerCase();
+  const unitat = brut === "l" ? "L" : ["u", "ut", "uts"].includes(brut) ? "u." : brut === "comp" ? "comprimits" : brut;
   return `${mida[1].replace(".", ",")} ${unitat}`;
 }
 
 /**
- * Les varietats d'un vi. A FactuSol van en un sol camp i de moltes maneres
- * («Garnatxa, Carinyena», «Macabeu i Xarel·lo», «Syrah/Garnatxa»): es
- * trossegen perquè el filtre trobi el vi per qualsevol de les seves.
+ * Un camp amb diversos valors: els principis actius o les espècies d'un
+ * producte. Van en un sol camp i de moltes maneres («Amoxicil·lina, àcid
+ * clavulànic», «Gos i gat», «Boví/Oví»): es trossegen perquè el filtre trobi
+ * el producte per qualsevol d'ells.
  */
-export function varietats(valor: string | null): string[] {
+export function valorsMultiples(valor: string | null): string[] {
   const net = (valor ?? "").trim();
   if (!net) return [];
   return net
     .split(/\s*(?:,|\/|;|\+|&|\s+i\s+|\s+y\s+|\s+and\s+|\s+-\s+)\s*/i)
-    // «20% macabeu» és macabeu; els parèntesis d'una llista partida («Garnatxa (blanca», «gris)») no hi diuen res.
+    // «20% amoxicil·lina» és amoxicil·lina; els parèntesis d'una llista partida no hi diuen res.
     .map((tros) => tros.replace(/^\d+(?:[.,]\d+)?\s*%\s*/, "").replace(/[()]/g, "").replace(/\.$/, "").trim())
     .filter(Boolean)
     .map((tros) => tros.charAt(0).toLocaleUpperCase("ca") + tros.slice(1));
@@ -73,7 +76,7 @@ export type Caracteristica = {
   clau: string;
   etiqueta: string;
   valors: (article: ArticleDeCataleg) => string[];
-  /** Les anyades, de la més nova a la més vella; la resta, alfabètic. */
+  /** De més a menys en comptes d'alfabètic. */
   ordre?: "desc";
 };
 
@@ -82,15 +85,26 @@ const un = (valor: string | null | undefined) => {
   return net ? [net] : [];
 };
 
+/** Què hi ha a cada camp de la fitxa del producte, per als formularis i les fitxes. */
+export const CAMPS_DEL_PRODUCTE = {
+  familia: "Categoria",
+  garantia: "Principi actiu",
+  camp_programable_1: "Espècie",
+  camp_programable_2: "Forma farmacèutica",
+  camp_programable_3: "Via d'administració",
+  camp_programable_4: "Prescripció",
+  camp_programable_5: "Format",
+} as const;
+
 export const CARACTERISTIQUES: Caracteristica[] = [
-  { clau: "tipus", etiqueta: "Tipus", valors: (a) => un(nomDeTipus(a.familia)) },
-  { clau: "varietat", etiqueta: "Varietat", valors: (a) => varietats(a.garantia) },
-  { clau: "productor", etiqueta: "Productor", valors: (a) => un(a.camp_programable_1) },
-  { clau: "anyada", etiqueta: "Anyada", valors: (a) => un(a.camp_programable_2), ordre: "desc" },
-  { clau: "regio", etiqueta: "Regió", valors: (a) => un(a.camp_programable_4) },
-  { clau: "zona", etiqueta: "Zona", valors: (a) => un(a.camp_programable_3) },
-  { clau: "format", etiqueta: "Format", valors: (a) => un(nomDeFormat(a.camp_programable_5)) },
-  { clau: "proveidor", etiqueta: "Proveïdor", valors: (a) => un(a.celler?.nom_comercial) },
+  { clau: "tipus", etiqueta: CAMPS_DEL_PRODUCTE.familia, valors: (a) => un(nomDeTipus(a.familia)) },
+  { clau: "principi_actiu", etiqueta: CAMPS_DEL_PRODUCTE.garantia, valors: (a) => valorsMultiples(a.garantia) },
+  { clau: "especie", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_1, valors: (a) => valorsMultiples(a.camp_programable_1) },
+  { clau: "forma", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_2, valors: (a) => un(a.camp_programable_2) },
+  { clau: "via", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_3, valors: (a) => un(a.camp_programable_3) },
+  { clau: "prescripcio", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_4, valors: (a) => un(a.camp_programable_4) },
+  { clau: "format", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_5, valors: (a) => un(nomDeFormat(a.camp_programable_5)) },
+  { clau: "laboratori", etiqueta: "Laboratori", valors: (a) => un(a.laboratori?.nom_comercial) },
 ];
 
 /** El que s'ha triat: per a cada característica, un valor (tal com surt al desplegable). */
@@ -100,7 +114,7 @@ export type FiltresArticles = {
   /** Si també s'ensenyen els històrics (descatalogats o no disponibles). Per defecte, no. */
   ambHistorics: boolean;
   tria: Record<string, string>;
-  /** L'ordre del llistat tal com va a l'URL («-anyada»). No és un filtre, però viatja amb ells perquè canviar-ne un no el perdi. */
+  /** L'ordre del llistat tal com va a l'URL («-format»). No és un filtre, però viatja amb ells perquè canviar-ne un no el perdi. */
   ordre: string;
 };
 
@@ -160,7 +174,7 @@ export function opcionsDeFiltres(articles: ArticleDeCataleg[], filtres: FiltresA
     const perClau = new Map<string, { formes: Map<string, number>; quants: number }>();
     for (const article of articles) {
       if (!passa(article, filtres, caracteristica.clau)) continue;
-      // Un vi amb «Garnatxa, Garnatxa negra» compta una vegada per a cada varietat, no dues per a la mateixa.
+      // Un producte amb «Garnatxa, Garnatxa negra» compta una vegada per a cada varietat, no dues per a la mateixa.
       const vistes = new Set<string>();
       for (const valor of caracteristica.valors(article)) {
         const clau = clauDeValor(valor);

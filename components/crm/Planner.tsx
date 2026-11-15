@@ -185,7 +185,7 @@ function NumeroDia({ dia }: { dia: DiaPlanner }) {
   return (
     <span
       className={`grid size-6 place-items-center rounded-full text-[12px] tabular-nums ${
-        dia.avui ? "bg-wine font-semibold text-cream" : dia.delMes ? "font-medium text-ink" : "text-muted/50"
+        dia.avui ? "bg-marca font-semibold text-cream" : dia.delMes ? "font-medium text-ink" : "text-muted/50"
       }`}
     >
       {dia.numero}
@@ -379,7 +379,7 @@ function CapsaleraDies() {
 /** El calendari d'activitats, per mes o per setmana, pintat per zones. */
 /**
  * Els representants comercials que es poden triar: primer tots, després cada
- * agent de FactuSol pel seu nom. Són els agents de F_AGE (la còpia a
+ * agent de l'ERP pel seu nom. Són els agents de F_AGE (la còpia a
  * `crm_agents`), no els usuaris del portal: l'agenda es prepara per qui porta
  * la cartera a l'ERP, i és l'agent que l'activitat hereta del client o del lead.
  */
@@ -406,7 +406,7 @@ export function agentDelPlanner(c: string, opcions: OpcioAgenda[]): string | nul
  * El calendari de ruta. Qui només veu els clients del seu agent hi té les
  * activitats d'aquells clients; qui ho veu tot (administrador, manager) hi té
  * les de tothom i, amb el desplegable, tria el **representant comercial**:
- * l'agent de FactuSol de qui es prepara la ruta. `c` és la tria tal com va a
+ * l'agent de l'ERP de qui es prepara la ruta. `c` és la tria tal com va a
  * l'adreça.
  */
 export async function Planner({

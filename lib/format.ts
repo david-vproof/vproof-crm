@@ -26,7 +26,7 @@ export function percentatge(valor: number) {
   return new Intl.NumberFormat("ca-ES", { maximumFractionDigits: 2 }).format(valor) + " %";
 }
 
-/** FactuSol desa l'IBAN trossejat; aquí es recompon en grups de quatre. */
+/** L'ERP desa l'IBAN trossejat; aquí es recompon en grups de quatre. */
 export function iban(parts: { PBACLI: string; DBACLI: string; ENTCLI: string; OFICLI: string; DCOCLI: string; CUECLI: string }) {
   const pla = `${parts.PBACLI}${parts.DBACLI}${parts.ENTCLI}${parts.OFICLI}${parts.DCOCLI}${parts.CUECLI}`.trim();
   if (pla.length < 20) return "";
@@ -60,7 +60,7 @@ function majuscula(mot: string) {
   return mot.charAt(0).toLocaleUpperCase("ca") + mot.slice(1);
 }
 
-/** Dia i hora locals de la bodega: «17 oct 2026 · 06:01». */
+/** Dia i hora locals de l'empresa: «17 oct 2026 · 06:01». */
 export function dataHoraCurta(iso?: string | null) {
   if (!iso) return "";
   const data = new Date(iso);

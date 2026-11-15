@@ -21,12 +21,12 @@ const AVIS: Record<string, { text: string; to: string } | null> = {
   obert: null,
   sense_horari: null,
   tancat: { text: "fora d'horari", to: "bg-amber-50 text-amber-800" },
-  bloquejat: { text: "dia bloquejat", to: "bg-wine-tint text-wine-deep" },
+  bloquejat: { text: "dia bloquejat", to: "bg-marca-clar text-marca-fosc" },
 };
 
-/** Un to per prioritat de tasca: el mateix semàfor que a Directus. */
+/** Un to per prioritat de tasca: el mateix semàfor que a la base de dades. */
 const TO_PRIORITAT: Record<string, string> = {
-  alta: "bg-wine",
+  alta: "bg-marca",
   normal: "bg-sky-500",
   baixa: "bg-muted/50",
 };
@@ -71,7 +71,7 @@ function Acte({ acte }: { acte: ActeAgenda }) {
               title={descriuEstat(acte.tancada, acte.resultat, acte.passada)}
               className="group flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1"
             >
-              <span className="truncate text-[15px] font-medium text-ink group-hover:text-wine">
+              <span className="truncate text-[15px] font-medium text-ink group-hover:text-marca">
                 {acte.compte || acte.assumpte}
               </span>
               {/* Les lletres del compte (categoria i potencial), com a la resta de llistes de clients. */}
@@ -94,7 +94,7 @@ function Acte({ acte }: { acte: ActeAgenda }) {
 
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12.5px] text-muted">
             <span className="text-ink-soft">{acte.tipus}</span>
-            {acte.ambVi ? <span title="Cal endur-se mostres">· amb vi</span> : null}
+            {acte.ambProductes ? <span title="Cal endur-se mostres">· amb producte</span> : null}
             <span className="flex items-center gap-1.5">
               ·
               <span className="size-1.5 rounded-full" style={{ backgroundColor: acte.color }} />
@@ -131,12 +131,12 @@ function Acte({ acte }: { acte: ActeAgenda }) {
 function Ara({ hora }: { hora: string }) {
   return (
     <li className="flex items-center gap-2.5 sm:gap-3" aria-hidden>
-      <span className="w-[52px] shrink-0 text-right text-[12px] font-semibold tabular-nums text-wine sm:w-[58px]">
+      <span className="w-[52px] shrink-0 text-right text-[12px] font-semibold tabular-nums text-marca sm:w-[58px]">
         {hora}
       </span>
       <span className="flex flex-1 items-center gap-1.5">
-        <span className="size-1.5 rounded-full bg-wine" />
-        <span className="h-px flex-1 bg-wine/35" />
+        <span className="size-1.5 rounded-full bg-marca" />
+        <span className="h-px flex-1 bg-marca/35" />
       </span>
     </li>
   );

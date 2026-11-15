@@ -169,7 +169,7 @@ export function Multitria({
           return (
             <li key={valor} role="option" aria-selected={marcat}>
               <label className={`flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 hover:bg-parchment ${marcat ? "text-ink" : "text-ink-soft"}`}>
-                <input type="checkbox" checked={marcat} onChange={() => commuta(valor)} className="size-3.5 shrink-0 accent-wine" />
+                <input type="checkbox" checked={marcat} onChange={() => commuta(valor)} className="size-3.5 shrink-0 accent-marca" />
                 <span className="min-w-0 flex-1 truncate">{nomOpcio}</span>
               </label>
             </li>
@@ -210,7 +210,7 @@ export function Multitria({
         aria-expanded={obert}
         aria-controls={obert ? id : undefined}
         className={`${CLASSE_CAMP} flex items-center justify-between gap-1 text-left normal-case tracking-normal disabled:cursor-not-allowed disabled:opacity-50 ${
-          ambValor ? "!border-wine/50 bg-wine-tint/40 text-ink" : "text-ink-soft"
+          ambValor ? "!border-marca/50 bg-marca-clar/40 text-ink" : "text-ink-soft"
         }`}
       >
         <span className="min-w-0 flex-1 truncate">{resum}</span>

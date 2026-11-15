@@ -1,7 +1,7 @@
 /**
  * Els albarans d'un client, per a la pestanya de facturació de la seva fitxa.
- * Es llegeixen de la còpia que en manté la sincronització a Directus
- * (`crm_albarans` i les seves línies), no de FactuSol en directe.
+ * Es llegeixen de la còpia que en manté la sincronització a la base de dades
+ * (`crm_albarans` i les seves línies), no de l'ERP en directe.
  */
 import "server-only";
 

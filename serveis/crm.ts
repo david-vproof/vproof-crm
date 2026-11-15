@@ -1,7 +1,7 @@
 /**
  * D'on surten les dades del CRM.
  *
- * De Directus, sempre. Les files es tradueixen al vocabulari de `domini/crm`,
+ * De la base de dades, sempre. Les files es tradueixen al vocabulari de `domini/crm`,
  * de manera que els càlculs i les pantalles no saben d'on venen.
  */
 import "server-only";
@@ -25,7 +25,7 @@ import { tipusActivitat } from "@/serveis/crm-tipus-activitat";
 export type FontCrm = {
   crm: Crm;
   nomAgent: (codi: number) => string;
-  /** El tipus de client ja arriba pel seu nom, des de la fitxa de Directus. */
+  /** El tipus de client ja arriba pel seu nom, des de la fitxa de la base de dades. */
   nomCanal: (codi: string) => string;
   /** Per què no hi ha dades, si no n'hi ha. */
   avis: string | null;
@@ -34,7 +34,7 @@ export type FontCrm = {
 const ETAPA: Record<string, Etapa> = {
   contacte: "Contacte",
   qualificada: "Qualificada",
-  tast: "Tast",
+  presentacio: "Presentació",
   proposta: "Proposta",
   negociacio: "Negociació",
   guanyada: "Guanyada",
@@ -45,11 +45,11 @@ const TIPUS: Record<string, TipusActivitat> = {
   trucada: "Trucada",
   correu: "Correu",
   reunio: "Reunió",
-  visita_sense_vi: "Visita",
-  visita_amb_vi: "Visita amb vi",
-  visita_celler_client: "Visita de celler a client",
-  visita_cellers_client: "Visita de celler a client",
-  visita_celler: "Visita al celler",
+  visita_sense_productes: "Visita",
+  visita_amb_productes: "Visita amb producte",
+  visita_laboratori_client: "Visita de laboratori a client",
+  visita_laboratoris_client: "Visita de laboratori a client",
+  visita_laboratori: "Visita al laboratori",
 };
 
 /** Un tipus creat a Configuració entra als càlculs per les seves marques: una visita, o «Altres» si no ho és. */
@@ -58,7 +58,7 @@ function tipusDelCalcul(valor: string | null, tipus: DefinicioTipus[]): TipusAct
   if (conegut) return conegut;
   const propi = tipus.find((definicio) => definicio.valor === valor);
   if (propi && !propi.visita) return "Altres";
-  return propi?.ambVi ? "Visita amb vi" : "Visita";
+  return propi?.ambProductes ? "Visita amb producte" : "Visita";
 }
 
 const PRIORITAT: Record<string, Tasca["prioritat"]> = { alta: "alta", normal: "mitjana", baixa: "baixa" };
@@ -66,7 +66,7 @@ const PRIORITAT: Record<string, Tasca["prioritat"]> = { alta: "alta", normal: "m
 const CRM_BUIT: Crm = { oportunitats: [], activitats: [], tasques: [] };
 
 /**
- * Els càlculs agrupen els comercials per codi numèric. Directus els identifica
+ * Els càlculs agrupen els comercials per codi numèric. La base de dades els identifica
  * amb UUID, així que se'ls dona un índex estable ordenant-los per nom; el zero
  * queda per a les fitxes sense assignar, com al mode demo.
  */
@@ -127,11 +127,11 @@ function aActivitat(fila: FilaActivitat, codiAgent: (id: string | null) => numbe
     id: fila.id,
     data: fila.data ?? fila.date_created ?? "",
     tipus: tipusDelCalcul(fila.tipus, tipus),
-    compte: fila.client?.nom_comercial ?? fila.lead?.nom ?? fila.celler?.nom_comercial ?? "Sense client",
+    compte: fila.client?.nom_comercial ?? fila.lead?.nom ?? fila.laboratori?.nom_comercial ?? "Sense client",
     oportunitatId: fila.oportunitat ?? null,
     agent: codiAgent(fila.comercial),
     resum: fila.resum ?? fila.assumpte ?? "",
-    celler: fila.celler?.nom_comercial ?? null,
+    laboratori: fila.laboratori?.nom_comercial ?? null,
     referencies: fila.referencies ?? null,
     assistents: fila.assistents ?? null,
   };
@@ -175,7 +175,7 @@ export async function crmDelPortal(): Promise<FontCrm> {
       crm,
       nomAgent: comercials.nom,
       nomCanal: (codi) => codi,
-      avis: buit ? "El CRM de Directus encara no té cap oportunitat ni cap activitat registrada." : null,
+      avis: buit ? "El CRM de la base de dades encara no té cap oportunitat ni cap activitat registrada." : null,
     };
   } catch (error) {
     if (error instanceof ErrorDades) {

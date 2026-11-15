@@ -70,7 +70,7 @@ export function TaulaRegistres({
         title={`${columna.etiqueta}: ${activa ? (ordre?.descendent ? "treu l'ordre" : "ordena descendent") : "ordena ascendent"}`}
       >
         {columna.curta ?? columna.etiqueta}
-        <span className={`text-[9px] ${activa ? "text-wine" : "text-line"}`} aria-hidden>
+        <span className={`text-[9px] ${activa ? "text-marca" : "text-line"}`} aria-hidden>
           {activa ? (ordre?.descendent ? "▼" : "▲") : "▲"}
         </span>
       </Link>
@@ -88,7 +88,7 @@ export function TaulaRegistres({
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-[12.5px] text-muted">
             <span>
               Ordre i filtres
-              {filtresActius ? <span className="ml-1.5 rounded bg-wine-tint px-1.5 py-px text-[11px] text-wine-deep">{filtresActius}</span> : null}
+              {filtresActius ? <span className="ml-1.5 rounded bg-marca-clar px-1.5 py-px text-[11px] text-marca-fosc">{filtresActius}</span> : null}
             </span>
             <span className="text-[10px]">▼</span>
           </summary>

@@ -7,7 +7,7 @@ import "server-only";
 
 import { activitatsPerClientEntre, darreraActivitatPerClient, llista, llistaAmbTotal, llistaTot, type Condicio } from "@/apis/sqlite/crm";
 import { ZONA } from "@/domini/crm-planner";
-import type { ActivitatTauler, AgentTauler, ClientTauler, LeadTauler, MesFacturat, OportunitatTauler, TascaTauler, ViTauler } from "@/domini/crm-tauler";
+import type { ActivitatTauler, AgentTauler, ClientTauler, LeadTauler, MesFacturat, OportunitatTauler, TascaTauler, ProducteTauler } from "@/domini/crm-tauler";
 import { ESTAT_CLIENT_BAIXA } from "@/domini/estats-client";
 import { tipusActivitat } from "@/serveis/crm-tipus-activitat";
 
@@ -19,7 +19,7 @@ export type DadesTauler = {
   tasques: TascaTauler[];
   leads: LeadTauler[];
   mesos: MesFacturat[];
-  vins: ViTauler[];
+  productes: ProducteTauler[];
   agents: AgentTauler[];
   fetesEnguany: Map<string, number>;
   darreraActivitat: Map<string, string>;
@@ -48,12 +48,12 @@ const numero = (valor: unknown) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-/** El dia d'avui a la bodega, en clau «2026-10-27». */
-export function avuiALaBodega() {
+/** El dia d'avui a l'empresa, en clau «2026-10-27». */
+export function avuiALEmpresa() {
   return new Date().toLocaleDateString("en-CA", { timeZone: ZONA });
 }
 
-/** Els agents de FactuSol, per triar-ne un al tauler i per posar nom a cada fila. */
+/** Els agents de l'ERP, per triar-ne un al tauler i per posar nom a cada fila. */
 export async function agentsDelTauler(): Promise<AgentTauler[]> {
   const files = await llistaTot<{ id: string; nom: string | null }>("crm_agents", ["id", "nom"], "nom");
   return files.map((fila) => ({ id: fila.id, nom: fila.nom ?? "Sense nom" }));
@@ -64,14 +64,14 @@ export async function agentsDelTauler(): Promise<AgentTauler[]> {
  * d'aquell agent (per a qui ho veu tot i en vol mirar un).
  */
 export async function dadesDelTauler(agent: string | null): Promise<DadesTauler> {
-  const avui = avuiALaBodega();
+  const avui = avuiALEmpresa();
   const exercici = Number(avui.slice(0, 4));
   const iniciExercici = `${exercici}-01-01`;
   const perAgent: Condicio[] = agent ? [{ agent: { _eq: agent } }] : [];
   const perAgentDelClient: Condicio[] = agent ? [{ client: { agent: { _eq: agent } } }] : [];
   const filtre = (condicions: Condicio[]) => (condicions.length ? `&filter=${encodeURIComponent(JSON.stringify(condicions.length === 1 ? condicions[0] : { _and: condicions }))}` : "");
 
-  const [clients, activitats, oportunitats, tasques, leads, mesos, linies, tastos, agents, fetesEnguany, darreraActivitat, definicions] = await Promise.all([
+  const [clients, activitats, oportunitats, tasques, leads, mesos, linies, presentacions, agents, fetesEnguany, darreraActivitat, definicions] = await Promise.all([
     llistaAmbTotal<FilaClient>("crm_clients", {
       camps: [
         "id", "nom_comercial", "agent", "comarca", "tipus_client.nom", "categoria", "periodicitat", "data_alta",
@@ -87,7 +87,7 @@ export async function dadesDelTauler(agent: string | null): Promise<DadesTauler>
     llista<FilaLead>(`/items/crm_leads?limit=-1&fields=id,nom,data_alta,date_created,estat,poblacio${filtre(perAgent)}`),
     llista<Agregat>(`/items/crm_facturacio?aggregate[sum]=base&groupBy[]=exercici&groupBy[]=mes&limit=-1${filtre([{ exercici: { _gte: exercici - 1 } }, ...perAgentDelClient])}`),
     llista<Agregat>(`/items/crm_albarans_linies?aggregate[count]=id&groupBy[]=article&limit=-1${filtre([{ albara: { data: { _gte: iniciExercici } } }, ...(agent ? [{ albara: { client: { agent: { _eq: agent } } } }] : [])])}`),
-    llista<Agregat>(`/items/crm_activitats_vins?aggregate[count]=id&groupBy[]=article&limit=-1${filtre([{ activitat: { data: { _gte: iniciExercici } } }, ...(agent ? [{ activitat: { agent: { _eq: agent } } }] : [])])}`),
+    llista<Agregat>(`/items/crm_activitats_productes?aggregate[count]=id&groupBy[]=article&limit=-1${filtre([{ activitat: { data: { _gte: iniciExercici } } }, ...(agent ? [{ activitat: { agent: { _eq: agent } } }] : [])])}`),
     agentsDelTauler(),
     activitatsPerClientEntre(iniciExercici, `${exercici + 1}-01-01`),
     darreraActivitatPerClient(`${avui}T23:59:59`),
@@ -95,26 +95,26 @@ export async function dadesDelTauler(agent: string | null): Promise<DadesTauler>
   ]);
   const tipusDeVisita = new Set(definicions.filter((tipus) => tipus.visita).map((tipus) => tipus.valor));
 
-  // Els vins: el nom dels que han sortit en alguna línia o en algun tast.
-  const perArticle = new Map<string, ViTauler>();
+  // Els productes: el nom dels que han sortit en alguna línia o en algun presentació.
+  const perArticle = new Map<string, ProducteTauler>();
   for (const fila of linies) {
     const id = String(fila.article ?? "");
     if (!id) continue;
-    perArticle.set(id, { id, nom: "", linies: numero(fila.count?.id), tastos: 0 });
+    perArticle.set(id, { id, nom: "", linies: numero(fila.count?.id), presentacions: 0 });
   }
-  for (const fila of tastos) {
+  for (const fila of presentacions) {
     const id = String(fila.article ?? "");
     if (!id) continue;
-    const vi = perArticle.get(id) ?? { id, nom: "", linies: 0, tastos: 0 };
-    vi.tastos = numero(fila.count?.id);
-    perArticle.set(id, vi);
+    const producte = perArticle.get(id) ?? { id, nom: "", linies: 0, presentacions: 0 };
+    producte.presentacions = numero(fila.count?.id);
+    perArticle.set(id, producte);
   }
   if (perArticle.size > 0) {
     // El catàleg sencer i no només els ids: centenars d'ids a l'adreça no hi caben.
     const articles = await llistaTot<{ id: string; nom: string | null }>("crm_articles", ["id", "nom"]);
     for (const article of articles) {
-      const vi = perArticle.get(article.id);
-      if (vi) vi.nom = article.nom ?? "Sense nom";
+      const producte = perArticle.get(article.id);
+      if (producte) producte.nom = article.nom ?? "Sense nom";
     }
   }
 
@@ -156,7 +156,7 @@ export async function dadesDelTauler(agent: string | null): Promise<DadesTauler>
     })),
     leads: leads.map((fila) => ({ id: fila.id, nom: fila.nom, dataAlta: fila.data_alta ?? fila.date_created, estat: fila.estat, poblacio: fila.poblacio })),
     mesos: mesos.map((fila) => ({ exercici: numero(fila.exercici), mes: numero(fila.mes), base: numero(fila.sum?.base) })),
-    vins: [...perArticle.values()].filter((vi) => vi.nom),
+    productes: [...perArticle.values()].filter((producte) => producte.nom),
     agents,
     fetesEnguany,
     darreraActivitat,

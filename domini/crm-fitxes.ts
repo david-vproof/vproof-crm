@@ -2,11 +2,12 @@
  * Què es pot mantenir del CRM des del portal, i com.
  *
  * Una sola descripció per fitxa: d'aquí en surten el llistat, el formulari, la
- * validació i l'escriptura cap a Directus. Afegir un camp és afegir-lo aquí.
+ * validació i l'escriptura cap a la base de dades. Afegir un camp és afegir-lo aquí.
  */
 import { TENDENCIES } from "./facturacio-tendencia";
 import { PERIODICITATS, PERIODICITATS_CURTES, SEGUIMENTS } from "./crm-periodicitat";
-import { TIPUS_BASE, VISITA_CELLERS_A_CLIENT, VISITA_CLIENTS_A_CELLER, opcionsDeTipus, valorsAmb } from "./crm-tipus-activitat";
+import { TIPUS_BASE, VISITA_LABORATORIS_A_CLIENT, VISITA_CLIENTS_A_LABORATORI, opcionsDeTipus, valorsAmb } from "./crm-tipus-activitat";
+import { CAMPS_DEL_PRODUCTE } from "./cataleg-articles";
 import { ESTATS_CLIENT_CURTS, ESTAT_CLIENT_BAIXA, OPCIONS_ESTAT_CLIENT } from "./estats-client";
 
 export type TipusCamp =
@@ -32,14 +33,14 @@ export type TipusCamp =
    */
   | "periodicitat"
   /**
-   * Els vins d'una activitat: es trien del catàleg d'articles amb un modal de
-   * cerca, tants com calgui, i es desen a part, a `crm_activitats_vins`. No és
-   * cap camp de la col·lecció: vegeu `serveis/crm-vins.ts`.
+   * Els productes d'una activitat: es trien del catàleg d'articles amb un modal de
+   * cerca, tants com calgui, i es desen a part, a `crm_activitats_productes`. No és
+   * cap camp de la col·lecció: vegeu `serveis/crm-productes.ts`.
    */
-  | "vins"
+  | "productes"
   /**
    * Una foto feta amb la càmera o triada de la galeria: el fitxer va a la
-   * biblioteca de Directus i el camp en desa l'id. Només es toca si es canvia:
+   * biblioteca de la base de dades i el camp en desa l'id. Només es toca si es canvia:
    * vegeu `domini/foto-activitat.ts`.
    */
   | "foto";
@@ -104,7 +105,7 @@ export type Camp = {
    */
   excloent?: { camp: string; avis: string };
   /**
-   * El camp el manté la sincronització amb FactuSol. En una fitxa que ve de
+   * El camp el manté la sincronització amb l'ERP. En una fitxa que ve de
    * l'ERP (vegeu `campFont` de la fitxa) es mostra però no s'edita, perquè
    * a la propera passada l'ERP el tornaria a posar com el té ell.
    */
@@ -118,7 +119,7 @@ export type Camp = {
   /**
    * En crear la fitxa, i si es compleix la condició, s'hi poden triar diverses
    * fitxes: se'n crea una per cadascuna, lligades pel camp `grup`. És el cas
-   * dels clients d'una visita al celler.
+   * dels clients d'una visita al laboratori.
    */
   multiple?: { camp: string; valors: string[] };
   /**
@@ -149,7 +150,7 @@ export type Camp = {
   contacte?: "telefon" | "correu";
   /**
    * Un camp d'abans que ja no es fa servir: només es veu a les fitxes que hi
-   * tenen alguna cosa, i ni s'edita ni es desa. És el text lliure de vins, que
+   * tenen alguna cosa, i ni s'edita ni es desa. És el text lliure de productes, que
    * ara es trien del catàleg.
    */
   antic?: boolean;
@@ -164,7 +165,8 @@ export type ClauFitxa =
   | "contactes"
   | "segments"
   | "tipus_client"
-  | "agents";
+  | "agents"
+  | "productes";
 
 export type Fitxa = {
   clau: ClauFitxa;
@@ -222,7 +224,7 @@ export type Fitxa = {
    */
   ambDeures?: boolean;
   /**
-   * Camp que diu d'on ve la fitxa. Quan val «factusol», els camps `deErp`
+   * Camp que diu d'on ve la fitxa. Quan val «erp», els camps `deErp`
    * queden bloquejats al formulari i no es desen.
    */
   campFont?: string;
@@ -230,8 +232,8 @@ export type Fitxa = {
   titolVista?: string;
   /**
    * El portal no hi escriu mai: ni en crea, ni n'edita, ni n'esborra. És per a
-   * les taules que manté l'ERP senceres, com els cellers (proveïdors de
-   * FactuSol): la fitxa es consulta, i qualsevol canvi es fa a l'ERP i arriba
+   * les taules que manté l'ERP senceres, com els laboratoris (proveïdors de
+   * L'ERP): la fitxa es consulta, i qualsevol canvi es fa a l'ERP i arriba
    * per la sincronització. Es comprova també al servidor, no només al
    * formulari: l'acció de desar és una porta oberta.
    */
@@ -262,14 +264,6 @@ export type Fitxa = {
   nomesAmb?: { camp: string; valors: number[] };
 };
 
-/**
- * Els tipus de client (TCLCLI de FactuSol, `codi_erp` de la seva còpia) que
- * treballa el CRM: restaurants, botigues especialitzades, distribuïdors i
- * caterings. Els particulars, les empreses i la resta no es visiten i no
- * surten enlloc: ni a la llista de clients, ni al mapa, ni als segments.
- */
-export const TIPUS_CLIENT_DEL_CRM = [1, 3, 4, 6];
-
 const FORMES: [string, string][] = [
   ["Comptat", "Comptat"], ["Transferència 30 dies", "Transferència 30 dies"],
   ["Rebut domiciliat 60 dies", "Rebut domiciliat 60 dies"],
@@ -280,9 +274,12 @@ const ORIGENS: [string, string][] = [
   ["Prospecció", "Prospecció"], ["Client existent", "Client existent"], ["Xarxes socials", "Xarxes socials"],
 ];
 const ACTIU: [string, string][] = [["actiu", "Actiu"], ["inactiu", "Inactiu"]];
+const PRESCRIPCIONS: [string, string][] = [
+  ["Amb recepta", "Amb recepta"], ["Sense recepta", "Sense recepta"], ["Ús exclusiu veterinari", "Ús exclusiu veterinari"],
+];
 
-/** Com els desa la sincronització de F_PRO: vegeu `domini/sincronitzacio.ts`. */
-const TIPUS_PROVEIDOR: [string, string][] = [["proveidor", "Celler o proveïdor"], ["creditor", "Creditor de serveis"]];
+/** Els tipus de proveïdor: qui ven mercaderia (els laboratoris) i qui ven serveis. */
+const TIPUS_PROVEIDOR: [string, string][] = [["proveidor", "Laboratori o proveïdor"], ["creditor", "Creditor de serveis"]];
 const ESTAT_PROVEIDOR: [string, string][] = [["actiu", "Actiu"], ["inactiu", "Inactiu"], ["baixa", "Baixa"]];
 
 export const MODES_SEGMENT: [string, string][] = [
@@ -340,7 +337,7 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
       { camp: "tipus", etiqueta: "Tipus" },
       { camp: "assumpte", etiqueta: "Assumpte" },
       { camp: "agent", etiqueta: "Agent", desDe: "xl" },
-      { camp: "celler", etiqueta: "Celler" },
+      { camp: "laboratori", etiqueta: "Laboratori" },
       { camp: "resultat", etiqueta: "Resultat" },
     ],
     camps: [
@@ -351,8 +348,8 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
       { nom: "assumpte", etiqueta: "Assumpte", tipus: "text", obligatori: true, ample: "sencer" },
       {
         nom: "client", etiqueta: "Client", tipus: "relacio", relacio: "clients", fixEnEditar: true,
-        // A una visita de clients al celler n'hi poden anar diversos: una activitat per client.
-        multiple: { camp: "tipus", valors: [VISITA_CLIENTS_A_CELLER] },
+        // A una visita de clients al laboratori n'hi poden anar diversos: una activitat per client.
+        multiple: { camp: "tipus", valors: [VISITA_CLIENTS_A_LABORATORI] },
         excloent: { camp: "lead", avis: "Ja és d'un lead: treu-lo per triar un client." },
       },
       {
@@ -372,27 +369,27 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
       },
       { nom: "oportunitat", etiqueta: "Oportunitat", tipus: "relacio", relacio: "oportunitats" },
       {
-        nom: "celler", etiqueta: "Celler", tipus: "relacio", relacio: "proveidors",
-        // Només quan hi ha un celler pel mig: a una visita amb vins normal no cal.
-        nomesSi: { camp: "tipus", valors: valorsAmb(TIPUS_BASE, "ambCeller") },
-        // A una visita de cellers a client n'hi poden anar diversos: una activitat per celler.
-        multiple: { camp: "tipus", valors: [VISITA_CELLERS_A_CLIENT] },
-        nota: "Quin celler ha anat al client, o a quin celler han anat els clients.",
+        nom: "laboratori", etiqueta: "Laboratori", tipus: "relacio", relacio: "proveidors",
+        // Només quan hi ha un laboratori pel mig: a una visita amb productes normal no cal.
+        nomesSi: { camp: "tipus", valors: valorsAmb(TIPUS_BASE, "ambLaboratori") },
+        // A una visita de laboratoris a client n'hi poden anar diversos: una activitat per laboratori.
+        multiple: { camp: "tipus", valors: [VISITA_LABORATORIS_A_CLIENT] },
+        nota: "Quin laboratori ha anat al client, o a quin laboratori han anat els clients.",
       },
       {
-        // Del catàleg d'articles, no text lliure: així se sap quins vins s'han ensenyat i a qui.
-        nom: "vins", etiqueta: "Vins presentats o tastats", tipus: "vins", ample: "sencer",
-        nomesSi: { camp: "tipus", valors: valorsAmb(TIPUS_BASE, "ambVi") },
+        // Del catàleg d'articles, no text lliure: així se sap quins productes s'han ensenyat i a qui.
+        nom: "productes", etiqueta: "Productes presentats", tipus: "productes", ample: "sencer",
+        nomesSi: { camp: "tipus", valors: valorsAmb(TIPUS_BASE, "ambProductes") },
       },
       {
         // El text lliure d'abans: només a les activitats que el tenen, per no perdre'l.
-        nom: "referencies", etiqueta: "Vins (text d'abans)", tipus: "area", ample: "sencer", antic: true,
-        nomesSi: { camp: "tipus", valors: valorsAmb(TIPUS_BASE, "ambVi") },
-        nota: "Ja no s'edita: els vins es trien del catàleg, al camp de dalt.",
+        nom: "referencies", etiqueta: "Productes (text d'abans)", tipus: "area", ample: "sencer", antic: true,
+        nomesSi: { camp: "tipus", valors: valorsAmb(TIPUS_BASE, "ambProductes") },
+        nota: "Ja no s'edita: els productes es trien del catàleg, al camp de dalt.",
       },
       {
         nom: "assistents", etiqueta: "Assistents del client", tipus: "nombre",
-        nomesSi: { camp: "tipus", valors: [VISITA_CLIENTS_A_CELLER] },
+        nomesSi: { camp: "tipus", valors: [VISITA_CLIENTS_A_LABORATORI] },
       },
       { nom: "durada_minuts", etiqueta: "Durada (minuts)", tipus: "nombre" },
       { nom: "cost", etiqueta: "Cost", tipus: "import", nota: "Mostres, desplaçament, àpat." },
@@ -406,7 +403,7 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
       { nom: "foto", etiqueta: "Foto", tipus: "foto", ample: "sencer" },
       { nom: "proper_pas", etiqueta: "Proper pas", tipus: "text", ample: "sencer" },
       { nom: "data_proper_pas", etiqueta: "Data del proper pas", tipus: "data" },
-      // El posa el portal quan una visita de clients al celler es desa per a diversos clients.
+      // El posa el portal quan una visita de clients al laboratori es desa per a diversos clients.
       { nom: "grup", etiqueta: "Visita compartida", tipus: "text", extern: true },
     ],
   },
@@ -441,7 +438,7 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
       },
       { nom: "origen", etiqueta: "Origen", tipus: "tria", opcions: ORIGENS },
       { nom: "tipus_client", etiqueta: "Tipus de client", tipus: "relacio", relacio: "tipus_client" },
-      // A mà: un lead encara no és a FactuSol i no en pot heretar l'agent.
+      // A mà: un lead encara no és a l'ERP i no en pot heretar l'agent.
       { nom: "agent", etiqueta: "Agent comercial", tipus: "relacio", relacio: "agents" },
       { nom: "persona_contacte", etiqueta: "Persona de contacte", tipus: "text" },
       { nom: "carrec", etiqueta: "Càrrec", tipus: "text" },
@@ -459,7 +456,7 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
         etiqueta: "Client resultant",
         tipus: "relacio",
         relacio: "clients",
-        nota: "En què s'ha convertit. Les seves activitats, amb els vins i els To-Do, passen a aquest client.",
+        nota: "En què s'ha convertit. Les seves activitats, amb els productes i els To-Do, passen a aquest client.",
         obligatori: true,
         nomesSi: { camp: "estat", valors: ["convertit"] },
       },
@@ -490,7 +487,7 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
       { nom: "titol", etiqueta: "Títol", tipus: "text", obligatori: true, ample: "sencer" },
       {
         nom: "etapa", etiqueta: "Etapa", tipus: "tria",
-        opcions: [["contacte", "Contacte"], ["qualificada", "Qualificada"], ["tast", "Tast"], ["proposta", "Proposta"], ["negociacio", "Negociació"], ["guanyada", "Guanyada"], ["perduda", "Perduda"]],
+        opcions: [["contacte", "Contacte"], ["qualificada", "Qualificada"], ["presentacio", "Presentació"], ["proposta", "Proposta"], ["negociacio", "Negociació"], ["guanyada", "Guanyada"], ["perduda", "Perduda"]],
       },
       { nom: "client", etiqueta: "Client", tipus: "relacio", relacio: "clients" },
       { nom: "lead", etiqueta: "Lead", tipus: "relacio", relacio: "leads" },
@@ -523,7 +520,6 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
     ambDeures: true,
     campFont: "font",
     excloses: { camp: "estat", valor: ESTAT_CLIENT_BAIXA.valor },
-    nomesAmb: { camp: "tipus_client.codi_erp", valors: TIPUS_CLIENT_DEL_CRM },
     relacionades: [
       { clau: "activitats", camp: "client", etiqueta: "Activitats" },
       { clau: "contactes", camp: "client", etiqueta: "Contactes" },
@@ -549,11 +545,11 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
     ],
     camps: [
       // La font la posa la sincronització: el formulari només la fa servir per bloquejar els camps de l'ERP.
-      { nom: "font", etiqueta: "Font de les dades", tipus: "tria", opcions: [["factusol", "FactuSol"], ["portal", "Portal"]], extern: true },
+      { nom: "font", etiqueta: "Font de les dades", tipus: "tria", opcions: [["erp", "L'ERP"], ["portal", "Portal"]], extern: true },
       { nom: "nom_comercial", etiqueta: "Nom comercial", tipus: "text", obligatori: true, ample: "sencer", deErp: true },
       { nom: "rao_social", etiqueta: "Raó social", tipus: "text", deErp: true },
       { nom: "nif", etiqueta: "NIF", tipus: "text", deErp: true },
-      // A FactuSol, TCLCLI apunta a la taula de tipus (F_TCL); aquí, a la seva còpia.
+      // A l'ERP, TCLCLI apunta a la taula de tipus (F_TCL); aquí, a la seva còpia.
       { nom: "tipus_client", etiqueta: "Tipus de client", tipus: "relacio", relacio: "tipus_client", deErp: true },
       // AGECLI apunta a F_AGE; aquí, a la seva còpia.
       { nom: "agent", etiqueta: "Agent comercial", tipus: "relacio", relacio: "agents", deErp: true },
@@ -591,7 +587,7 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
         nota: "Quan s'hi pot entregar, si no coincideix amb l'anterior.",
       },
       { nom: "tarifa", etiqueta: "Tarifa", tipus: "nombre", nota: "Llista de preus (1-6).", deErp: true },
-      { nom: "codi_erp", etiqueta: "Codi a FactuSol", tipus: "nombre", nota: "CODCLI, per lligar-lo amb l'ERP. Amb codi, la sincronització hi porta les dades de l'ERP.", deErp: true },
+      { nom: "codi_erp", etiqueta: "Codi a l'ERP", tipus: "nombre", nota: "Per lligar-lo amb l'ERP.", deErp: true },
       {
         nom: "latitud", etiqueta: "Ubicació al mapa", tipus: "decimal", ample: "sencer", parella: "longitud",
         nota: "Buida, es calcula de l'adreça. Si el punt no cau on toca, tria'l al mapa.",
@@ -620,25 +616,24 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
   },
 
   /**
-   * Els cellers: de qui es compra. No són una taula del portal sinó els
-   * proveïdors de FactuSol, que la sincronització manté al dia. La clau és
-   * «proveidors» perquè és el que són a l'ERP, però a la gent se'ls ensenya
-   * com a cellers, que és com se'n parla a la casa.
+   * Els laboratoris: de qui es compra. Són els proveïdors de l'ERP: els que en
+   * vinguin (font «erp») tindran els camps de l'ERP bloquejats, i els creats
+   * des del portal s'editen sencers. La clau és «proveidors» perquè és el que
+   * són a l'ERP, però a la gent se'ls ensenya com a laboratoris.
    */
   proveidors: {
     clau: "proveidors",
     colleccio: "crm_proveidors",
-    singular: "Celler",
+    singular: "Laboratori",
     article: "nou",
-    plural: "Cellers",
-    nomesLectura: true,
+    plural: "Laboratoris",
     titol: "nom_comercial",
     ordre: "nom_comercial",
     cerca: ["nom_comercial", "rao_social", "nif", "poblacio", "provincia", "correu"],
     campFont: "font",
-    relacionades: [{ clau: "activitats", camp: "celler", etiqueta: "Activitats" }],
+    relacionades: [{ clau: "activitats", camp: "laboratori", etiqueta: "Activitats" }],
     columnes: [
-      { camp: "nom_comercial", etiqueta: "Celler" },
+      { camp: "nom_comercial", etiqueta: "Laboratori" },
       { camp: "tipus", etiqueta: "Tipus" },
       { camp: "poblacio", etiqueta: "Població" },
       { camp: "provincia", etiqueta: "Província" },
@@ -649,7 +644,7 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
     ],
     camps: [
       // La font la posa la sincronització: el formulari només la fa servir per bloquejar els camps de l'ERP.
-      { nom: "font", etiqueta: "Font de les dades", tipus: "tria", opcions: [["factusol", "FactuSol"], ["portal", "Portal"]], extern: true },
+      { nom: "font", etiqueta: "Font de les dades", tipus: "tria", opcions: [["erp", "L'ERP"], ["portal", "Portal"]], extern: true },
       { nom: "nom_comercial", etiqueta: "Nom comercial", tipus: "text", obligatori: true, ample: "sencer", deErp: true },
       { nom: "rao_social", etiqueta: "Raó social", tipus: "text", deErp: true },
       { nom: "nif", etiqueta: "NIF", tipus: "text", deErp: true },
@@ -672,7 +667,7 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
       { nom: "bic", etiqueta: "BIC", tipus: "text", deErp: true },
       { nom: "banc", etiqueta: "Banc", tipus: "text", deErp: true },
       { nom: "compte_comptable", etiqueta: "Compte comptable", tipus: "text", deErp: true },
-      { nom: "codi_erp", etiqueta: "Codi a FactuSol", tipus: "nombre", nota: "CODPRO, per lligar-lo amb l'ERP.", deErp: true },
+      { nom: "codi_erp", etiqueta: "Codi a l'ERP", tipus: "nombre", nota: "Per lligar-lo amb l'ERP.", deErp: true },
       { nom: "data_alta", etiqueta: "Data d'alta", tipus: "data", deErp: true },
       { nom: "erp_modificat_el", etiqueta: "Darrer moviment a l'ERP", tipus: "data", deErp: true },
       { nom: "observacions", etiqueta: "Observacions de l'ERP", tipus: "area", ample: "sencer", deErp: true },
@@ -681,9 +676,9 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
   },
 
   /**
-   * Els tipus de client de FactuSol (F_TCL). Els porta la passada de clients i
-   * no s'editen des del portal. Quins surten als desplegables del CRM es tria a
-   * Directus, amb «Es fa servir al CRM»: la taula és sencera, com a l'ERP.
+   * Els tipus de client: clínica veterinària, hospital, botiga d'animals… Es
+   * mantenen des del portal; els que vinguin de l'ERP tindran els camps de
+   * l'ERP bloquejats. Quins surten als desplegables es tria amb «Es fa servir al CRM».
    */
   tipus_client: {
     clau: "tipus_client",
@@ -691,7 +686,6 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
     singular: "Tipus de client",
     article: "nou",
     plural: "Tipus de client",
-    nomesLectura: true,
     titol: "nom",
     ordre: "codi_erp",
     cerca: ["nom"],
@@ -704,10 +698,10 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
       { camp: "usat_crm", etiqueta: "Al CRM" },
     ],
     camps: [
-      { nom: "font", etiqueta: "Font de les dades", tipus: "tria", opcions: [["factusol", "FactuSol"], ["portal", "Portal"]], extern: true },
+      { nom: "font", etiqueta: "Font de les dades", tipus: "tria", opcions: [["erp", "L'ERP"], ["portal", "Portal"]], extern: true },
       { nom: "nom", etiqueta: "Nom", tipus: "text", obligatori: true, ample: "sencer", deErp: true },
-      { nom: "codi_erp", etiqueta: "Codi a FactuSol", tipus: "nombre", nota: "CODTCL, el que desa TCLCLI a la fitxa del client.", deErp: true },
-      { nom: "usat_crm", etiqueta: "Es fa servir al CRM", tipus: "booleà", nota: "Si surt als desplegables. Es canvia a Directus." },
+      { nom: "codi_erp", etiqueta: "Codi a l'ERP", tipus: "nombre", nota: "Per lligar-lo amb l'ERP.", deErp: true },
+      { nom: "usat_crm", etiqueta: "Es fa servir al CRM", tipus: "booleà", nota: "Si surt als desplegables del CRM." },
     ],
   },
 
@@ -717,7 +711,6 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
     singular: "Agent comercial",
     article: "nou",
     plural: "Agents comercials",
-    nomesLectura: true,
     titol: "nom",
     ordre: "nom",
     cerca: ["nom"],
@@ -728,9 +721,59 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
       { camp: "codi_erp", etiqueta: "Codi ERP" },
     ],
     camps: [
-      { nom: "font", etiqueta: "Font de les dades", tipus: "tria", opcions: [["factusol", "FactuSol"], ["portal", "Portal"]], extern: true },
+      { nom: "font", etiqueta: "Font de les dades", tipus: "tria", opcions: [["erp", "L'ERP"], ["portal", "Portal"]], extern: true },
       { nom: "nom", etiqueta: "Nom", tipus: "text", obligatori: true, ample: "sencer", deErp: true },
-      { nom: "codi_erp", etiqueta: "Codi a FactuSol", tipus: "nombre", nota: "CODAGE, el que desa AGECLI a la fitxa del client.", deErp: true },
+      { nom: "codi_erp", etiqueta: "Codi a l'ERP", tipus: "nombre", nota: "Per lligar-lo amb l'ERP i amb els usuaris del portal.", deErp: true },
+    ],
+  },
+
+  /**
+   * Els productes sanitaris veterinaris: el catàleg (`crm_articles`). Es creen
+   * i s'editen des del portal; els que vinguin de l'ERP (font «erp») tindran els
+   * camps de l'ERP bloquejats. Les característiques són les de
+   * `CAMPS_DEL_PRODUCTE` (vegeu `domini/cataleg-articles.ts`).
+   */
+  productes: {
+    clau: "productes",
+    colleccio: "crm_articles",
+    singular: "Producte",
+    article: "nou",
+    plural: "Productes",
+    titol: "nom",
+    ordre: "nom",
+    cerca: ["nom", "codi_erp", "codi_barres", "familia", "garantia", "camp_programable_1"],
+    campFont: "font",
+    relacionades: [],
+    columnes: [
+      { camp: "nom", etiqueta: "Producte" },
+      { camp: "familia", etiqueta: CAMPS_DEL_PRODUCTE.familia },
+      { camp: "laboratori", etiqueta: "Laboratori" },
+      { camp: "camp_programable_1", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_1 },
+      { camp: "preu", etiqueta: "Preu" },
+      { camp: "estoc_disponible", etiqueta: "Estoc" },
+      { camp: "historic", etiqueta: "Històric" },
+    ],
+    camps: [
+      { nom: "font", etiqueta: "Font de les dades", tipus: "tria", opcions: [["erp", "L'ERP"], ["portal", "Portal"]], extern: true },
+      { nom: "nom", etiqueta: "Nom", tipus: "text", obligatori: true, ample: "sencer", deErp: true },
+      { nom: "codi_erp", etiqueta: "Codi", tipus: "text", deErp: true, nota: "El codi de l'article a l'ERP." },
+      { nom: "codi_barres", etiqueta: "Codi de barres", tipus: "text", deErp: true },
+      { nom: "familia", etiqueta: CAMPS_DEL_PRODUCTE.familia, tipus: "text", deErp: true, suggeriments: true, nota: "Antiparasitari, antibiòtic, vacuna, nutrició…" },
+      { nom: "laboratori", etiqueta: "Laboratori", tipus: "relacio", relacio: "proveidors", deErp: true },
+      { nom: "referencia_proveidor", etiqueta: "Referència del laboratori", tipus: "text", deErp: true },
+      { nom: "garantia", etiqueta: CAMPS_DEL_PRODUCTE.garantia, tipus: "text", ample: "sencer", deErp: true, nota: "Si n'hi ha diversos, separats per comes." },
+      { nom: "camp_programable_1", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_1, tipus: "text", deErp: true, suggeriments: true, nota: "Gos, gat, boví, porcí… Separades per comes." },
+      { nom: "camp_programable_2", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_2, tipus: "text", deErp: true, suggeriments: true, nota: "Comprimit, injectable, pipeta, pinso…" },
+      { nom: "camp_programable_3", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_3, tipus: "text", deErp: true, suggeriments: true, nota: "Oral, tòpica, subcutània…" },
+      { nom: "camp_programable_4", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_4, tipus: "tria", opcions: PRESCRIPCIONS, deErp: true },
+      { nom: "camp_programable_5", etiqueta: CAMPS_DEL_PRODUCTE.camp_programable_5, tipus: "text", deErp: true, nota: "100 ml, 30 comprimits, 15 kg…" },
+      { nom: "preu", etiqueta: "Preu de venda (sense IVA)", tipus: "import", deErp: true },
+      { nom: "estoc_actual", etiqueta: "Estoc actual", tipus: "decimal", deErp: true },
+      { nom: "estoc_disponible", etiqueta: "Estoc disponible", tipus: "decimal", deErp: true, nota: "L'actual menys el que ja està compromès en comandes." },
+      { nom: "historic", etiqueta: "Històric", tipus: "booleà", deErp: true, nota: "Descatalogat o no disponible: els catàlegs només l'ensenyen si es demana." },
+      { nom: "data_alta", etiqueta: "Data d'alta", tipus: "data", deErp: true },
+      { nom: "imatge", etiqueta: "Foto", tipus: "foto", ample: "sencer" },
+      { nom: "notes", etiqueta: "Notes", tipus: "area", ample: "sencer" },
     ],
   },
 
@@ -802,7 +845,7 @@ export const FITXES: Record<ClauFitxa, Fitxa> = {
 
 /**
  * L'ordre de les pestanyes: primer l'embut comercial —qui encara no compra, qui
- * ja compra, què hi ha obert, de qui és el vi i amb qui es parla— i al final les
+ * ja compra, què hi ha obert, de qui és el producte i amb qui es parla— i al final les
  * taules que només s'administren de tant en tant.
  */
 export const CLAUS_FITXA: ClauFitxa[] = [
@@ -813,6 +856,9 @@ export const CLAUS_FITXA: ClauFitxa[] = [
   "contactes",
   "activitats",
   "segments",
+  "tipus_client",
+  "agents",
+  "productes",
 ];
 
 export function esClauFitxa(valor: string): valor is ClauFitxa {
@@ -864,12 +910,12 @@ export function textAlta(fitxa: Fitxa) {
 }
 
 /**
- * Si la fitxa ve de FactuSol. Aquestes tenen l'ERP com a amo: els seus camps
+ * Si la fitxa ve de l'ERP. Aquestes tenen l'ERP com a amo: els seus camps
  * no s'editen ni es desen, i la fitxa no s'esborra (a la propera passada
  * tornaria, i tot el CRM que hi penja es perdria).
  */
 export function veDeFactusol(fitxa: Fitxa, valors: Record<string, unknown> | null | undefined) {
-  return Boolean(fitxa.campFont && valors?.[fitxa.campFont] === "factusol");
+  return Boolean(fitxa.campFont && valors?.[fitxa.campFont] === "erp");
 }
 
 /**
@@ -883,7 +929,7 @@ export function esVisiblePer(fitxa: Fitxa, valors: Record<string, unknown> | nul
   return !de || de === deQui;
 }
 
-/** `{ a: { b: condicio } }` a partir de «a.b»: així filtra Directus per una relació. */
+/** `{ a: { b: condicio } }` a partir de «a.b»: així filtra la base de dades per una relació. */
 function perCami(cami: string, condicio: Record<string, unknown>): Record<string, unknown> {
   return cami
     .split(".")
@@ -891,7 +937,7 @@ function perCami(cami: string, condicio: Record<string, unknown>): Record<string
 }
 
 /**
- * Les condicions de Directus que deixen fora les fitxes que no surten al CRM:
+ * Les condicions de la base de dades que deixen fora les fitxes que no surten al CRM:
  * les `excloses` i les que no són `nomesAmb`. De les excloses, les que no
  * tenen valor al camp hi entren: un «diferent de» sol també les deixaria fora.
  */

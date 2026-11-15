@@ -52,9 +52,9 @@ export type Variable = {
   tipus: TipusCamp | "regio";
   opcions?: [string, string][];
   operadors: Operador[];
-  /** A quin catàleg apunta, si és una relació: les opcions surten de Directus. */
+  /** A quin catàleg apunta, si és una relació: les opcions surten de la base de dades. */
   relacio?: ClauFitxa;
-  /** Què cal demanar a Directus: el camp, o l'id i el títol de la fitxa si és una relació. */
+  /** Què cal demanar a la base de dades: el camp, o l'id i el títol de la fitxa si és una relació. */
   camps: string[];
 };
 
@@ -92,7 +92,7 @@ export const SENSE_VALOR: Operador[] = ["buit", "no_buit"];
  * filtrable sense tocar res més.
  *
  * Una relació amb un catàleg, com el tipus de client, és una variable de
- * relació: es tria d'un desplegable i es compara per id, igual que a Directus.
+ * relació: es tria d'un desplegable i es compara per id, igual que a la base de dades.
  */
 const VARIABLES_DE_FITXA: Variable[] = FITXES.clients.camps
   .filter((camp: Camp) => {
@@ -126,13 +126,13 @@ export const VARIABLE_UBICACIO: Variable = {
 
 export const VARIABLES: Variable[] = [...VARIABLES_DE_FITXA, VARIABLE_UBICACIO];
 
-/** Els camps que cal demanar a Directus per poder avaluar qualsevol segment. */
+/** Els camps que cal demanar a la base de dades per poder avaluar qualsevol segment. */
 export const CAMPS_VARIABLES = VARIABLES.flatMap((v) => v.camps);
 
 const SUFIX_TITOL = "__titol";
 
 /**
- * Directus torna les relacions com a objecte ({ id, nom }). Es deixa l'id,
+ * La base de dades torna les relacions com a objecte ({ id, nom }). Es deixa l'id,
  * que és el que comparen els criteris, i el títol a part, per ensenyar-lo.
  */
 export function aplanaVariables<T extends Record<string, unknown>>(fila: T): T {
@@ -249,7 +249,7 @@ export function pertany(definicio: DefinicioSegment, compte: Record<string, unkn
     : criteris.every((criteri) => compleix(criteri, compte));
 }
 
-/** Neteja el que arriba de Directus: el JSON d'un camp lliure no és de fiar. */
+/** Neteja el que arriba de la base de dades: el JSON d'un camp lliure no és de fiar. */
 export function llegeixCriteris(brut: unknown): Criteri[] {
   if (!Array.isArray(brut)) return [];
 

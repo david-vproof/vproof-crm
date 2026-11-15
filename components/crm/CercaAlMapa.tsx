@@ -176,7 +176,7 @@ export function CercaAlMapa({ punts, alDestacar }: { punts: PuntCompte[]; alDest
             </ul>
           ) : null}
 
-          {avis ? <p className="px-3 py-2 text-[12px] text-wine-deep">{avis}</p> : null}
+          {avis ? <p className="px-3 py-2 text-[12px] text-marca-fosc">{avis}</p> : null}
 
           {/* L'adreça sempre es pot buscar, també quan hi ha clients que coincideixen: potser no es busca cap client. */}
           {!llocs ? (
@@ -184,7 +184,7 @@ export function CercaAlMapa({ punts, alDestacar }: { punts: PuntCompte[]; alDest
               type="button"
               onClick={() => void cercaAdreca()}
               disabled={cercant}
-              className={`${fila} border-t border-line text-wine disabled:opacity-60 ${coincidencies.length === 0 ? "" : "text-[12px]"}`}
+              className={`${fila} border-t border-line text-marca disabled:opacity-60 ${coincidencies.length === 0 ? "" : "text-[12px]"}`}
             >
               {cercant ? "Cercant a OpenStreetMap…" : `Cerca «${netejat}» com a adreça`}
             </button>

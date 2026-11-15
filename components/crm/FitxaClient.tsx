@@ -16,7 +16,7 @@ import { MiniSeguiment } from "@/components/crm/MiniSeguiment";
 import { PanellEstabliments } from "@/components/crm/PanellEstabliments";
 import { PanellFacturacio } from "@/components/crm/PanellFacturacio";
 import { PestanyesFitxa, type Pestanya } from "@/components/crm/PestanyesFitxa";
-import { VinsTastatsClient } from "@/components/crm/VinsTastatsClient";
+import { ProductesPresentatsClient } from "@/components/crm/ProductesPresentatsClient";
 import { FITXES, PENDENT, activitatTancada, esVisiblePer, idDeRelacio, textAlta, veDeFactusol, type Fitxa } from "@/domini/crm-fitxes";
 import { nomPeriode } from "@/domini/facturacio";
 import { CAMPS_RESUM_FACTURACIO } from "@/domini/facturacio-tendencia";
@@ -28,12 +28,12 @@ import { deuresDe } from "@/serveis/crm-deures";
 import { llistaRelacionada, obteFitxa, opcionsDeRelacions, type ValorsFitxa } from "@/serveis/crm-manteniment";
 import { seguimentDelClient } from "@/serveis/crm-periodicitat";
 import { fitxaViva } from "@/serveis/crm-tipus-activitat";
-import { vinsTastatsDelClient } from "@/serveis/crm-vins";
+import { productesPresentatsDelClient } from "@/serveis/crm-productes";
 import { establimentsDelClient } from "@/serveis/establiments";
 import { resumDeFacturacio } from "@/serveis/facturacio";
 
 /** L'ordre de les seccions: el que es mira més, primer. */
-const ORDRE_PESTANYES = ["dades", "activitats", "vins", "contactes", "establiments", "facturacio", "leads"];
+const ORDRE_PESTANYES = ["dades", "activitats", "productes", "contactes", "establiments", "facturacio", "leads"];
 
 /**
  * La fitxa d'un client, a pantalla sencera i a sobre de la vista d'on es ve.
@@ -77,7 +77,7 @@ export async function FitxaClient({
 
   // Tot es demana alhora. El que no es pot llegir no tomba la fitxa: la seva secció no surt.
   const relacionades = esNou ? [] : (fitxa.relacionades ?? []);
-  const [opcions, llistes, deures, facturacio, seguiment, establiments, atributs, vinsTastats] = await Promise.all([
+  const [opcions, llistes, deures, facturacio, seguiment, establiments, atributs, productesPresentats] = await Promise.all([
     opcionsDeRelacions("clients", valors),
     Promise.all(relacionades.map((relacio) => llistaRelacionada(relacio.clau, relacio.camp, id, { comercial }))),
     esNou ? null : deuresDe({ camp: "client", id }).catch(() => null),
@@ -85,7 +85,7 @@ export async function FitxaClient({
     esNou ? null : seguimentDelClient(id, valors.periodicitat).catch(() => null),
     esNou ? null : establimentsDelClient(id).catch(() => null),
     esNou ? null : atributsDelClient(id).catch(() => null),
-    esNou ? null : vinsTastatsDelClient(id).catch(() => null),
+    esNou ? null : productesPresentatsDelClient(id).catch(() => null),
   ]);
 
   const relacio = relacionades.find((candidata) => candidata.clau === pestanya) ?? null;
@@ -95,8 +95,8 @@ export async function FitxaClient({
       ? "establiments"
       : facturacio && pestanya === "facturacio"
         ? "facturacio"
-        : vinsTastats && pestanya === "vins"
-          ? "vins"
+        : productesPresentats && pestanya === "productes"
+          ? "productes"
           : "dades";
   const llista = relacio ? llistes[relacionades.indexOf(relacio)] : null;
 
@@ -139,7 +139,7 @@ export async function FitxaClient({
           ? [{ clau: "establiments", etiqueta: "Establiments", compte: establiments.length, href: enllac({ t: "establiments" }) }]
           : []),
         ...(facturacio ? [{ clau: "facturacio", etiqueta: "Facturació", href: enllac({ t: "facturacio" }) }] : []),
-        ...(vinsTastats ? [{ clau: "vins", etiqueta: "Vins tastats", compte: vinsTastats.length, href: enllac({ t: "vins" }) }] : []),
+        ...(productesPresentats ? [{ clau: "productes", etiqueta: "Productes presentats", compte: productesPresentats.length, href: enllac({ t: "productes" }) }] : []),
       ].sort((a, b) => ORDRE_PESTANYES.indexOf(a.clau) - ORDRE_PESTANYES.indexOf(b.clau));
 
   /** El text d'una relació de la fitxa (el tipus, l'agent), tal com surt al desplegable. */
@@ -156,7 +156,7 @@ export async function FitxaClient({
         textDe("tipus_client"),
         String(valors.poblacio ?? "").trim(),
         agent ? `Agent ${agent}` : "",
-        valors.codi_erp ? `FactuSol ${valors.codi_erp}` : "",
+        valors.codi_erp ? `L'ERP ${valors.codi_erp}` : "",
       ].filter(Boolean);
 
   const ambLateral = !esNou;
@@ -259,16 +259,16 @@ export async function FitxaClient({
               {activa === "dades" ? (
                 <>
                   <FormulariFitxa fitxa={fitxa} valors={valors} opcions={opcions} id={esNou ? null : id} />
-                  {/* Les fitxes de FactuSol no s'esborren: les manté l'ERP. */}
+                  {/* Les fitxes de l'ERP no s'esborren: les manté l'ERP. */}
                   {esNou || veDeFactusol(fitxa, valors) ? null : (
                     <EsborraFitxa entitat="clients" id={id} nom={nom} despres={{ mena: "tanca" }} />
                   )}
                 </>
               ) : activa === "establiments" && establiments ? (
                 <PanellEstabliments establiments={establiments} />
-              ) : activa === "vins" && vinsTastats ? (
-                <VinsTastatsClient
-                  vins={vinsTastats}
+              ) : activa === "productes" && productesPresentats ? (
+                <ProductesPresentatsClient
+                  productes={productesPresentats}
                   comercial={comercial}
                   enllacActivitat={(activitat) => enllac({ t: "activitats", f: activitat.id })}
                 />
@@ -382,7 +382,7 @@ function Contacte({ valors }: { valors: ValorsFitxa }) {
               href={/^https?:\/\//i.test(web) ? web : `https://${web}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-wine hover:underline"
+              className="text-marca hover:underline"
             >
               {web.replace(/^https?:\/\//i, "")}
             </a>

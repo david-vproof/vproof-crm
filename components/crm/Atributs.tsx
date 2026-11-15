@@ -23,7 +23,7 @@ function Pastilla({ text, apagada = false, children }: { text: string; apagada?:
   return (
     <li
       className={`flex max-w-full items-start gap-1.5 rounded-lg px-2 py-1 text-[13px] ${
-        apagada ? "bg-parchment/70 text-muted" : "bg-wine-tint text-wine-deep"
+        apagada ? "bg-parchment/70 text-muted" : "bg-marca-clar text-marca-fosc"
       }`}
     >
       <span className="min-w-0 break-words">{text}</span>
@@ -68,7 +68,7 @@ export function EntradaAtributs({ existents, nous, canvia }: { existents: Atribu
                 type="button"
                 aria-label={`Treu «${nou}»`}
                 onClick={() => canvia(nous.filter((_, j) => j !== i))}
-                className="mt-px shrink-0 leading-none text-wine-deep/60 transition hover:text-wine"
+                className="mt-px shrink-0 leading-none text-marca-fosc/60 transition hover:text-marca"
               >
                 ×
               </button>
@@ -120,7 +120,7 @@ function FilaAtribut({ atribut }: { atribut: Atribut }) {
       <div className="min-w-0 flex-1">
         <p className="break-words text-[13.5px] text-ink">{atribut.text}</p>
         {origen ? <p className="mt-0.5 break-words text-[11.5px] text-muted">{origen}</p> : null}
-        {error ? <p className="mt-0.5 text-[11.5px] text-wine">{error}</p> : null}
+        {error ? <p className="mt-0.5 text-[11.5px] text-marca">{error}</p> : null}
       </div>
       {confirmant ? (
         <span className="flex shrink-0 items-center gap-2 text-[12.5px]">
@@ -139,7 +139,7 @@ function FilaAtribut({ atribut }: { atribut: Atribut }) {
                 }
               })
             }
-            className="rounded-md bg-wine px-2 py-0.5 font-medium text-cream transition hover:bg-wine-deep"
+            className="rounded-md bg-marca px-2 py-0.5 font-medium text-cream transition hover:bg-marca-fosc"
           >
             Treu-lo
           </button>
@@ -149,7 +149,7 @@ function FilaAtribut({ atribut }: { atribut: Atribut }) {
           type="button"
           aria-label={`Treu «${atribut.text}»`}
           onClick={() => setConfirmant(true)}
-          className="shrink-0 rounded px-2 py-0.5 text-[15px] leading-none text-muted transition hover:bg-parchment hover:text-wine"
+          className="shrink-0 rounded px-2 py-0.5 text-[15px] leading-none text-muted transition hover:bg-parchment hover:text-marca"
         >
           ×
         </button>
@@ -191,7 +191,7 @@ export function PanellAtributs({ client, atributs }: { client: string; atributs:
           </button>
         </div>
         {estat.error ? (
-          <p role="alert" className="text-[12.5px] text-wine">
+          <p role="alert" className="text-[12.5px] text-marca">
             {estat.error}
           </p>
         ) : null}
@@ -215,7 +215,7 @@ export function PanellAtributs({ client, atributs }: { client: string; atributs:
 function AtributsDelModal({ client }: { client: string }) {
   const dades = useDemanda<{ atributs: Atribut[] }>(`/api/crm/atributs?${new URLSearchParams({ client })}`);
   if (!dades) return <p className="text-[13px] text-muted">Un moment…</p>;
-  if (dades.error) return <p className="text-[13px] text-wine">{dades.error}</p>;
+  if (dades.error) return <p className="text-[13px] text-marca">{dades.error}</p>;
   const atributs = dades.valor?.atributs ?? [];
   if (atributs.length === 0) return <p className="text-[13px] text-muted">Aquest client ja no té cap atribut.</p>;
   return (
@@ -224,7 +224,7 @@ function AtributsDelModal({ client }: { client: string }) {
         const origen = origenDe(atribut);
         return (
           <li key={atribut.id} className="flex items-start gap-2.5 py-2 first:pt-0 last:pb-0">
-            <span aria-hidden className="mt-[7px] size-1.5 shrink-0 rounded-full bg-wine" />
+            <span aria-hidden className="mt-[7px] size-1.5 shrink-0 rounded-full bg-marca" />
             <span className="min-w-0 flex-1">
               <span className="block break-words text-[13.5px] leading-snug text-ink">{atribut.text}</span>
               {origen ? <span className="mt-0.5 block break-words text-[11.5px] text-muted">{origen}</span> : null}
@@ -244,7 +244,7 @@ export function BotoAtributs({ client, nom, mida = "petita" }: { client: string;
       etiqueta={`Atributs de ${nom}`}
       apartat="Atributs"
       nom={nom}
-      to="bg-wine-tint text-wine-deep hover:bg-wine hover:text-cream"
+      to="bg-marca-clar text-marca-fosc hover:bg-marca hover:text-cream"
       mida={mida}
       enllac={{ href: rutaDelClient(client), text: "Obre la fitxa del client" }}
     >

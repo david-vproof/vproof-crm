@@ -12,9 +12,9 @@ export type Filtre = { camp: string; valor: string } | null;
  * Desplegable de relació amb cerca al servidor.
  *
  * Es porten només les primeres opcions i, a partir de la segona lletra, es
- * consulta Directus. Així el camp aguanta igual amb quatre cellers que amb
+ * consulta la base de dades. Així el camp aguanta igual amb quatre laboratoris que amb
  * quatre mil. La cerca passa per una ruta del portal: el navegador no parla
- * mai amb Directus.
+ * mai amb la base de dades.
  *
  * Amb `filtre`, el desplegable només ofereix el que pengi d'una altra fitxa
  * —els contactes d'aquest compte— i se n'assabenta quan aquella canvia: llavors
@@ -109,7 +109,7 @@ export function TriaRelacio({
   // Es tanca quan es toca fora, no quan el camp perd el focus. Safari no dona
   // el focus a un botó en tocar-lo: el camp perdia el focus sense saber cap on,
   // la llista es tancava i desapareixia abans que hi arribés el toc, i al
-  // telèfon no es podia triar cap lead. Com a `SelectorCeller`.
+  // telèfon no es podia triar cap lead. Com a `SelectorLaboratori`.
   useEffect(() => {
     if (!obert) return;
     const aFora = (e: PointerEvent) => {

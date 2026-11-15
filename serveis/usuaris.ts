@@ -1,7 +1,7 @@
 /**
  * Qui pot entrar al portal.
  *
- * Els comptes viuen a Directus i el portal només els administra: aquí es
+ * Els comptes viuen a la base de dades i el portal només els administra: aquí es
  * tradueixen al seu vocabulari i s'amaga el compte de màquina, que no és
  * ningú. Els canvis els signa sempre l'administrador amb la seva contrasenya.
  */
@@ -32,17 +32,17 @@ export type UsuariPortal = {
   correu: string;
   telefon: string;
   rol: { id: string; nom: string } | null;
-  /** L'agent comercial de FactuSol que és aquesta persona, si n'és un. */
+  /** L'agent comercial de l'ERP que és aquesta persona, si n'és un. */
   agent: AgentPortal | null;
   estat: EstatUsuari;
-  /** L'estat tal com el diu Directus, per quan no és cap dels dos coneguts. */
+  /** L'estat tal com el diu la base de dades, per quan no és cap dels dos coneguts. */
   estatDirectus: string;
   darrerAcces: string | null;
 };
 
 export type RolPortal = { id: string; nom: string; descripcio: string };
 
-/** Un agent comercial de FactuSol (F_AGE), tal com el copia la sincronització de clients. */
+/** Un agent comercial de l'ERP (F_AGE), tal com el copia la sincronització de clients. */
 export type AgentPortal = { id: string; nom: string };
 
 export class ErrorUsuaris extends Error {
@@ -76,7 +76,7 @@ function aRol(fila: FilaRol): RolPortal {
   return { id: fila.id, nom: fila.name, descripcio: fila.description ?? "" };
 }
 
-/** Els agents comercials de FactuSol: per lligar-los a un usuari i per triar de qui és l'agenda. */
+/** Els agents comercials de l'ERP: per lligar-los a un usuari i per triar de qui és l'agenda. */
 export async function agentsDelPortal(): Promise<AgentPortal[]> {
   const files = await llistaTot<{ id: string; nom: string | null }>("crm_agents", ["id", "nom"], "nom");
   return files.map((fila) => ({ id: fila.id, nom: fila.nom ?? "Sense nom" }));
@@ -166,7 +166,7 @@ export async function desaUsuariDelPortal(admin: Administrador, id: string, dade
 }
 
 /**
- * Crea el rol Manager a Directus, si no hi és: qui el té veu els clients de
+ * Crea el rol Manager a la base de dades, si no hi és: qui el té veu els clients de
  * tothom sense administrar res (vegeu `lib/sessio.ts`). Diu si ha quedat amb
  * la política de l'equip; sense, no podria entrar fins a passar scripts/crm-acces.mjs.
  */

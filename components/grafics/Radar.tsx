@@ -28,12 +28,12 @@ export function Radar({
         categories: eixos,
         tickmarkPlacement: "on",
         lineWidth: 0,
-        gridLineColor: "#e7ded8",
-        labels: { style: { color: "#857878", fontSize: "11.5px" } },
+        gridLineColor: "#dbe5e3",
+        labels: { style: { color: "#6b7b79", fontSize: "11.5px" } },
       },
       yAxis: {
         gridLineInterpolation: "polygon",
-        gridLineColor: "#e7ded8",
+        gridLineColor: "#dbe5e3",
         lineWidth: 0,
         min: 0,
         max: 100,
@@ -43,7 +43,7 @@ export function Radar({
       pane: { size: "82%" },
       tooltip: {
         shared: true,
-        headerFormat: '<span style="font-size:11px;color:#857878">{point.key}</span><br/>',
+        headerFormat: '<span style="font-size:11px;color:#6b7b79">{point.key}</span><br/>',
         pointFormatter() {
           const serie = series.find((s) => s.nom === this.series.name);
           return `<span style="color:${this.color}">●</span> ${this.series.name}: <b>${

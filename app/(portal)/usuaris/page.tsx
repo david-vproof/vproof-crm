@@ -9,7 +9,7 @@ import { ErrorUsuaris, usuarisDelPortal, type UsuariPortal } from "@/serveis/usu
 import { FormulariRolManager } from "./FormulariRolManager";
 import { FormulariUsuari } from "./FormulariUsuari";
 
-export const metadata = { title: "Usuaris · Wine Backend" };
+export const metadata = { title: "Usuaris · vproof CRM" };
 
 type Parametres = { searchParams: Promise<{ u?: string; nou?: string; fet?: string }> };
 
@@ -38,7 +38,7 @@ function darrerAcces(iso: string | null) {
 
 const TO_ESTAT: Record<UsuariPortal["estat"], string> = {
   actiu: "bg-emerald-50 text-emerald-700",
-  suspes: "bg-wine-tint text-wine-deep",
+  suspes: "bg-marca-clar text-marca-fosc",
   altre: "bg-amber-50 text-amber-700",
 };
 
@@ -114,7 +114,7 @@ function LlistaUsuaris({ usuaris, actual }: { usuaris: UsuariPortal[]; actual: s
                 <td className="max-w-[220px] truncate px-3 py-[9px] align-middle">
                   <Link
                     href={enllacDe(usuari, propi)}
-                    className="font-medium text-ink underline-offset-2 group-hover:text-wine group-hover:underline"
+                    className="font-medium text-ink underline-offset-2 group-hover:text-marca group-hover:underline"
                   >
                     {`${usuari.nom} ${usuari.cognoms}`.trim() || "Sense nom"}
                   </Link>
@@ -168,7 +168,7 @@ export default async function PaginaUsuaris({ searchParams }: Parametres) {
     <div className="mx-auto max-w-[960px] px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
       <Capcalera
         titol="Usuaris"
-        descripcio="Qui pot entrar al portal i treballar amb el CRM. Els comptes viuen a Directus."
+        descripcio="Qui pot entrar al portal i treballar amb el CRM. Els comptes viuen a la base de dades del portal."
         accions={
           dades && !formulari ? (
             <Link href="/usuaris?nou=1" className="btn-compacte">
@@ -205,7 +205,7 @@ export default async function PaginaUsuaris({ searchParams }: Parametres) {
             <LlistaUsuaris usuaris={dades.usuaris} actual={sessio.id} />
             <p className="text-[13px] text-muted">
               L&apos;administrador i el manager veuen els clients de tothom. La resta només veu els clients del seu agent
-              comercial (el vincle amb FactuSol que es tria aquí) i tot el que en penja: leads, contactes, oportunitats,
+              comercial (el vincle amb l&apos;ERP que es tria aquí) i tot el que en penja: leads, contactes, oportunitats,
               activitats i To-Do. Qui no té agent no veu cap client.
             </p>
           </>

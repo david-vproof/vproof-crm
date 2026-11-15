@@ -1,4 +1,4 @@
-/** «RESTAURANT» o «restaurant» es llegeixen «Restaurant». */
+/** «CLÍNICA» o «clínica» es llegeixen «Clínica». */
 function majusculaInicial(text: string) {
   const net = text.trim().toLocaleLowerCase("ca");
   return net.charAt(0).toLocaleUpperCase("ca") + net.slice(1);

@@ -157,7 +157,7 @@ export function MapaComptes({
         <div className="flex flex-wrap items-center gap-1.5">
           <CercaAlMapa punts={punts} alDestacar={setDestacat} />
           {dibuixant ? (
-            <span className="text-[12.5px] text-wine-deep">Arrossega sobre el mapa per resseguir el contorn</span>
+            <span className="text-[12.5px] text-marca-fosc">Arrossega sobre el mapa per resseguir el contorn</span>
           ) : null}
           <button type="button" onClick={() => setDibuixant(!dibuixant)} aria-pressed={dibuixant} className={pastilla(dibuixant)}>
             {dibuixant ? "Cancel·la" : regions.length > 0 ? "+ Afegeix una regió" : "Dibuixa una regió"}
@@ -176,7 +176,7 @@ export function MapaComptes({
       </div>
 
       {/* isolate: els z-index interns de Leaflet (fins a 1000) no han de passar per sobre del panell de la fitxa. */}
-      <div className={`isolate min-h-0 flex-1 overflow-hidden rounded-xl border ${dibuixant ? "border-wine" : "border-line"}`}>
+      <div className={`isolate min-h-0 flex-1 overflow-hidden rounded-xl border ${dibuixant ? "border-marca" : "border-line"}`}>
         <MapaIntern
           punts={punts}
           segmentTriat={triat}

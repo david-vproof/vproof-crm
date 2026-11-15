@@ -11,7 +11,7 @@ import { Notes } from "@/components/crm/Notes";
 import { rutaDelClient } from "@/lib/navegacio";
 
 /** Un client triat per a la ronda: una franja granat al marge, perquè el fons ja és el de la tendència. */
-const MARCA_TRIAT = "shadow-[inset_3px_0_0_0_#8c2f45]";
+const MARCA_TRIAT = "shadow-[inset_3px_0_0_0_#0f766e]";
 import { disponibilitat, posicioDeData } from "@/domini/crm-horaris";
 import { ZONA } from "@/domini/crm-planner";
 import { dataCurta } from "@/lib/format";
@@ -19,7 +19,7 @@ import type { CompteDelSegment } from "@/serveis/crm-segments";
 import { MarquesClient } from "@/components/crm/MarquesClient";
 
 /** Per a una ronda, el punt de partida natural és una visita. */
-const TIPUS_PER_DEFECTE = "visita_sense_vi";
+const TIPUS_PER_DEFECTE = "visita_sense_productes";
 
 function avuiAqui() {
   return new Date().toLocaleDateString("en-CA", { timeZone: ZONA });
@@ -40,7 +40,7 @@ const AVIS: Record<string, { text: string; to: string } | null> = {
   obert: null,
   sense_horari: null,
   tancat: { text: "fora d'horari", to: "bg-amber-50 text-amber-800" },
-  bloquejat: { text: "dia bloquejat", to: "bg-wine-tint text-wine-deep" },
+  bloquejat: { text: "dia bloquejat", to: "bg-marca-clar text-marca-fosc" },
 };
 
 /**
@@ -147,7 +147,7 @@ export function AccionsSegment({
             onChange={() =>
               totsTriats ? setHores(new Map()) : encadena(desDe, interval, comptes.map((c) => c.id))
             }
-            className="size-4 shrink-0 accent-wine"
+            className="size-4 shrink-0 accent-marca"
           />
           <label htmlFor="tots-mobil" className="text-[12.5px] text-muted">
             {totsTriats ? "Treu-los tots" : "Tria'ls tots"}
@@ -165,7 +165,7 @@ export function AccionsSegment({
                     type="checkbox"
                     checked={triat}
                     onChange={() => commuta(compte.id)}
-                    className="mt-0.5 size-4 accent-wine"
+                    className="mt-0.5 size-4 accent-marca"
                   />
                   <span className="sr-only">Selecciona {compte.nom}</span>
                 </label>
@@ -205,7 +205,7 @@ export function AccionsSegment({
                   onChange={() =>
                     totsTriats ? setHores(new Map()) : encadena(desDe, interval, comptes.map((c) => c.id))
                   }
-                  className="size-3.5 accent-wine"
+                  className="size-3.5 accent-marca"
                 />
               </th>
               <th className="px-3 py-2">Client</th>
@@ -229,7 +229,7 @@ export function AccionsSegment({
                       aria-label={`Selecciona ${compte.nom}`}
                       checked={triat}
                       onChange={() => commuta(compte.id)}
-                      className="size-3.5 accent-wine"
+                      className="size-3.5 accent-marca"
                     />
                   </td>
                   {/* Les lletres, el tipus de client i la facturació van al costat del nom, sense columna pròpia. */}
@@ -239,7 +239,7 @@ export function AccionsSegment({
                       <Link
                         href={rutaDelClient(compte.id)}
                         scroll={false}
-                        className="block min-w-0 truncate font-medium text-ink underline-offset-2 group-hover:text-wine group-hover:underline"
+                        className="block min-w-0 truncate font-medium text-ink underline-offset-2 group-hover:text-marca group-hover:underline"
                       >
                         {compte.nom}
                       </Link>
@@ -368,7 +368,7 @@ export function AccionsSegment({
                   type="button"
                   aria-label={`Treu ${compte.nom} de la ronda`}
                   onClick={() => commuta(compte.id)}
-                  className="grid size-6 shrink-0 place-items-center rounded-md text-[14px] leading-none text-muted transition hover:bg-wine-tint hover:text-wine"
+                  className="grid size-6 shrink-0 place-items-center rounded-md text-[14px] leading-none text-muted transition hover:bg-marca-clar hover:text-marca"
                 >
                   ×
                 </button>
@@ -419,7 +419,7 @@ export function AccionsSegment({
       ) : null}
 
       {estat.error ? (
-        <p role="alert" className="border-t border-line bg-wine-tint px-3.5 py-2.5 text-[13px] text-wine-deep">
+        <p role="alert" className="border-t border-line bg-marca-clar px-3.5 py-2.5 text-[13px] text-marca-fosc">
           {estat.error}
         </p>
       ) : null}

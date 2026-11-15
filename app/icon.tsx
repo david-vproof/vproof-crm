@@ -5,7 +5,7 @@ import { SegellApp } from "@/components/SegellApp";
 /**
  * Icones de l'app en tres talles, dibuixades a partir del segell: no hi ha
  * cap PNG al repositori. La «mascara» és per als llançadors d'Android, que hi
- * apliquen la seva forma: el fons va de banda a banda i la copa, més recollida.
+ * apliquen la seva forma: el fons va de banda a banda i l'emblema, més recollit.
  */
 export function generateImageMetadata() {
   return [

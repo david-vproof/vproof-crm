@@ -1,6 +1,6 @@
 /**
- * Els articles: els vins que es venen. Com els cellers, no es llegeixen de
- * FactuSol en directe sinó de la còpia que en manté la sincronització
+ * Els articles: els productes que es venen. Com els laboratoris, no es llegeixen de
+ * L'ERP en directe sinó de la còpia que en manté la sincronització
  * (`crm_articles`), que porta tot F_ART: els actius i els històrics
  * (descatalogats o no disponibles), aquests marcats.
  *
@@ -15,21 +15,21 @@ import type { MidaImatge } from "@/domini/imatge-article";
 
 const COLLECCIO = "crm_articles";
 
-/** Tots els que encara són a FactuSol, històrics inclosos. */
+/** Tots els que encara són a l'ERP, històrics inclosos. */
 export const ARTICLES_VIGENTS: Condicio = { erp_absent_des_de: { _null: true } };
-/** Només els que avui són actius a FactuSol: ni esborrats ni històrics. */
+/** Només els que avui són actius a l'ERP: ni esborrats ni històrics. */
 export const ARTICLES_ACTIUS: Condicio = { ...ARTICLES_VIGENTS, historic: { _eq: false } };
-/** Només els històrics: encara a FactuSol, però descatalogats o no disponibles. */
+/** Només els històrics: encara a l'ERP, però descatalogats o no disponibles. */
 export const ARTICLES_HISTORICS: Condicio = { ...ARTICLES_VIGENTS, historic: { _eq: true } };
 const ACTIUS = ARTICLES_ACTIUS;
 
-/** Els cinc camps programables de la fitxa d'article de FactuSol, de l'1 al 5. */
+/** Els cinc camps programables de la fitxa d'article de l'ERP, de l'1 al 5. */
 export type CampProgramable = `camp_programable_${1 | 2 | 3 | 4 | 5}`;
 
 const CAMPS = [
   "id", "codi_erp", "nom", "familia", "codi_barres", "referencia_proveidor", "data_alta", "garantia",
   "camp_programable_1", "camp_programable_2", "camp_programable_3", "camp_programable_4", "camp_programable_5",
-  "imatge", "historic", "celler.id", "celler.nom_comercial",
+  "imatge", "historic", "laboratori.id", "laboratori.nom_comercial",
 ];
 
 export type FitxaArticle = {
@@ -41,16 +41,16 @@ export type FitxaArticle = {
   referencia_proveidor: string | null;
   data_alta: string | null;
   garantia: string | null;
-  /** L'id del fitxer de la foto a Directus. */
+  /** L'id del fitxer de la foto a la base de dades. */
   imatge: string | null;
-  /** Descatalogat o no disponible a FactuSol: ja no es ven. */
+  /** Descatalogat o no disponible a l'ERP: ja no es ven. */
   historic: boolean;
-  celler: { id: string; nom_comercial: string | null } | null;
+  laboratori: { id: string; nom_comercial: string | null } | null;
 } & Record<CampProgramable, string | null>;
 
 /**
  * On demana el navegador la foto d'un article: al portal, que la treu de
- * Directus. L'id del fitxer va a l'adreça perquè una foto nova tingui adreça
+ * La base de dades. L'id del fitxer va a l'adreça perquè una foto nova tingui adreça
  * nova, i així la vella es pot guardar a la memòria cau sense caducitat.
  */
 export function urlImatge(article: Pick<FitxaArticle, "id" | "imatge">, mida: MidaImatge) {
@@ -62,7 +62,7 @@ export function urlImatge(article: Pick<FitxaArticle, "id" | "imatge">, mida: Mi
 export type AbastCataleg = "actius" | "tots" | "historics";
 
 /**
- * El catàleg, per a la pantalla d'articles i el selector de vins. Els actius
+ * El catàleg, per a la pantalla d'articles i el selector de productes. Els actius
  * són uns centenars i els històrics, uns milers: es porten d'un cop i els
  * filtres, els comptes de cada opció i la paginació es fan al servidor del
  * portal (vegeu `domini/cataleg-articles.ts`).
@@ -92,22 +92,22 @@ export async function historicsEntre(ids: string[]): Promise<FitxaArticle[]> {
   return pagines.flatMap((pagina) => pagina.files);
 }
 
-/** Quants articles d'un celler se n'ensenyen a la seva fitxa. N'hi ha prou per a qualsevol celler real. */
-const ARTICLES_PER_CELLER = 100;
+/** Quants articles d'un laboratori se n'ensenyen a la seva fitxa. N'hi ha prou per a qualsevol laboratori real. */
+const ARTICLES_PER_LABORATORI = 100;
 
-/** Els articles actius d'un celler, per nom, per a la seva fitxa. */
-export async function articlesDelCeller(celler: string) {
+/** Els articles actius d'un laboratori, per nom, per a la seva fitxa. */
+export async function articlesDelLaboratori(laboratori: string) {
   return llistaAmbTotal<FitxaArticle>(COLLECCIO, {
     camps: CAMPS,
     ordre: "nom",
-    limit: ARTICLES_PER_CELLER,
-    condicions: [ACTIUS, { celler: { _eq: celler } }],
+    limit: ARTICLES_PER_LABORATORI,
+    condicions: [ACTIUS, { laboratori: { _eq: laboratori } }],
   });
 }
 
 // ------------------------------------------------------------------ fotos
 
-/** Com surt cada mida de Directus: la petita, quadrada i lleugera, per als llistats; la gran, per mirar-la. */
+/** Com surt cada mida de la base de dades: la petita, quadrada i lleugera, per als llistats; la gran, per mirar-la. */
 const TRANSFORMACIO: Record<MidaImatge, Record<string, string>> = {
   petita: { width: "160", height: "160", fit: "inside", format: "webp", quality: "80" },
   gran: { width: "1200", height: "1200", fit: "inside", withoutEnlargement: "true" },
@@ -115,7 +115,7 @@ const TRANSFORMACIO: Record<MidaImatge, Record<string, string>> = {
 
 /**
  * La foto d'un article, per servir-la al navegador. Null si l'article no en
- * té. Si Directus no sap transformar-la, es dona l'original.
+ * té. Si la base de dades no sap transformar-la, es dona l'original.
  */
 export async function imatgeDArticle(id: string, mida: MidaImatge) {
   const article = await obteItem<{ imatge: string | null }>(COLLECCIO, id, ["imatge"]);

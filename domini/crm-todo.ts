@@ -29,7 +29,7 @@ export type ToDo = {
   /** Quan es va crear, com a clau de dia. */
   creatEl: string;
   responsable: { id: string; nom: string } | null;
-  /** L'activitat que el va deixar. Un To-Do apuntat a mà, a la fitxa o a Directus, no en té. */
+  /** L'activitat que el va deixar. Un To-Do apuntat a mà, a la fitxa o a la base de dades, no en té. */
   activitat: {
     id: string;
     assumpte: string;

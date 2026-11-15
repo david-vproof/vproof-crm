@@ -41,7 +41,7 @@ function Camp({
 
 /**
  * L'alta o l'edició d'un usuari. Cada canvi es signa amb la contrasenya de
- * l'administrador: és amb les seves credencials que Directus el rep.
+ * l'administrador: és amb les seves credencials que la base de dades el rep.
  */
 export function FormulariUsuari({
   usuari,
@@ -81,10 +81,10 @@ export function FormulariUsuari({
           <Camp etiqueta="Correu electrònic" nom="correu" type="email" defaultValue={usuari?.correu ?? ""} autoComplete="off" required />
           <div className="space-y-1.5">
             <Camp etiqueta="Telèfon" nom="telefon" type="tel" defaultValue={usuari?.telefon ?? ""} autoComplete="off" />
-            <p className="text-[12.5px] text-muted">Surt al peu de la fulla de vins que treu aquesta persona, amb el correu.</p>
+            <p className="text-[12.5px] text-muted">Surt al peu de la fulla de productes que treu aquesta persona, amb el correu.</p>
           </div>
           <div className="space-y-1.5">
-            <Etiqueta per="rol">Rol a Directus</Etiqueta>
+            <Etiqueta per="rol">Rol</Etiqueta>
             <select id="rol" name="rol" defaultValue={rolInicial} className="field" required>
               {rols.map((rol) => (
                 <option key={rol.id} value={rol.id}>
@@ -92,7 +92,7 @@ export function FormulariUsuari({
                 </option>
               ))}
               {!rols.some((rol) => rol.nom.toLowerCase() === ROL_MANAGER) ? (
-                // Encara no hi és a Directus: triar-lo el crea en desar, amb la contrasenya que ja es demana.
+                // Encara no hi és a la base de dades: triar-lo el crea en desar, amb la contrasenya que ja es demana.
                 <option value={ROL_MANAGER_NOU}>Manager (es crearà en desar)</option>
               ) : null}
             </select>
@@ -112,7 +112,7 @@ export function FormulariUsuari({
                 </option>
               ))}
             </select>
-            <p className="text-[12.5px] text-muted">L&apos;agent de FactuSol que porta els clients d&apos;aquesta persona.</p>
+            <p className="text-[12.5px] text-muted">L&apos;agent de l&apos;ERP que porta els clients d&apos;aquesta persona.</p>
           </div>
           {nou ? null : (
             <div className="space-y-1.5">
@@ -140,13 +140,13 @@ export function FormulariUsuari({
         </div>
       </Seccio>
 
-      <Seccio titol="Confirmació" nota="Els canvis es fan a Directus amb el teu compte: cal la teva contrasenya.">
+      <Seccio titol="Confirmació" nota="Els canvis es fan en nom teu: cal la teva contrasenya.">
         <div className="grid gap-4 sm:grid-cols-2">
           <Camp etiqueta="La teva contrasenya" nom="contrasenya_admin" type="password" autoComplete="current-password" required />
         </div>
 
         {estat.error ? (
-          <p role="alert" className="mt-4 rounded-lg bg-wine-tint px-3.5 py-2.5 text-[13px] text-wine-deep">
+          <p role="alert" className="mt-4 rounded-lg bg-marca-clar px-3.5 py-2.5 text-[13px] text-marca-fosc">
             {estat.error}
           </p>
         ) : null}

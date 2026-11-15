@@ -243,8 +243,8 @@ export const MODEL: Record<string, DefinicioTaula> = {
       nom: { tipus: "text" },
       valor: { tipus: "text", unic: true },
       visita: { tipus: "boolea", perDefecte: false },
-      amb_vi: { tipus: "boolea", perDefecte: false },
-      amb_celler: { tipus: "boolea", perDefecte: false },
+      amb_productes: { tipus: "boolea", perDefecte: false },
+      amb_laboratori: { tipus: "boolea", perDefecte: false },
       actiu: { tipus: "boolea", perDefecte: true },
       ordre: { tipus: "enter", perDefecte: 100 },
       date_created: { tipus: "instant" },
@@ -289,8 +289,8 @@ export const MODEL: Record<string, DefinicioTaula> = {
       date_updated: { tipus: "instant" },
     },
     o2m: {
-      activitats: { colleccio: "crm_activitats", camp: "celler" },
-      articles: { colleccio: "crm_articles", camp: "celler" },
+      activitats: { colleccio: "crm_activitats", camp: "laboratori" },
+      articles: { colleccio: "crm_articles", camp: "laboratori" },
     },
   },
   crm_articles: {
@@ -300,7 +300,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
       codi_barres: { tipus: "text" },
       familia: { tipus: "text" },
       erp_familia: { tipus: "text" },
-      celler: { tipus: "uuid", m2o: "crm_proveidors" },
+      laboratori: { tipus: "uuid", m2o: "crm_proveidors" },
       erp_proveidor: { tipus: "enter" },
       referencia_proveidor: { tipus: "text" },
       garantia: { tipus: "text" },
@@ -450,7 +450,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
       agent: { tipus: "uuid", m2o: "crm_agents" },
       contacte: { tipus: "uuid", m2o: "crm_contactes" },
       oportunitat: { tipus: "uuid", m2o: "crm_oportunitats" },
-      celler: { tipus: "uuid", m2o: "crm_proveidors" },
+      laboratori: { tipus: "uuid", m2o: "crm_proveidors" },
       referencies: { tipus: "text" },
       assistents: { tipus: "enter" },
       grup: { tipus: "text" },
@@ -464,7 +464,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
       date_updated: { tipus: "instant" },
     },
     o2m: {
-      vins: { colleccio: "crm_activitats_vins", camp: "activitat" },
+      productes: { colleccio: "crm_activitats_productes", camp: "activitat" },
       tasques: { colleccio: "crm_tasques", camp: "activitat" },
     },
   },
@@ -485,7 +485,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
       date_updated: { tipus: "instant" },
     },
   },
-  crm_activitats_vins: {
+  crm_activitats_productes: {
     camps: {
       activitat: { tipus: "uuid", m2o: "crm_activitats", enEsborrar: "CASCADE" },
       article: { tipus: "uuid", m2o: "crm_articles", enEsborrar: "CASCADE" },
@@ -493,7 +493,7 @@ export const MODEL: Record<string, DefinicioTaula> = {
       date_updated: { tipus: "instant" },
     },
   },
-  crm_plantilles_vins: {
+  crm_plantilles_productes: {
     camps: {
       nom: { tipus: "text" },
       descripcio: { tipus: "text" },
@@ -503,12 +503,12 @@ export const MODEL: Record<string, DefinicioTaula> = {
       date_updated: { tipus: "instant" },
     },
     o2m: {
-      linies: { colleccio: "crm_plantilles_vins_linies", camp: "plantilla" },
+      linies: { colleccio: "crm_plantilles_productes_linies", camp: "plantilla" },
     },
   },
-  crm_plantilles_vins_linies: {
+  crm_plantilles_productes_linies: {
     camps: {
-      plantilla: { tipus: "uuid", m2o: "crm_plantilles_vins", enEsborrar: "CASCADE" },
+      plantilla: { tipus: "uuid", m2o: "crm_plantilles_productes", enEsborrar: "CASCADE" },
       article: { tipus: "uuid", m2o: "crm_articles", enEsborrar: "CASCADE" },
       quantitat: { tipus: "enter", perDefecte: 1 },
       ordre: { tipus: "enter" },

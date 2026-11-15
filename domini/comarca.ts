@@ -2,7 +2,7 @@
  * La comarca d'un client, deduïda de la seva adreça. Només a Catalunya: fora
  * no hi ha comarques oficials i el camp es deixa com estigui.
  *
- * FactuSol no porta la comarca, i la població hi arriba escrita de mil
+ * L'ERP no porta la comarca, i la població hi arriba escrita de mil
  * maneres: en majúscules i sense accents, en castellà, amb l'article al
  * darrere o amb el nom d'un nucli que no és municipi (Llafranc, Cabrianes).
  * Per això es prova en tres passos, del més segur al menys:
@@ -29,7 +29,7 @@ export type UbicacioClient = {
   poblacio: string | null;
   codi_postal: string | null;
   provincia: string | null;
-  /** Directus torna els decimals com a text. */
+  /** La base de dades torna els decimals com a text. */
   latitud: number | string | null;
   longitud: number | string | null;
 };
@@ -48,7 +48,7 @@ export function clauDeLloc(text: unknown): string {
     .replace(/l·l|l\.l/g, "ll")
     .trim();
   // L'article al darrere, com l'escriu l'Idescat o com surt d'un llistat ordenat.
-  // Hi ha d'haver separador: «Vila» no és «Vi, la».
+  // Hi ha d'haver separador: «Vila» no és «Producte, la».
   const invertit = /^(.+?)[\s,]+\(?\s*(l'|el|la|els|les|los|las)\s*\)?$/.exec(net);
   if (invertit) net = `${invertit[2]} ${invertit[1]}`;
   return net

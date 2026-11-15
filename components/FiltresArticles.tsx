@@ -10,7 +10,7 @@ import { CARACTERISTIQUES, clauDeValor, quantsFiltres, type FiltresArticles as F
  * Els filtres de la pantalla d'articles: la cerca, un desplegable per
  * característica i «només amb foto». Cada canvi s'aplica de seguida i va a
  * l'adreça, així que un filtre es pot enviar o guardar com qualsevol enllaç.
- * Cada opció diu quants vins hi quedarien.
+ * Cada opció diu quants productes hi quedarien.
  *
  * Al telèfon els desplegables es pleguen darrere d'un botó: vuit desplegables
  * apilats empenyerien la llista fora de la pantalla.
@@ -35,7 +35,7 @@ export function FiltresArticles({ filtres, opcions }: { filtres: Filtres; opcion
     };
     for (const [clau, valor] of Object.entries(tots)) if (valor) parametres.set(clau, valor);
     const consulta = parametres.toString();
-    startTransition(() => router.push(consulta ? `/articles?${consulta}` : "/articles", { scroll: false }));
+    startTransition(() => router.push(consulta ? `/productes?${consulta}` : "/productes", { scroll: false }));
   }
 
   return (
@@ -55,7 +55,7 @@ export function FiltresArticles({ filtres, opcions }: { filtres: Filtres; opcion
             type="search"
             name="q"
             defaultValue={filtres.cerca}
-            placeholder="Cerca per nom, productor, zona…"
+            placeholder="Cerca per nom, principi actiu, espècie…"
             aria-label="Cerca articles"
             className="field w-full !py-2 pl-9"
           />
@@ -92,7 +92,7 @@ export function FiltresArticles({ filtres, opcions }: { filtres: Filtres; opcion
               <select
                 value={triat}
                 onChange={(e) => navega({ [caracteristica.clau]: e.target.value })}
-                className={`field w-full !py-1.5 text-[13.5px] ${triat ? "!border-wine/50 bg-wine-tint/40" : ""}`}
+                className={`field w-full !py-1.5 text-[13.5px] ${triat ? "!border-marca/50 bg-marca-clar/40" : ""}`}
               >
                 <option value="">Qualsevol</option>
                 {llista.map((opcio) => (
@@ -110,7 +110,7 @@ export function FiltresArticles({ filtres, opcions }: { filtres: Filtres; opcion
             type="checkbox"
             checked={filtres.ambFoto}
             onChange={(e) => navega({ foto: e.target.checked ? "1" : "" })}
-            className="size-4 accent-wine"
+            className="size-4 accent-marca"
           />
           Només els que tenen foto
         </label>
@@ -119,10 +119,10 @@ export function FiltresArticles({ filtres, opcions }: { filtres: Filtres; opcion
             type="checkbox"
             checked={filtres.ambHistorics}
             onChange={(e) => navega({ historics: e.target.checked ? "1" : "" })}
-            className="size-4 accent-wine"
+            className="size-4 accent-marca"
           />
           Històrics
-          <span className="text-[12.5px] text-muted">(descatalogats o no disponibles a FactuSol)</span>
+          <span className="text-[12.5px] text-muted">(descatalogats o no disponibles a l&apos;ERP)</span>
         </label>
       </div>
     </div>

@@ -2,11 +2,11 @@
  * Els comptes situats al mapa.
  *
  * Cada client surt als seus establiments, que són les direccions d'entrega de
- * FactuSol (vegeu `domini/establiments.ts`): un punt per establiment, tots
+ * L'ERP (vegeu `domini/establiments.ts`): un punt per establiment, tots
  * lligats al client. El client que no en té cap surt a la seva adreça, com
  * sempre.
  *
- * Les coordenades viuen a Directus, al costat de la resta de la fitxa: el
+ * Les coordenades viuen a la base de dades, al costat de la resta de la fitxa: el
  * portal no en manté cap còpia. Les que encara no hi són es calculen amb
  * `ubicaComptesPendents`, que pregunta a Nominatim i desa el resultat. Els
  * clients també se situen encara que surtin pels seus establiments: els
@@ -144,7 +144,7 @@ function llegeixClients() {
 
 /**
  * Els establiments vius, agrupats per client. Si la col·lecció encara no hi és
- * (no s'ha executat l'script de Directus), el mapa surt com abans: cada client
+ * (no s'ha executat l'script de la base de dades), el mapa surt com abans: cada client
  * a la seva adreça.
  */
 async function establimentsPerClient(): Promise<Map<string, FilaEstabliment[]>> {
@@ -154,7 +154,7 @@ async function establimentsPerClient(): Promise<Map<string, FilaEstabliment[]>> 
       camps: CAMPS_ESTABLIMENT,
       ordre: "erp_codi",
       limit: -1,
-      // Les adreces marcades a FactuSol per a parts de reparació no són punts
+      // Les adreces marcades a l'ERP per a parts de reparació no són punts
       // d'entrega: ni es pinten ni es geocodifiquen. Un client que només en té
       // d'aquestes surt a la seva adreça, com si no tingués cap establiment.
       condicions: [ESTABLIMENTS_VIUS, ESTABLIMENTS_DENTREGA],

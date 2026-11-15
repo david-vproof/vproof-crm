@@ -1,8 +1,8 @@
 import type Highcharts from "highcharts";
 
-/** Paleta pensada per a fons crema, amb el vi de la marca com a color principal. */
+/** Paleta pensada per a fons crema, amb el producte de la marca com a color principal. */
 export const PALETA = [
-  "#8c2f45",
+  "#0f766e",
   "#3f6f6b",
   "#c98b3c",
   "#6b5b95",
@@ -12,9 +12,9 @@ export const PALETA = [
   "#b45f4d",
 ];
 
-const TINTA = "#17100f";
-const APAGAT = "#857878";
-const LINIA = "#e7ded8";
+const TINTA = "#0f1f1d";
+const APAGAT = "#6b7b79";
+const LINIA = "#dbe5e3";
 const TIPUS = "var(--font-inter), ui-sans-serif, system-ui, sans-serif";
 
 export const eurosCurt = (valor: number) => {

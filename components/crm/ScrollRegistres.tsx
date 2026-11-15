@@ -234,7 +234,7 @@ export function PeuScroll() {
       {fase === "error" ? (
         <>
           No s&apos;han pogut carregar més fitxes.{" "}
-          <button type="button" onClick={reintenta} className="text-wine underline underline-offset-2">
+          <button type="button" onClick={reintenta} className="text-marca underline underline-offset-2">
             Torna-ho a provar
           </button>
         </>

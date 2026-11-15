@@ -56,7 +56,7 @@ function EntradaDeures({ deures, canvia }: { deures: string[]; canvia: (nous: st
                 type="button"
                 aria-label={`Treu «${deure}»`}
                 onClick={() => canvia(deures.filter((_, j) => j !== i))}
-                className="mt-px shrink-0 leading-none text-muted transition hover:text-wine"
+                className="mt-px shrink-0 leading-none text-muted transition hover:text-marca"
               >
                 ×
               </button>
@@ -128,7 +128,7 @@ function FilaDeure({ deure, nomesLectura = false }: { deure: Deure; nomesLectura
         disabled={enviant || nomesLectura}
         onChange={commuta}
         aria-label={deure.text}
-        className="mt-0.5 size-4 shrink-0 accent-wine"
+        className="mt-0.5 size-4 shrink-0 accent-marca"
       />
       <span className="min-w-0 flex-1">
         <span className={`block break-words text-[13.5px] leading-snug ${fet ? "text-muted line-through" : "text-ink"}`}>
@@ -138,7 +138,7 @@ function FilaDeure({ deure, nomesLectura = false }: { deure: Deure; nomesLectura
           {deure.origen}
           {deure.venciment ? ` · venç ${deure.venciment.slice(8)}/${deure.venciment.slice(5, 7)}` : ""}
         </span>
-        {error ? <span className="mt-0.5 block text-[11.5px] text-wine">{error}</span> : null}
+        {error ? <span className="mt-0.5 block text-[11.5px] text-marca">{error}</span> : null}
       </span>
     </li>
   );
@@ -172,7 +172,7 @@ function Llista({
       <h3 className="flex flex-wrap items-center gap-2 text-[12px] font-medium text-muted">
         {titol}
         {pendents > 0 ? (
-          <span className="rounded bg-wine-tint px-1.5 py-px text-[11px] tabular-nums text-wine-deep">
+          <span className="rounded bg-marca-clar px-1.5 py-px text-[11px] tabular-nums text-marca-fosc">
             {pendents}
           </span>
         ) : null}
@@ -219,7 +219,7 @@ function Tancament({ id, atributs }: { id: string; atributs: Atribut[] | null })
       <input type="hidden" name="resultat" value={resultat} />
 
       {estat.error ? (
-        <p role="alert" className="rounded-lg bg-wine-tint px-3 py-2 text-[13px] text-wine-deep">
+        <p role="alert" className="rounded-lg bg-marca-clar px-3 py-2 text-[13px] text-marca-fosc">
           {estat.error}
         </p>
       ) : null}
@@ -227,7 +227,7 @@ function Tancament({ id, atributs }: { id: string; atributs: Atribut[] | null })
       <div className="space-y-1.5">
         {/* Com els altres títols del tancament, sense majúscules: hi ha «To-Do» al costat. */}
         <p className="text-[12px] font-medium text-muted">
-          Com ha anat<span className="text-wine"> *</span>
+          Com ha anat<span className="text-marca"> *</span>
         </p>
         <div className="flex flex-wrap gap-1.5">
           {RESULTATS_TANCAMENT.map((valor) => (
@@ -306,7 +306,7 @@ function Reobre({ id, resultat }: { id: string; resultat: string }) {
         {enviant ? "Obrint…" : "Torna a obrir"}
       </button>
       {estat.error ? (
-        <p role="alert" className="w-full text-[12.5px] text-wine">
+        <p role="alert" className="w-full text-[12.5px] text-marca">
           {estat.error}
         </p>
       ) : null}
@@ -430,7 +430,7 @@ function NouToDo({ client }: { client: string }) {
         </button>
       </div>
       {estat.error ? (
-        <p role="alert" className="text-[12.5px] text-wine">
+        <p role="alert" className="text-[12.5px] text-marca">
           {estat.error}
         </p>
       ) : null}

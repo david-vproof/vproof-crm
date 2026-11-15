@@ -6,7 +6,7 @@ import { ErrorIdentitat, perfilDelCompte } from "@/serveis/identitat";
 
 import { FormulariCompte } from "./FormulariCompte";
 
-export const metadata = { title: "El meu compte · Wine Backend" };
+export const metadata = { title: "El meu compte · vproof CRM" };
 
 export default async function PaginaCompte() {
   const sessio = await verificaToken((await cookies()).get(GALETA_SESSIO)?.value);

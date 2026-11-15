@@ -19,7 +19,7 @@ const ALCADA_EDITAR = 260;
  * El mapa d'un establiment, dins de la seva caixa a la fitxa del client: en
  * petit, amb la rodona on és. «Situa'l» o «Mou el punt» obren el mapa gran
  * per clicar, arrossegar o cercar l'adreça, i «Desa» ho guarda. És l'únic
- * canvi que es fa aquí: la resta de l'establiment és de FactuSol.
+ * canvi que es fa aquí: la resta de l'establiment és de l'ERP.
  */
 export function MapaEstabliment({
   id,
@@ -85,7 +85,7 @@ export function MapaEstabliment({
           >
             Cancel·la
           </button>
-          {error ? <span className="text-[12.5px] text-wine-deep">{error}</span> : null}
+          {error ? <span className="text-[12.5px] text-marca-fosc">{error}</span> : null}
         </div>
       </div>
     );
@@ -108,7 +108,7 @@ export function MapaEstabliment({
       <button
         type="button"
         onClick={() => setEditant(true)}
-        className="text-[12.5px] text-wine underline-offset-2 transition hover:underline"
+        className="text-[12.5px] text-marca underline-offset-2 transition hover:underline"
       >
         {ambPunt ? "Mou el punt" : "Situa'l al mapa"}
       </button>

@@ -39,7 +39,7 @@ export default async function PaginaConfiguracio({ searchParams }: { searchParam
               aria-current={activa ? "page" : undefined}
               className={`-mb-px flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 text-[13.5px] transition-colors ${
                 activa
-                  ? "border-wine font-medium text-ink"
+                  ? "border-marca font-medium text-ink"
                   : "border-transparent text-muted hover:border-line hover:text-ink-soft"
               }`}
             >
@@ -57,8 +57,8 @@ export default async function PaginaConfiguracio({ searchParams }: { searchParam
 /** Un avís de configuració: què passa i, si n'hi ha, el detall de l'error. */
 function AvisModel({ titol, text, detall }: { titol: string; text: React.ReactNode; detall?: string | null }) {
   return (
-    <div className="card border-wine/30 p-5">
-      <p className="text-[14px] font-medium text-wine-deep">{titol}</p>
+    <div className="card border-marca/30 p-5">
+      <p className="text-[14px] font-medium text-marca-fosc">{titol}</p>
       <p className="mt-1.5 text-[13.5px] leading-relaxed text-muted">{text}</p>
       {detall ? <p className="mt-2 rounded-lg bg-parchment px-3.5 py-2.5 font-mono text-[12.5px] text-ink">{detall}</p> : null}
     </div>
@@ -88,10 +88,10 @@ async function PlafoCategoria() {
     <Plafo titol="Categoria dels clients">
       <p className="text-[14px] leading-relaxed text-muted">
         La categoria de cada client es calcula sola amb la facturació de l&apos;exercici passat sencer (base imposable,
-        sense IVA): li toca la lletra de la franja on cau. Es posa al dia a cada sincronització de clients i, en desar
-        aquí, es recalcula a tots els clients de cop. La columna «Clients» compta els que surten al CRM: ni els de
-        baixa ni els d&apos;altres tipus que no siguin restaurant, botiga especialitzada, distribuïdor o catering. El
-        potencial és una altra cosa: la mateixa escala, però la posa a mà qui porta el compte, a la fitxa del client.
+        sense IVA): li toca la lletra de la franja on cau. Es posa al dia quan arriba la facturació de l&apos;ERP i, en
+        desar aquí, es recalcula a tots els clients de cop. La columna «Clients» compta els que surten al CRM: tots
+        menys els de baixa. El potencial és una altra cosa: la mateixa escala, però la posa a mà qui porta el compte,
+        a la fitxa del client.
       </p>
       <div className="mt-4">
         <FormulariCategoria franges={franges} quants={quants} />
@@ -126,16 +126,16 @@ async function PlafoTipusActivitat() {
       <p className="text-[14px] leading-relaxed text-muted">
         Els tipus que es trien en crear una activitat. Canviar-ne el nom no toca cap activitat: les que ja hi ha surten
         amb el nom nou. Només es poden esborrar els creats aquí que encara no tenen cap activitat. Portar diversos
-        clients o cellers a la mateixa visita és propi de les visites de client/s a celler i de cellers a client: en un
+        clients o laboratoris a la mateixa visita és propi de les visites de client/s a laboratori i de laboratoris a client: en un
         tipus nou, no es pot.
       </p>
       <dl className="mt-3 grid gap-x-2 gap-y-1 text-[13px] leading-relaxed text-muted sm:grid-cols-[max-content_minmax(0,1fr)]">
         <dt className="font-medium text-ink-soft">Compta com a visita</dt>
         <dd className="mb-1 sm:mb-0">Les activitats d&apos;aquest tipus sumen a les visites del tauler.</dd>
-        <dt className="font-medium text-ink-soft">Demana vins</dt>
-        <dd className="mb-1 sm:mb-0">El formulari de l&apos;activitat mostra el camp dels vins presentats o tastats.</dd>
-        <dt className="font-medium text-ink-soft">Demana celler</dt>
-        <dd className="mb-1 sm:mb-0">El formulari de l&apos;activitat mostra el camp del celler.</dd>
+        <dt className="font-medium text-ink-soft">Demana productes</dt>
+        <dd className="mb-1 sm:mb-0">El formulari de l&apos;activitat mostra el camp dels productes presentats.</dd>
+        <dt className="font-medium text-ink-soft">Demana laboratori</dt>
+        <dd className="mb-1 sm:mb-0">El formulari de l&apos;activitat mostra el camp del laboratori.</dd>
         <dt className="font-medium text-ink-soft">Es pot triar</dt>
         <dd className="mb-1 sm:mb-0">Surt en crear una activitat. Si el desmarques, les que ja el tenen el conserven.</dd>
         <dt className="font-medium text-ink-soft">Núm. d&apos;activitats</dt>

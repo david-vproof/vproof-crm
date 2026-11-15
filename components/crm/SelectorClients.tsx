@@ -400,7 +400,7 @@ export function ModalClients({
             </div>
 
             {error ? (
-              <p role="alert" className="py-3 text-[13px] text-wine-deep">
+              <p role="alert" className="py-3 text-[13px] text-marca-fosc">
                 {error}
               </p>
             ) : resultat && resultat.files.length === 0 && !carregant ? (
@@ -416,14 +416,14 @@ export function ModalClients({
                         onClick={() => commuta(client)}
                         aria-pressed={multiple ? triat : undefined}
                         className={`flex w-full items-center gap-2.5 px-1.5 py-2 text-left transition-colors hover:bg-parchment/60 ${fonsDeTendencia(client.facturacio)} ${
-                          triat ? "shadow-[inset_3px_0_0_0_#8c2f45]" : ""
+                          triat ? "shadow-[inset_3px_0_0_0_#0f766e]" : ""
                         }`}
                       >
                         {multiple ? (
                           <span
                             aria-hidden
                             className={`grid size-4 shrink-0 place-items-center rounded border text-[10px] leading-none ${
-                              triat ? "border-wine bg-wine text-cream" : "border-line bg-white"
+                              triat ? "border-marca bg-marca text-cream" : "border-line bg-white"
                             }`}
                           >
                             {triat ? "✓" : ""}
@@ -503,7 +503,7 @@ export function SelectorClients({
   alCanviar?: (id: string) => void;
   /** Quants n'hi ha de triats: amb algun, el lead d'una activitat queda desactivat. */
   alCanviarQuants?: (quants: number) => void;
-  /** Els triats sencers, amb el nom: el configurador de vins de l'activitat els vol per dir què han tastat. */
+  /** Els triats sencers, amb el nom: el configurador de productes de l'activitat els vol per dir què han presentat. */
   alCanviarTriats?: (triats: Opcio[]) => void;
 }) {
   const [triats, setTriats] = useState<Opcio[]>(triatsInicials);
@@ -577,7 +577,7 @@ export function SelectorClients({
                 type="button"
                 aria-label={`Treu ${triat.text}`}
                 onClick={() => canvia(triats.filter((x) => x.id !== triat.id))}
-                className="shrink-0 leading-none text-muted hover:text-wine"
+                className="shrink-0 leading-none text-muted hover:text-marca"
               >
                 ×
               </button>

@@ -23,7 +23,7 @@ function puntDe(establiment: Establiment): { latitud: number; longitud: number }
 }
 
 /**
- * Els establiments d'un client: les direccions d'entrega de FactuSol. Les
+ * Els establiments d'un client: les direccions d'entrega de l'ERP. Les
  * dades les manté l'ERP; el que és del portal és el punt del mapa, que surt
  * en petit a cada caixa i es pot situar o moure des d'aquí. De cadascun,
  * l'adreça, qui hi ha i com arribar-hi, que és el que es busca quan s'és a la carretera.
@@ -32,7 +32,7 @@ export function PanellEstabliments({ establiments }: { establiments: Establiment
   if (establiments.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-line px-4 py-6 text-center text-[13px] text-muted">
-        Aquest client no té cap direcció d&apos;entrega a FactuSol: al mapa surt a la seva adreça fiscal.
+        Aquest client no té cap direcció d&apos;entrega a l&apos;ERP: al mapa surt a la seva adreça fiscal.
       </p>
     );
   }
@@ -40,7 +40,7 @@ export function PanellEstabliments({ establiments }: { establiments: Establiment
   return (
     <div className="space-y-3">
       <p className="text-[13px] text-muted">
-        Les direccions d&apos;entrega de FactuSol: es canvien a l&apos;ERP i arriben amb la sincronització de clients. El punt del
+        Les direccions d&apos;entrega de l&apos;ERP: es canvien a l&apos;ERP i arriben amb la sincronització de clients. El punt del
         mapa sí que es pot situar o moure des d&apos;aquí.
       </p>
 
@@ -64,9 +64,9 @@ export function PanellEstabliments({ establiments }: { establiments: Establiment
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13.5px] font-medium text-ink">
                   {establiment.nom ?? "Sense nom"}
                   {establiment.per_reparacions ? (
-                    // La marca de FactuSol per a parts de reparació: l'adreça es veu aquí, però no és un punt d'entrega ni surt al mapa.
+                    // La marca de l'ERP per a parts de reparació: l'adreça es veu aquí, però no és un punt d'entrega ni surt al mapa.
                     <span
-                      title="A FactuSol és la direcció d'entrega per a la impressió de parts de reparació: no surt al mapa."
+                      title="A l'ERP és la direcció d'entrega per a la impressió de parts de reparació: no surt al mapa."
                       className="rounded-full bg-parchment px-2 py-0.5 text-[11px] font-medium text-muted"
                     >
                       Parts de reparació · fora del mapa
@@ -78,7 +78,7 @@ export function PanellEstabliments({ establiments }: { establiments: Establiment
                   {lloc ? <span className="block">{lloc}</span> : null}
                   {regio ? <span className="block text-muted">{regio}</span> : null}
                 </p>
-                {/* A FactuSol, el telèfon i la persona de contacte porten sovint l'horari: es mostren tal qual. */}
+                {/* A l'ERP, el telèfon i la persona de contacte porten sovint l'horari: es mostren tal qual. */}
                 {establiment.telefon || establiment.persona_contacte || establiment.correu ? (
                   <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5 text-[12.5px] text-muted">
                     {establiment.persona_contacte ? <span>{establiment.persona_contacte}</span> : null}
@@ -91,7 +91,7 @@ export function PanellEstabliments({ establiments }: { establiments: Establiment
                     href={ruta}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1.5 inline-block text-[12.5px] text-wine transition hover:underline"
+                    className="mt-1.5 inline-block text-[12.5px] text-marca transition hover:underline"
                   >
                     Com arribar-hi →
                   </a>

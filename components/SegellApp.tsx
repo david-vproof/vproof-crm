@@ -1,11 +1,12 @@
-import { COPA } from "@/components/Marca";
+import { CREU } from "@/components/Marca";
 
 /**
- * El segell de l'app per a les icones: la copa en blanc sobre vi. Es renderitza
- * amb Satori (`next/og`), que no entén classes: només estils en línia.
+ * El segell de l'app per a les icones: l'escut amb la creu, en blanc sobre el
+ * color de la marca. Es renderitza amb Satori (`next/og`), que no entén
+ * classes: només estils en línia.
  */
 export function SegellApp({ mida, radi, escala }: { mida: number; radi: number; escala: number }) {
-  const copa = mida * escala;
+  const emblema = mida * escala;
   return (
     <div
       style={{
@@ -14,13 +15,13 @@ export function SegellApp({ mida, radi, escala }: { mida: number; radi: number; 
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#8c2f45",
+        background: "#0f766e",
         borderRadius: radi,
       }}
     >
-      <svg width={copa} height={copa} viewBox="0 0 24 24" fill="none">
-        <path d={COPA.cos} fill="#ffffff" />
-        <path d={COPA.peu} stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round" />
+      <svg width={emblema} height={emblema} viewBox="0 0 24 24">
+        <path d={CREU.escut} fill="#ffffff" />
+        <path d={CREU.creu} fill="#0f766e" />
       </svg>
     </div>
   );

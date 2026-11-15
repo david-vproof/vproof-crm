@@ -2,13 +2,13 @@
  * El motor de consultes del portal sobre SQLite.
  *
  * Entén el mateix llenguatge de consulta que feia servir el portal quan les
- * dades eren a Directus (`/items/<taula>?fields=…&filter=…&sort=…`), perquè
+ * dades eren a la base de dades (`/items/<taula>?fields=…&filter=…&sort=…`), perquè
  * tots els serveis el parlen: camps amb punt que travessen relacions
  * (`client.nom_comercial`, `linies.article.nom`), filtres en JSON amb `_and`,
  * `_or` i els operadors `_eq`, `_in`, `_null`, `_icontains`…, també sobre
  * taules relacionades, ordres, límits, recomptes (`meta=filter_count`) i
  * agregats (`aggregate[count]=id&groupBy[]=client`). Torna una `Response` amb
- * el mateix cos (`{ data, meta }`) que tornava Directus.
+ * el mateix cos (`{ data, meta }`) que tornava la base de dades.
  *
  * Les relacions surten de `model.ts`. Un camp o una taula que no hi és dona un
  * error, no un buit: així un error de programació es veu de seguida.
@@ -24,7 +24,7 @@ import { esborraFitxerDelDisc, llegeixFitxerDelDisc, pujaFitxerAlDisc } from "./
 type Fila = Record<string, unknown>;
 type Valor = string | number | bigint | null | Buffer;
 
-/** Els camins de l'API de Directus que tenien taula pròpia. */
+/** Els camins de l'API de la base de dades que tenien taula pròpia. */
 const TAULES_DE_SISTEMA: Record<string, string> = { users: "usuaris", roles: "rols", files: "fitxers", folders: "carpetes" };
 /** Camps que no surten mai en una lectura, encara que es demani `*`. */
 const CAMPS_OCULTS = new Set(["password"]);
@@ -49,7 +49,7 @@ function taula(nom: string): DefinicioTaula {
 }
 
 function campDesconegut(colleccio: string, camp: string): never {
-  // El mateix text que Directus, perquè qui el llegeix (`crm.ts`) en sap treure el camp.
+  // El mateix text que donava Directus, perquè qui el llegeix (`crm.ts`) en sap treure el camp.
   throw new ErrorConsulta(403, `You don't have permission to access field "${camp}" in collection "${colleccio}" or it does not exist.`, "FORBIDDEN");
 }
 
@@ -219,7 +219,7 @@ const uneix = (parts: Sql[], amb: "AND" | "OR"): Sql =>
     ? { sql: amb === "AND" ? "1" : "0", params: [] }
     : { sql: parts.map((p) => `(${p.sql})`).join(` ${amb} `), params: parts.flatMap((p) => p.params) };
 
-/** Un filtre de Directus en SQL, sobre la taula `colleccio` amb l'àlies `alies`. */
+/** Un filtre de la base de dades en SQL, sobre la taula `colleccio` amb l'àlies `alies`. */
 function compilaFiltre(colleccio: string, alies: string, filtre: unknown): Sql {
   if (!filtre || typeof filtre !== "object") return { sql: "1", params: [] };
   const parts: Sql[] = [];
@@ -309,7 +309,7 @@ function resol(colleccio: string, files: Fila[], arbre: Arbre): Fila[] {
           if (CAMPS_OCULTS.has(camp)) continue;
           if (!(camp in sortida[i])) sortida[i][camp] = deColumna(def, fila[camp]);
         }
-        // Com Directus, `*` porta els ids dels fills de cada relació d'un a molts.
+        // Com la base de dades, `*` porta els ids dels fills de cada relació d'un a molts.
       });
       continue;
     }
@@ -405,7 +405,7 @@ function llegeixParametres(consulta: URLSearchParams): Parametres {
     camps: (consulta.getAll("fields").join(",") || "*").split(","),
     filtre,
     ordre: consulta.getAll("sort").join(",").split(",").filter(Boolean),
-    // Sense límit (o -1), totes. Directus en donava cent, i en un agregat això en perdia.
+    // Sense límit (o -1), totes. La base de dades en donava cent, i en un agregat això en perdia.
     limit: limit === null ? -1 : Number(limit),
     salta: Number(consulta.get("offset") ?? 0) || 0,
     meta: (consulta.get("meta") ?? "").split(",").filter(Boolean),
@@ -595,7 +595,7 @@ async function cosDe(cos: BodyInit | null | undefined): Promise<unknown> {
 }
 
 /**
- * Executa una petició amb el camí i el mètode de l'API de Directus. És
+ * Executa una petició amb el camí i el mètode de l'API de la base de dades. És
  * síncrona per dins (SQLite ho és), però torna una promesa perquè qui la crida
  * ho feia per xarxa.
  */

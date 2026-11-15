@@ -5,7 +5,7 @@ import { calendariDelPlanner, setmanaDelPlanner } from "@/serveis/crm-planner";
 
 /**
  * El calendari del Planner en JSON, per triar-hi un dia des d'un modal (el
- * selector de vins): `?m=AAAA-MM` el mes, o `?pv=setmana&s=AAAA-MM-DD` la
+ * selector de productes): `?m=AAAA-MM` el mes, o `?pv=setmana&s=AAAA-MM-DD` la
  * setmana. És l'agenda de qui té la sessió oberta: la seva, o la de tothom si
  * és administrador. Va pel servidor, i el middleware ja exigeix sessió.
  */

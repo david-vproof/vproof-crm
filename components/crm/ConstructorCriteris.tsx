@@ -57,7 +57,7 @@ export function EditorCriteris({
           {criteris.map((criteri, posicio) => {
             const meta = variable(criteri.camp);
             const senseValor = SENSE_VALOR.includes(criteri.operador);
-            // Les d'una relació surten de Directus; les d'una tria, de la fitxa.
+            // Les d'una relació surten de la base de dades; les d'una tria, de la fitxa.
             const opcions: [string, string][] | undefined = meta?.relacio
               ? (opcionsRelacio[meta.relacio] ?? []).map((o): [string, string] => [o.id, o.text])
               : meta?.opcions;
@@ -148,7 +148,7 @@ export function EditorCriteris({
                     type="button"
                     aria-label="Treu el criteri"
                     onClick={() => alCanviar(criteris.filter((_, i) => i !== posicio))}
-                    className="grid size-7 shrink-0 place-items-center rounded-md text-[15px] leading-none text-muted transition hover:bg-wine-tint hover:text-wine"
+                    className="grid size-7 shrink-0 place-items-center rounded-md text-[15px] leading-none text-muted transition hover:bg-marca-clar hover:text-marca"
                   >
                     ×
                   </button>
@@ -171,7 +171,7 @@ export function EditorCriteris({
                             )
                           }
                           className={`rounded-full px-2 py-0.5 text-[12px] transition ${
-                            triat ? "bg-wine text-cream" : "bg-parchment text-ink-soft hover:bg-parchment/70"
+                            triat ? "bg-marca text-cream" : "bg-parchment text-ink-soft hover:bg-parchment/70"
                           }`}
                         >
                           {text}

@@ -47,7 +47,7 @@ export type FilaActivitat = {
   referencies: string | null;
   comercial: string | null;
   oportunitat: string | null;
-  celler: { nom_comercial: string | null } | null;
+  laboratori: { nom_comercial: string | null } | null;
   client: { id: string; nom_comercial: string | null; categoria: string | null; potencial: string | null } | null;
   lead: { id: string; nom: string | null } | null;
   date_created: string | null;
@@ -79,7 +79,7 @@ export type FilaAgenda = {
   resultat: string | null;
   proper_pas: string | null;
   comercial: string | null;
-  celler: { nom_comercial: string | null } | null;
+  laboratori: { nom_comercial: string | null } | null;
   client: {
     id: string;
     nom_comercial: string | null;
@@ -112,7 +112,7 @@ const RUTA_ITEMS = /^\/items\/([a-z_]+)(?:\/([^/?]+))?$/;
  * Tota petició a `/items` passa per l'abast de qui la fa (vegeu
  * `domini/abast.ts`): qui no ho veu tot només llegeix, canvia i esborra el
  * que és dels seus clients, i el que crea porta el seu agent. Es fa aquí, al
- * coll d'ampolla, perquè valgui per a totes les pantalles sense que cap se
+ * coll d'unitat, perquè valgui per a totes les pantalles sense que cap se
  * n'hagi de recordar. Torna la ruta i el cos tal com s'han d'enviar.
  */
 async function dinsDeLAbast(ruta: string, opcions: RequestInit): Promise<{ ruta: string; body?: BodyInit | null }> {
@@ -175,7 +175,7 @@ async function cridaCrua(ruta: string, opcions: RequestInit = {}) {
     const detall = cos.errors?.[0]?.message ?? "";
 
     if (resposta.status === 401 || resposta.status === 403) {
-      // Un camp que no és al model: el motor ho diu amb el mateix text que deia Directus.
+      // Un camp que no és al model: el motor ho diu amb el mateix text que deia la base de dades.
       const camp = /access fields? ("[^"]+"(?:, "[^"]+")*) in collection "([^"]+)"/.exec(detall);
       if (camp) {
         const camps = Array.from(camp[1].matchAll(/"([^"]+)"/g), (m) => m[1]);
@@ -412,7 +412,7 @@ const CAMPS_OPORTUNITAT = [
 const CAMPS_ACTIVITAT = [
   "id", "tipus", "data", "assumpte", "resum", "assistents", "referencies", "comercial",
   // El resultat és el que diu si l'activitat és oberta o tancada.
-  "resultat", "oportunitat", "date_created", "celler.nom_comercial",
+  "resultat", "oportunitat", "date_created", "laboratori.nom_comercial",
   // L'id del compte és el que lliga l'activitat amb el seu segment.
   "client.id", "client.nom_comercial", "client.categoria", "client.potencial", "lead.id", "lead.nom",
 ].join(",");
@@ -431,7 +431,7 @@ function entre(camp: string, desde: string, fins: string): Condicio[] {
  * Les activitats d'un interval, per al calendari. Es demana per rang i no tot
  * de cop perquè el Planner només ensenya un mes i les activitats són el que
  * més creix d'un CRM. Amb `comercial`, només les seves i les de ningú; amb
- * `agent`, només les del representant comercial de FactuSol (l'agent del
+ * `agent`, només les del representant comercial de l'ERP (l'agent del
  * client o del lead, que l'activitat hereta).
  */
 export async function llistaActivitatsEntre(
@@ -452,7 +452,7 @@ export async function llistaActivitatsEntre(
 
 const CAMPS_AGENDA = [
   "id", "tipus", "data", "assumpte", "durada_minuts", "resultat", "proper_pas", "comercial",
-  "celler.nom_comercial",
+  "laboratori.nom_comercial",
   "client.id", "client.nom_comercial", "client.categoria", "client.potencial", "client.poblacio", "client.telefon",
   "client.horari_comercial",
   // Perquè l'agenda pinti el client amb la seva facturació, com els altres llistats.

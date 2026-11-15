@@ -1,7 +1,7 @@
 /**
  * El calendari del Planner: graella del mes i repartiment de les activitats.
  *
- * Tot és càlcul pur. La feina delicada és el fus: Directus desa les marques de
+ * Tot és càlcul pur. La feina delicada és el fus: la base de dades desa les marques de
  * temps en UTC i una visita de les onze del vespre cauria el dia següent si es
  * llegís en cru des d'un servidor que va en UTC, com el de Cloud Run. Per això
  * el dia i l'hora d'una activitat es deriven sempre amb el fus del negoci.
@@ -74,12 +74,12 @@ export type DiaPlanner = {
  * entre ells; el primer és el de la casa, que se sol endur el segment principal.
  */
 export const PALETA_SEGMENTS = [
-  "#8c2f45", "#2f6f8c", "#6b4c9a", "#b06d1f",
+  "#0f766e", "#2f6f8c", "#6b4c9a", "#b06d1f",
   "#2f7d5a", "#a33b6a", "#3d5a80", "#96562a",
 ];
 
 export const SENSE_SEGMENT = "Sense segment";
-export const COLOR_SENSE_SEGMENT = "#857878";
+export const COLOR_SENSE_SEGMENT = "#6b7b79";
 
 export function colorSegment(posicio: number) {
   return PALETA_SEGMENTS[posicio % PALETA_SEGMENTS.length];
@@ -122,7 +122,7 @@ export type MesPlanner = {
   actual: string;
 };
 
-/** Dia i hora locals d'una marca de temps de Directus. */
+/** Dia i hora locals d'una marca de temps de la base de dades. */
 export function momentLocal(marca: string | null): { dia: string; hora: string } | null {
   if (!marca) return null;
   const quan = new Date(marca);

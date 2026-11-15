@@ -29,7 +29,7 @@ import { comercialsDelPortal } from "@/serveis/usuaris";
 
 /** El to de cada termini: el que ja ha vençut crida, el d'avui avisa, la resta espera. */
 const TO_TERMINI: Record<Termini, string> = {
-  vencut: "bg-wine-tint text-wine-deep",
+  vencut: "bg-marca-clar text-marca-fosc",
   avui: "bg-amber-50 text-amber-800",
   setmana: "bg-sky-50 text-sky-800",
   mes_endavant: "bg-parchment text-muted",
@@ -73,7 +73,7 @@ function Compte({ compte, marcats, gran = false }: { compte: ToDo["compte"]; mar
     <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
       <Link
         href={enllacCompte(compte)}
-        className={`min-w-0 truncate font-medium text-ink transition hover:text-wine ${gran ? "text-[15px]" : "text-[13px]"}`}
+        className={`min-w-0 truncate font-medium text-ink transition hover:text-marca ${gran ? "text-[15px]" : "text-[13px]"}`}
       >
         {compte.nom}
       </Link>
@@ -180,7 +180,7 @@ function Fila({
   const etiquetes = (
     <>
       {todo.prioritat === "alta" ? (
-        <Marca to="bg-wine-tint text-wine-deep" titol="Prioritat alta">Alta</Marca>
+        <Marca to="bg-marca-clar text-marca-fosc" titol="Prioritat alta">Alta</Marca>
       ) : todo.prioritat === "baixa" ? (
         <Marca to="bg-parchment text-muted" titol="Prioritat baixa">Baixa</Marca>
       ) : null}
@@ -314,7 +314,7 @@ function Capcalera({
           {resum.pendents === 0 ? "Tot al dia" : `${resum.pendents} To-Do per fer`}
         </h2>
         <p className="mt-1.5 flex flex-wrap gap-x-1.5 text-[13px] text-muted">
-          {resum.vencuts > 0 ? <Tros text={`${resum.vencuts} ${resum.vencuts === 1 ? "vençut" : "vençuts"}`} ancora={ancora("vencut")} to="font-medium text-wine-deep" /> : null}
+          {resum.vencuts > 0 ? <Tros text={`${resum.vencuts} ${resum.vencuts === 1 ? "vençut" : "vençuts"}`} ancora={ancora("vencut")} to="font-medium text-marca-fosc" /> : null}
           {resum.avui > 0 ? <Tros text={`${resum.vencuts > 0 ? "· " : ""}${resum.avui} avui`} ancora={ancora("avui")} to="font-medium text-amber-800" /> : null}
           {resum.setmana > 0 ? <Tros text={`${resum.vencuts + resum.avui > 0 ? "· " : ""}${resum.setmana} aquesta setmana`} ancora={ancora("setmana")} /> : null}
           {resum.sense > 0 ? <Tros text={`${resum.pendents - resum.sense > 0 ? "· " : ""}${resum.sense} sense venciment`} ancora={ancora("sense")} /> : null}

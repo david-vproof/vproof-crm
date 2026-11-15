@@ -3,7 +3,7 @@
  *
  * Un segment és una consulta desada, no una etiqueta enganxada a cada fitxa:
  * es llegeixen els segments, es llegeixen els comptes i s'avalua. Els criteris
- * arriben d'un camp JSON de Directus, així que sempre es tornen a validar.
+ * arriben d'un camp JSON de la base de dades, així que sempre es tornen a validar.
  */
 import "server-only";
 

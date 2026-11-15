@@ -51,7 +51,7 @@ export function ModalCarregant({ obert }: { obert: boolean }) {
       <div className="flex flex-col items-center gap-3 rounded-xl bg-cream px-8 py-6 text-ink shadow-2xl">
         <span
           aria-hidden="true"
-          className="size-9 animate-spin rounded-full border-[3px] border-line border-t-wine motion-reduce:animate-[spin_2s_linear_infinite]"
+          className="size-9 animate-spin rounded-full border-[3px] border-line border-t-marca motion-reduce:animate-[spin_2s_linear_infinite]"
         />
         <p className="text-[13.5px] text-muted">Carregant…</p>
       </div>

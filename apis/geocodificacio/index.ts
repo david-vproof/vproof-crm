@@ -5,7 +5,7 @@
  * un User-Agent propi i no fer més d'una consulta per segon, i les dues coses
  * es respecten aquí. Per això la geocodificació no es fa mai al render d'una
  * pàgina, sinó per tandes (des del mapa obert, en segon pla des del
- * programador o després de desar un client), i el resultat es desa a Directus
+ * programador o després de desar un client), i el resultat es desa a la base de dades
  * perquè no s'hagi de tornar a preguntar.
  */
 import "server-only";
@@ -15,7 +15,7 @@ import { carrerPerGeocodificar } from "@/domini/adreces";
 const BASE = process.env.NOMINATIM_URL ?? "https://nominatim.openstreetmap.org";
 /**
  * Photon (Komoot) també va sobre OpenStreetMap, però cerca pel nom del lloc i
- * tolera errors d'escriptura: és el que troba «El Celleret» quan Nominatim,
+ * tolera errors d'escriptura: és el que troba «El Laboratoriet» quan Nominatim,
  * pensat per a adreces, no en treu res. Es prioritza Catalunya perquè els
  * homònims d'arreu del món quedin al final.
  */

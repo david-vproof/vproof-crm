@@ -18,7 +18,7 @@ const FEINERS = [0, 1, 2, 3, 4];
 const TO_ESTAT: Record<EstatDia, string> = {
   obert: "border-line bg-white text-ink",
   preferent: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  bloquejat: "border-wine/30 bg-wine-tint text-wine-deep",
+  bloquejat: "border-marca/30 bg-marca-clar text-marca-fosc",
 };
 
 function sumaMinuts(hora: string, minuts: number) {

@@ -2,10 +2,10 @@
  * Vocabulari i formes del CRM.
  *
  * Viu al domini perquè el comparteixen tres móns que no s'han de conèixer
- * entre ells: les dades sintètiques de `demo/`, la lectura de Directus a
+ * entre ells: les dades sintètiques de `demo/`, la lectura de la base de dades a
  * `apis/` i els càlculs de `domini/crm-analitica.ts`.
  */
-export const ETAPES = ["Contacte", "Qualificada", "Tast", "Proposta", "Negociació"] as const;
+export const ETAPES = ["Contacte", "Qualificada", "Presentació", "Proposta", "Negociació"] as const;
 export const ETAPES_TANCADES = ["Guanyada", "Perduda"] as const;
 
 export type Etapa = (typeof ETAPES)[number] | (typeof ETAPES_TANCADES)[number];
@@ -13,7 +13,7 @@ export type Etapa = (typeof ETAPES)[number] | (typeof ETAPES_TANCADES)[number];
 export const PROBABILITAT: Record<Etapa, number> = {
   Contacte: 10,
   Qualificada: 25,
-  Tast: 45,
+  "Presentació": 45,
   Proposta: 60,
   Negociació: 80,
   Guanyada: 100,
@@ -24,12 +24,12 @@ export type Origen = "Fira" | "Recomanació" | "Web" | "Prospecció" | "Client e
 
 export const TIPUS_ACTIVITAT = [
   "Visita",
-  "Visita amb vi",
-  "Visita de celler a client",
-  "Visita al celler",
+  "Visita amb producte",
+  "Visita de laboratori a client",
+  "Visita al laboratori",
   "Trucada",
   "Correu",
-  "Tast",
+  "Presentació",
   "Reunió",
   // Els creats a Configuració que no són visites.
   "Altres",
@@ -42,14 +42,14 @@ export const TIPUS_REMOTS: readonly TipusActivitat[] = ["Trucada", "Correu"];
 /** Cara a cara amb el client. */
 export const TIPUS_PRESENCIALS: readonly TipusActivitat[] = [
   "Visita",
-  "Visita amb vi",
-  "Visita de celler a client",
-  "Visita al celler",
-  "Tast",
+  "Visita amb producte",
+  "Visita de laboratori a client",
+  "Visita al laboratori",
+  "Presentació",
   "Reunió",
 ];
-/** Amb vi damunt la taula: el que de debò mou una carta. */
-export const TIPUS_AMB_VI: readonly TipusActivitat[] = ["Visita amb vi", "Visita de celler a client", "Visita al celler", "Tast"];
+/** Amb producte damunt la taula: el que de debò mou una carta. */
+export const TIPUS_AMB_PRODUCTE: readonly TipusActivitat[] = ["Visita amb producte", "Visita de laboratori a client", "Visita al laboratori", "Presentació"];
 
 export type Oportunitat = {
   id: string;
@@ -83,8 +83,8 @@ export type Activitat = {
   oportunitatId: string | null;
   agent: number;
   resum: string;
-  /** Només a les activitats amb vi: de quin celler i quines referències. */
-  celler?: string | null;
+  /** Només a les activitats amb producte: de quin laboratori i quines referències. */
+  laboratori?: string | null;
   referencies?: string | null;
   assistents?: number | null;
 };

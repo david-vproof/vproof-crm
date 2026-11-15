@@ -1,9 +1,9 @@
-# Wine Backend
+# vproof CRM
 
-Portal de gestió en Next.js 15 (App Router) per a una distribuïdora de vi.
+Portal de gestió en Next.js 15 (App Router) per a una distribuïdora de producte.
 
 - **CRM** sobre **Directus**: leads, comptes, oportunitats, contactes i
-  activitats —incloses les visites del client al celler—, amb tauler analític,
+  activitats —incloses les visites del client al laboratori—, amb tauler analític,
   mapa de comptes i segmentació per criteris.
 - **Clients** llegits de **FactuSol** (API de DELSOL).
 - Accés amb sessió pròpia, comprovada contra Directus.
@@ -94,7 +94,7 @@ els carrega amb `next/dynamic` i `ssr: false`; el contenidor reserva l'alçada
 perquè no hi hagi salt de maqueta.
 
 Dotze KPI (pipeline obert i ponderat, conversió, cicle de venda, leads nous,
-visites i tastos, activitat total, contactes per oportunitat, valor mitjà,
+visites i presentacions, activitat total, contactes per oportunitat, valor mitjà,
 velocitat del pipeline, pas a proposta i tasques vençudes) i deu gràfics, més
 un mapa de calor d'intensitat d'activitat per comercial i mes. Les agregacions
 són funcions pures a `domini/crm-analitica.ts`.
@@ -102,30 +102,30 @@ són funcions pures a `domini/crm-analitica.ts`.
 > Highcharts és de pagament per a ús comercial. Per a un desplegament real cal
 > la llicència corresponent; vegeu <https://highcharts.com/license>.
 
-## Selector de vins
+## Selector de productes
 
-El punt de menú **Selector de vins** és un configurador que actua com una
+El punt de menú **Selector de productes** és un configurador que actua com una
 cistella de la compra: a l'esquerra els **criteris de selecció**, al mig els
-vins del catàleg que els compleixen i a la dreta la **cistella**: només
-quins vins, sense quantitats. Els criteris són les característiques dels
+productes del catàleg que els compleixen i a la dreta la **cistella**: només
+quins productes, sense quantitats. Els criteris són les característiques dels
 articles de FactuSol (les mateixes que filtren la pantalla d'Articles: tipus,
 varietat, productor, anyada, regió, zona, format i proveïdor), més la cerca de
 text i «només amb foto»; aquí cada característica admet més d'un valor («negre
-o blanc»), i cada opció diu quants vins hi quedarien. «Afegeix-los tots» posa a
-la cistella tots els vins trobats.
+o blanc»), i cada opció diu quants productes hi quedarien. «Afegeix-los tots» posa a
+la cistella tots els productes trobats.
 
-La cistella es desa com a **plantilla** (`crm_plantilles_vins`, amb els
-criteris en JSON, i una línia per vi a `crm_plantilles_vins_linies`; la
+La cistella es desa com a **plantilla** (`crm_plantilles_productes`, amb els
+criteris en JSON, i una línia per producte a `crm_plantilles_productes_linies`; la
 columna `quantitat` hi queda, però ja no es fa servir), i una plantilla es torna a carregar, s'actualitza
 o s'esborra des del mateix desplegable. Les plantilles són de la casa: les veu
-i les pot tocar tothom. Si un vi d'una plantilla ja no és al catàleg, la
+i les pot tocar tothom. Si un producte d'una plantilla ja no és al catàleg, la
 cistella es carrega sense i la pantalla ho diu.
 
 La pàgina **recorda la tria** (la cistella, la plantilla carregada, els criteris,
 els clients i leads, el dia de visita i l'ordre): anar a una altra pantalla i
 tornar-hi, o recarregar, la deixa tal com estava. S'oblida en tancar la sessió o
 la pestanya, perquè va a `sessionStorage` (vegeu `lib/vistes-recordades.ts`), i
-cada pestanya té la seva. L'estoc, els preus, els tastos i les activitats del dia
+cada pestanya té la seva. L'estoc, els preus, els presentacions i les activitats del dia
 no es recorden: es tornen a llegir. El configurador en modal d'una activitat no
 recorda res.
 
@@ -134,41 +134,41 @@ el modal de clients del CRM; amb **Dia de visita** s'obre el calendari del
 Planner en un modal (per mes o per setmana, amb les visites de cada dia
 repartides per segment; `/api/crm/agenda`) i tocar un dia hi posa d'un cop els
 clients de les activitats d'aquell dia (`/api/crm/clients-del-dia`, amb la
-mateixa visibilitat que l'agenda: les de cadascú, o totes si és administrador). Llavors cada vi diu si **ja l'han tastat**:
-amb un client, «Tastat el <data>»; amb diversos, «Tastat per <client>» si és
-un de sol, i si no «Tastat per 2 de 3» o «Tastat per tots». La marca es toca i
-desplega sota el vi la llista dels clients triats: els que sí, amb la data (i
-les ampolles, si és una compra), i els que no, en gris. Els tastos surten de `crm_activitats_vins`
-(`/api/crm/vins-dels-clients`), de les activitats de tothom: que un client ja ha
-tastat un vi és un fet del client, no del comercial. També diu si ja l'han **comprat**: de les
+mateixa visibilitat que l'agenda: les de cadascú, o totes si és administrador). Llavors cada producte diu si **ja l'han presentat**:
+amb un client, «Presentat el <data>»; amb diversos, «Presentat per <client>» si és
+un de sol, i si no «Presentat per 2 de 3» o «Presentat per tots». La marca es toca i
+desplega sota el producte la llista dels clients triats: els que sí, amb la data (i
+les unitats, si és una compra), i els que no, en gris. Els presentacions surten de `crm_activitats_productes`
+(`/api/crm/productes-dels-clients`), de les activitats de tothom: que un client ja ha
+presentat un producte és un fet del client, no del comercial. També diu si ja l'han **comprat**: de les
 línies dels albarans de venda (`crm_albarans_linies`, aquest exercici i el
-passat), amb la data del darrer albarà i les ampolles. Entre els criteris de
-l'esquerra n'hi ha dos que es miren respecte als clients triats, **Tastat** i
-**Comprat** (tant si com no, que no ha tastat cap, que n'ha tastat algun; no
-hi ha «que han tastat tots»: entre clients no es fa cap I);
+passat), amb la data del darrer albarà i les unitats. Entre els criteris de
+l'esquerra n'hi ha dos que es miren respecte als clients triats, **Presentat** i
+**Comprat** (tant si com no, que no ha presentat cap, que n'ha presentat algun; no
+hi ha «que han presentat tots»: entre clients no es fa cap I);
 sense clients queden en gris i no filtren. Els clients triats no es desen a la
 plantilla.
 
-Els vins **històrics** (descatalogats o no disponibles a FactuSol) no surten si
+Els productes **històrics** (descatalogats o no disponibles a FactuSol) no surten si
 no es marca la casella **Històrics**, que els ensenya tots. L'excepció són els
-que algun dels clients triats ha tastat o comprat: aquests surten amb la casella
-desmarcada, i arriben amb els tastos i les compres, sense baixar els milers
+que algun dels clients triats ha presentat o comprat: aquests surten amb la casella
+desmarcada, i arriben amb els presentacions i les compres, sense baixar els milers
 d'històrics que hi ha. Sense clients, cap. Com que les compres venen dels
-albarans copiats, un vi comprat abans de l'exercici passat no hi compta.
+albarans copiats, un producte comprat abans de l'exercici passat no hi compta.
 
 Amb **Tria leads** s'hi posen també leads, i el dia de visita porta els leads
-d'aquell dia i n'hi pot posar els vins: cada vi diu què ha tastat el lead (de
-les seves activitats), i la fulla de vins surt amb el seu nom i la tarifa de
+d'aquell dia i n'hi pot posar els productes: cada producte diu què ha presentat el lead (de
+les seves activitats), i la fulla de productes surt amb el seu nom i la tarifa de
 venda al major, perquè encara no en té de pròpia. Un lead no té compres. La
-fitxa del lead té una secció **Vins** amb el que ha tastat i un botó que obre
-una activitat amb vins ja lligada al lead. Els vins sempre van amb una
-activitat: no hi ha cap tria de vins solta.
+fitxa del lead té una secció **Productes** amb el que ha presentat i un botó que obre
+una activitat amb productes ja lligada al lead. Els productes sempre van amb una
+activitat: no hi ha cap tria de productes solta.
 
 Quan un lead es **converteix** (estat «Convertit» i «Client resultant»), en
 desar-lo les seves **activitats i els seus To-Do passen al client**: surten a la
 seva fitxa, compten per a la periodicitat i la darrera visita, i l'**històric de
-vins** arriba a la secció de vins (on les activitats ho diuen, «quan era lead»)
-i a les marques i el criteri de **Tastat** del selector. No es mouen: porten el
+productes** arriba a la secció de productes (on les activitats ho diuen, «quan era lead»)
+i a les marques i el criteri de **Presentat** del selector. No es mouen: porten el
 client sense deixar de portar el lead (`passaDelLeadAlClient` a
 `serveis/crm-manteniment.ts`, `domini/crm-conversio.ts`), i és l'únic cas en què
 una activitat porta tots dos. Si es canvia el client resultant, el segueixen, i
@@ -177,29 +177,29 @@ canvia res. L'agent de les activitats passa a ser el del client. Una activitat
 que s'apunti després a un lead ja convertit també surt amb el client. Els
 contactes i les oportunitats del lead no passen.
 
-Cada vi diu també quin **estoc** en tenim, en viu de FactuSol: la marca
+Cada producte diu també quin **estoc** en tenim, en viu de FactuSol: la marca
 «Estoc 153» és el disponible (DISSTO de F_STO, l'actual menys el que ja està
 compromès en comandes) sumant tots els magatzems, i si l'actual és un altre
 número, «Estoc 153 · actual 159». Tocar-la desplega el desglòs per magatzem
-(F_ALM: General, Sant Bartomeu de Grau, els cellers…) amb les dues xifres. Un
-vi sense res enlloc diu «Sense estoc». Entre els criteris n'hi ha un d'**Estoc**
+(F_ALM: General, Sant Bartomeu de Grau, els laboratoris…) amb les dues xifres. Un
+producte sense res enlloc diu «Sense estoc». Entre els criteris n'hi ha un d'**Estoc**
 (tant si en tenim com si no, només amb estoc disponible, només sense). L'estoc
-es llegeix a part del catàleg (`/api/crm/estoc-vins`, `estocDelCataleg` a
-`serveis/crm-vins.ts`, agregat a `domini/estoc-vins.ts`): si l'API de DELSOL
+es llegeix a part del catàleg (`/api/crm/estoc-productes`, `estocDelCataleg` a
+`serveis/crm-productes.ts`, agregat a `domini/estoc-productes.ts`): si l'API de DELSOL
 triga o falla, el selector va igual, sense estoc, i el criteri queda en gris
 dient per què.
 
 El mateix configurador s'obre **en modal des del formulari d'una activitat**
-(botó «Configurador», al costat del camp de vins): comença amb els vins que
+(botó «Configurador», al costat del camp de productes): comença amb els productes que
 l'activitat ja té i amb el client de l'activitat ja triat (el que es visita:
-així cada vi diu de seguida si ja l'ha tastat o comprat), i «Aplica a
+així cada producte diu de seguida si ja l'ha presentat o comprat), i «Aplica a
 l'activitat» els hi torna. L'activitat només
-guarda quins vins són (`crm_activitats_vins`).
+guarda quins productes són (`crm_activitats_productes`).
 
-El catàleg sencer viatja al navegador d'un cop (`/api/crm/cataleg-vins`) i el
+El catàleg sencer viatja al navegador d'un cop (`/api/crm/cataleg-productes`) i el
 filtrat, els comptes de cada opció i la cistella són càlcul pur a
-`domini/cistella-vins.ts`; les plantilles van per `/api/crm/plantilles-vins`
-i `serveis/plantilles-vins.ts`. Al telèfon, els criteris i la cistella es
+`domini/cistella-productes.ts`; les plantilles van per `/api/crm/plantilles-productes`
+i `serveis/plantilles-productes.ts`. Al telèfon, els criteris i la cistella es
 pleguen darrere d'un botó cada un.
 
 ## Agenda d'avui
@@ -705,11 +705,11 @@ escriu és `serveis/sincronitzacio.ts`.
 - **Tipus d'activitat.** Són a `crm_tipus_activitat` i es creen i es canvien a
   Configuració › Valors CRM. L'activitat desa el `valor` del tipus, que surt del
   nom en crear-lo i ja no canvia, així que canviar el nom no toca cap activitat.
-  Cada tipus diu si compta com a visita al tauler i si porta vins i celler al
+  Cada tipus diu si compta com a visita al tauler i si porta productes i laboratori al
   formulari. Un de desactivat deixa de sortir en crear activitats, però les que
   el tenen el conserven; només s'esborren els creats aquí que no tenen cap
-  activitat. Els diversos clients o cellers d'una mateixa visita van lligats als
-  valors `visita_celler` i `visita_cellers_client`. Si Directus no té la taula,
+  activitat. Els diversos clients o laboratoris d'una mateixa visita van lligats als
+  valors `visita_laboratori` i `visita_laboratoris_client`. Si Directus no té la taula,
   el CRM fa servir els de partida (`domini/crm-tipus-activitat.ts`). Per crear
   la taula en un Directus en marxa, `scripts/crm-tipus-activitat.mjs`.
 - **Tipus de client.** Com a FactuSol, és una taula a part: F_TCL es copia a
@@ -729,20 +729,20 @@ escriu és `serveis/sincronitzacio.ts`.
   comptadors i error, si n'hi ha), amb el nom de la taula. Un bloqueig en
   memòria per taula evita dues passades alhora de la mateixa.
 
-### Cellers: els proveïdors de l'ERP
+### Laboratoris: els proveïdors de l'ERP
 
-Els cellers de qui es compra no són una taula del portal: són els proveïdors de
-FactuSol. Hi havia una `crm_cellers` pròpia amb quatre fitxes de mostra i s'ha
-retirat (`scripts/crm-cellers-erp.mjs`), de manera que ara:
+Els laboratoris de qui es compra no són una taula del portal: són els proveïdors de
+FactuSol. Hi havia una `crm_laboratoris` pròpia amb quatre fitxes de mostra i s'ha
+retirat (`scripts/crm-laboratoris-erp.mjs`), de manera que ara:
 
-- El menú els porta a **ERP › Cellers**, que és la fitxa `proveidors` de
+- El menú els porta a **ERP › Laboratoris**, que és la fitxa `proveidors` de
   `domini/crm-fitxes.ts` sobre `crm_proveidors`. La clau interna és
   «proveidors», que és el que són a l'ERP, però a la gent se'ls ensenya com a
-  cellers, que és com se'n parla a la casa.
-- El camp **celler** d'una activitat hi apunta, i el proveïdor ensenya les
+  laboratoris, que és com se'n parla a la casa.
+- El camp **laboratori** d'una activitat hi apunta, i el proveïdor ensenya les
   seves visites a la pestanya d'activitats.
 - Com que en són centenars, el camp no ofereix cap llista: es cerca
-  (`components/crm/SelectorCeller.tsx`, servit per `/api/crm/cellers`). Cerca
+  (`components/crm/SelectorLaboratori.tsx`, servit per `/api/crm/laboratoris`). Cerca
   alhora per nom, raó social, NIF, població, província, correu i codi d'ERP, i
   escurça per tipus i per província. El codi es prova per igualtat i només si
   el terme és tot xifres, perquè `_icontains` contra una columna de números
@@ -760,9 +760,9 @@ mapatge de camps.
 
 **Només els homologats.** La consulta filtra per `HOMPRO = 1`, que és la
 casella «Proveedor homologado» de la pestanya «Otros datos» de FactuSol: dels
-651 proveïdors de la taula, 34 ho estan, i són exactament els cellers de qui es
+651 proveïdors de la taula, 34 ho estan, i són exactament els laboratoris de qui es
 compra (tots amb compte comptable 600). La resta són transportistes, gestories
-i subministraments, que no tenen res a veure amb l'acció comercial. Un celler
+i subministraments, que no tenen res a veure amb l'acció comercial. Un laboratori
 que deixi d'estar homologat no s'esborra: entra per la via dels absents i
 conserva tot el que hi penja.
 
@@ -788,7 +788,7 @@ dades:
 ### Sincronització d'articles (FactuSol → Directus)
 
 `F_ART` → `crm_articles`, amb el mateix mecanisme. Es llegeix a ERP › Articles
-i a la fitxa de cada celler.
+i a la fitxa de cada laboratori.
 
 - **Només els actius.** La consulta deixa fora els articles amb la casella de
   descatalogat (`DSCART`) o la de no permetre'n l'ús (`NPUART`) marcades
@@ -798,10 +798,10 @@ i a la fitxa de cada celler.
 - **Codi de text.** CODART no és numèric com CODCLI o CODPRO: la comparació
   lliga pel codi en text, i així es conserven els zeros del davant.
 - **Camps.** `nom` (DESART), `codi_barres` (EANART), `familia` (descripció de
-  F_FAM) i `erp_familia` (FAMART), `celler` (PHAART, el proveïdor habitual,
+  F_FAM) i `erp_familia` (FAMART), `laboratori` (PHAART, el proveïdor habitual,
   lligat a `crm_proveidors` si és dels homologats) i `erp_proveidor`,
   `referencia_proveidor` (REFART) i `data_alta`. Les `notes` són del portal.
-- **Ordre.** Va després dels proveïdors: els articles apunten als cellers que
+- **Ordre.** Va després dels proveïdors: els articles apunten als laboratoris que
   aquella passada ja ha copiat.
 - **Fotos.** IMGART és el nom del fitxer de la foto i porta la data, així que
   només canvia quan canvia la foto: es copia a `erp_imatge` com un camp més.
@@ -886,7 +886,7 @@ Publicat a Google Cloud Run:
 
 | | |
 | --- | --- |
-| Projecte | `winebackend-portal` (Wine Backend) |
+| Projecte | `winebackend-portal` (vproof CRM) |
 | Regió | `europe-west1` |
 | Servei | `wine-backend` |
 | URL | <https://wine-backend-140120684729.europe-west1.run.app> |
@@ -961,7 +961,7 @@ servir dades velles d'un CRM.
 - `AUTH_SECRET` té un valor de desenvolupament per defecte: **defineix-lo**
   abans de desplegar o les sessions seran falsificables.
 - Fotografies a `public/`: [vinya al capvespre](https://commons.wikimedia.org/wiki/File:Vineyard_during_sunset_(Unsplash).jpg)
-  i [celler](https://commons.wikimedia.org/wiki/File:Wine_Cellar_Showing_Barrels(GN11869).jpg),
+  i [laboratori](https://commons.wikimedia.org/wiki/File:Wine_Cellar_Showing_Barrels(GN11869).jpg),
   totes dues en domini públic (CC0) via Wikimedia Commons.
 - Els identificadors interns del codi són en català; els noms de columna de
   FactuSol (`CODCLI`, `NOFCLI`…) es mantenen tal com els defineix l'ERP.

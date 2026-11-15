@@ -241,7 +241,7 @@ export async function esborraFitxaAccio(dades: FormData) {
     await comprovaQueEsSeva(entitat, id, (await abastDeLaSessio()).deQui);
     await esborraFitxa(entitat, id);
   } catch (error) {
-    // La fitxa no s'ha esborrat (ve de FactuSol, posem): es torna on s'era.
+    // La fitxa no s'ha esborrat (ve de l'ERP, posem): es torna on s'era.
     if (error instanceof ErrorFitxa) redirect(destiSegur(retorn, `/crm?v=${entitat}`));
     throw error;
   }

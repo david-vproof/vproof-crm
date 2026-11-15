@@ -28,7 +28,7 @@ import {
 } from "@/domini/crm-avui";
 import { activitatTancada, esLletra } from "@/domini/crm-fitxes";
 import { llegeixHorari } from "@/domini/crm-horaris";
-import { nomDelTipus, tipusPortaVi, type DefinicioTipus } from "@/domini/crm-tipus-activitat";
+import { nomDelTipus, tipusPortaProducte, type DefinicioTipus } from "@/domini/crm-tipus-activitat";
 import { CAMPS_RESUM_FACTURACIO } from "@/domini/facturacio-tendencia";
 import { nomDeLloc } from "@/lib/format";
 import { COLOR_SENSE_SEGMENT, SENSE_SEGMENT, avuiLocal, momentLocal } from "@/domini/crm-planner";
@@ -69,9 +69,9 @@ function aActe(fila: FilaAgenda, dia: string, segment: Segment | undefined, marc
     hora: moment.hora,
     fi: fila.durada_minuts ? sumaMinuts(moment.hora, fila.durada_minuts) : "",
     tipus: nomDelTipus(definicions, tipus),
-    ambVi: tipusPortaVi(definicions, tipus),
+    ambProductes: tipusPortaProducte(definicions, tipus),
     assumpte: text(fila.assumpte) || "Sense assumpte",
-    compte: text(fila.client?.nom_comercial) || text(fila.lead?.nom) || text(fila.celler?.nom_comercial),
+    compte: text(fila.client?.nom_comercial) || text(fila.lead?.nom) || text(fila.laboratori?.nom_comercial),
     esLead: !fila.client && Boolean(fila.lead),
     marques: marquesDe(fila.client?.id, marcats) ?? null,
     categoria: esLletra(fila.client?.categoria) ? fila.client.categoria : null,

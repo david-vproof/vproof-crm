@@ -12,8 +12,8 @@ import {
 import { rutaDelClient } from "@/lib/navegacio";
 
 /** Els dos tons de la marca, per als grups que barregen segments. */
-const VI = "#8c2f45";
-const VI_FOSC = "#6d2235";
+const MARCA = "#0f766e";
+const MARCA_FOSC = "#115e59";
 /** Els que queden fora del segment triat: hi són, però no criden. */
 const APAGAT = "#b9aeae";
 /** Distància mínima, en píxels, entre dos punts seguits d'un contorn: prou per seguir la mà sense milers de punts. */
@@ -34,7 +34,7 @@ function iconaXinxeta() {
     tooltipAnchor: [0, -34],
     html:
       `<svg width="26" height="36" viewBox="0 0 26 36" aria-hidden="true" style="display:block;filter:drop-shadow(0 2px 4px rgba(23,16,15,.45))">` +
-      `<path d="M13 1C6.4 1 1 6.3 1 12.8 1 21.6 13 35 13 35s12-13.4 12-22.2C25 6.3 19.6 1 13 1z" fill="${VI}" stroke="#fff" stroke-width="2"/>` +
+      `<path d="M13 1C6.4 1 1 6.3 1 12.8 1 21.6 13 35 13 35s12-13.4 12-22.2C25 6.3 19.6 1 13 1z" fill="${MARCA}" stroke="#fff" stroke-width="2"/>` +
       `<circle cx="13" cy="13" r="4.5" fill="#fff"/></svg>`,
   });
 }
@@ -50,7 +50,7 @@ function escapa(text: string) {
 function colorDeGrup(grup: Grup) {
   const segments = new Set(grup.membres.map((punt) => punt.segmentId));
   if (segments.size === 1) return grup.membres[0].color;
-  return grup.membres.length === 1 ? VI : VI_FOSC;
+  return grup.membres.length === 1 ? MARCA : MARCA_FOSC;
 }
 
 /** Les dues lletres d'un punt, o un punt sol si no en té cap. */
@@ -106,11 +106,11 @@ function retolDeGrup(grup: Grup) {
     return (
       `<strong>${escapa(titol)}</strong>` +
       (punt.establiment ? `<br>Client: ${escapa(punt.nom)}` : "") +
-      (punt.adreca || punt.poblacio ? `<br><span style="color:#857878">${escapa(punt.adreca || punt.poblacio)}</span>` : "") +
-      (sota ? `<br><span style="color:#857878">${escapa(sota)}</span>` : "") +
-      `<br><span style="color:#857878">${escapa(punt.segment)}</span>` +
+      (punt.adreca || punt.poblacio ? `<br><span style="color:#6b7b79">${escapa(punt.adreca || punt.poblacio)}</span>` : "") +
+      (sota ? `<br><span style="color:#6b7b79">${escapa(sota)}</span>` : "") +
+      `<br><span style="color:#6b7b79">${escapa(punt.segment)}</span>` +
       (punt.categoria || punt.potencial
-        ? `<br><span style="color:#857878">Categoria ${punt.categoria ?? "–"} · Potencial ${punt.potencial ?? "–"}</span>`
+        ? `<br><span style="color:#6b7b79">Categoria ${punt.categoria ?? "–"} · Potencial ${punt.potencial ?? "–"}</span>`
         : "")
     );
   }
@@ -124,7 +124,7 @@ function retolDeGrup(grup: Grup) {
     clients === grup.membres.length ? `${clients} clients` : `${grup.membres.length} establiments de ${clients} ${clients === 1 ? "client" : "clients"}`;
   return (
     `<strong>${quants}</strong> · ${cap}<br>${noms}` +
-    (resta > 0 ? `<br><span style="color:#857878">i ${resta} més…</span>` : "")
+    (resta > 0 ? `<br><span style="color:#6b7b79">i ${resta} més…</span>` : "")
   );
 }
 
@@ -212,7 +212,7 @@ export default function MapaIntern({
       const posicions = posicionsAranya(grup.membres.length);
       grup.membres.forEach((punt, i) => {
         const on = m.layerPointToLatLng(centre.add(L.point(posicions[i].x, posicions[i].y)));
-        L.polyline([[grup.latitud, grup.longitud], on], { color: VI_FOSC, weight: 1.5, opacity: 0.55, interactive: false }).addTo(capaAranya);
+        L.polyline([[grup.latitud, grup.longitud], on], { color: MARCA_FOSC, weight: 1.5, opacity: 0.55, interactive: false }).addTo(capaAranya);
         const sol: Grup = { latitud: on.lat, longitud: on.lng, membres: [punt], radi: radiDeGrup(1) };
         const fill = L.marker(on, { icon: icona(sol, apagat), zIndexOffset: 20000, keyboard: false });
         fill.bindTooltip(retolDeGrup(sol), { direction: "top", offset: [0, -sol.radi] });
@@ -343,7 +343,7 @@ export default function MapaIntern({
     if (!capa) return;
     capa.clearLayers();
     for (const regio of regions) {
-      L.polygon(regio, { color: VI, weight: 2, fillColor: VI, fillOpacity: 0.1, interactive: false }).addTo(capa);
+      L.polygon(regio, { color: MARCA, weight: 2, fillColor: MARCA, fillOpacity: 0.1, interactive: false }).addTo(capa);
     }
   }, [regions]);
 
@@ -358,7 +358,7 @@ export default function MapaIntern({
     if (!destacat) return;
     const on: [number, number] = [destacat.latitud, destacat.longitud];
     if (destacat.mena === "client") {
-      L.circleMarker(on, { radius: 24, color: VI, weight: 3, fill: false, interactive: false, className: "mapa-anella" }).addTo(capa);
+      L.circleMarker(on, { radius: 24, color: MARCA, weight: 3, fill: false, interactive: false, className: "mapa-anella" }).addTo(capa);
     } else {
       L.marker(on, { icon: iconaXinxeta(), keyboard: false, interactive: false, zIndexOffset: 30000 })
         .bindTooltip(escapa(destacat.nom), { permanent: true, direction: "top" })
@@ -394,7 +394,7 @@ export default function MapaIntern({
       punter = e.pointerId;
       element.setPointerCapture(e.pointerId);
       trac = [m.mouseEventToLatLng(e)];
-      linia = L.polyline(trac, { color: VI, weight: 2, dashArray: "5 5", interactive: false }).addTo(m);
+      linia = L.polyline(trac, { color: MARCA, weight: 2, dashArray: "5 5", interactive: false }).addTo(m);
     };
 
     const mou = (e: PointerEvent) => {

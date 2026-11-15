@@ -15,7 +15,7 @@ export type DadesPanellCrm = {
   leads: { mesos: string[]; series: { nom: string; dades: number[] }[] };
   tancaments: { mes: string; guanyades: number; perdudes: number; valorGuanyat: number; conversio: number }[];
   activitat: { mesos: string[]; series: { nom: string; dades: number[] }[] };
-  visites: { nom: string; visites: number; tastos: number; remotes: number }[];
+  visites: { nom: string; visites: number; presentacions: number; remotes: number }[];
   canals: { nom: string; oportunitats: number; conversio: number; cicle: number; valor: number }[];
   previsio: { mes: string; valor: number; ponderat: number; oportunitats: number }[];
   tasques: { nom: string; vencudes: number; setmana: number; endavant: number }[];
@@ -72,7 +72,7 @@ export function PanellCrm({ dades }: { dades: DadesPanellCrm }) {
           formatter() {
             return `${embut[this.index].percentTotal.toFixed(0)} %`;
           },
-          style: { fontWeight: "400", fontSize: "11.5px", textOutline: "none", color: "#857878" },
+          style: { fontWeight: "400", fontSize: "11.5px", textOutline: "none", color: "#6b7b79" },
         },
       },
     },
@@ -83,7 +83,7 @@ export function PanellCrm({ dades }: { dades: DadesPanellCrm }) {
         data: embut.map((pas, index) => ({
           y: pas.oportunitats,
           // Com més avançada l'etapa, més saturat el color.
-          color: `rgba(140, 47, 69, ${0.3 + (index / Math.max(1, embut.length - 1)) * 0.7})`,
+          color: `rgba(15, 118, 110, ${0.3 + (index / Math.max(1, embut.length - 1)) * 0.7})`,
         })),
       },
     ],
@@ -137,7 +137,7 @@ export function PanellCrm({ dades }: { dades: DadesPanellCrm }) {
     plotOptions: { bar: { stacking: "normal" } },
     series: [
       { type: "bar", name: "Visites", data: visites.map((a) => a.visites), color: PALETA[0] },
-      { type: "bar", name: "Tastos", data: visites.map((a) => a.tastos), color: PALETA[2] },
+      { type: "bar", name: "Presentacions", data: visites.map((a) => a.presentacions), color: PALETA[2] },
       { type: "bar", name: "Contacte remot", data: visites.map((a) => a.remotes), color: PALETA[1] },
     ],
   };
@@ -215,11 +215,11 @@ export function PanellCrm({ dades }: { dades: DadesPanellCrm }) {
         <Grafic opcions={tancats} alcada={300} />
       </TargetaGrafic>
 
-      <TargetaGrafic titol="Activitat comercial" subtitol="Visites, tastos, trucades, correus i reunions" ample>
+      <TargetaGrafic titol="Activitat comercial" subtitol="Visites, presentacions, trucades, correus i reunions" ample>
         <Grafic opcions={activitatMensual} alcada={300} />
       </TargetaGrafic>
 
-      <TargetaGrafic titol="Treball de carrer" subtitol="Visites i tastos contra contacte remot, per comercial">
+      <TargetaGrafic titol="Treball de carrer" subtitol="Visites i presentacions contra contacte remot, per comercial">
         <Grafic opcions={carrer} alcada={290} />
       </TargetaGrafic>
 

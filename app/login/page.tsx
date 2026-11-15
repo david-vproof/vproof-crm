@@ -1,6 +1,4 @@
-import Image from "next/image";
-
-import { Marca } from "@/components/Marca";
+import { CREU, Marca } from "@/components/Marca";
 
 import { FormulariLogin } from "./FormulariLogin";
 
@@ -15,29 +13,24 @@ export default async function PaginaLogin({ searchParams }: { searchParams: Prom
 
         <div className="mx-auto w-full max-w-[360px] py-16">
           <h1 className="font-display text-[40px] leading-[1.1] tracking-[-0.01em]">Benvingut de nou</h1>
-          <p className="mt-2 text-[15px] text-muted">Accedeix al portal de gestió comercial.</p>
+          <p className="mt-2 text-[15px] text-muted">Accedeix al portal de gestió comercial de producte sanitari veterinari.</p>
 
           <FormulariLogin des={des} ambCorreu />
 
         </div>
 
-        <p className="text-[12px] text-muted">© {new Date().getFullYear()} Wine Backend · Portal de gestió comercial</p>
+        <p className="text-[12px] text-muted">© {new Date().getFullYear()} vproof CRM · Portal de gestió comercial</p>
       </div>
 
-      {/* Columna dreta: fotografia */}
-      <div className="relative hidden overflow-hidden lg:block">
-        <Image
-          src="/vineyard.jpg"
-          alt="Vinya al capvespre amb la boira cobrint la vall"
-          fill
-          priority
-          sizes="(min-width: 1024px) 55vw, 0px"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-ink/10" />
+      {/* Columna dreta: el color de la marca, amb l'emblema en gran com a filigrana */}
+      <div className="relative hidden overflow-hidden bg-marca-fosc lg:block">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.14),transparent_55%),radial-gradient(circle_at_85%_80%,rgba(13,148,136,0.55),transparent_60%)]" />
+        <svg viewBox="0 0 24 24" aria-hidden className="absolute -right-24 top-1/2 size-[640px] -translate-y-1/2 text-cream/[0.07]">
+          <path d={CREU.escut} fill="currentColor" />
+        </svg>
         <div className="absolute inset-x-0 bottom-0 p-12">
           <p className="max-w-[26ch] font-display text-[32px] leading-[1.2] text-cream">
-            Wine Backend.
+            La relació amb les clíniques i les explotacions, en un sol lloc.
           </p>
           <div className="mt-6 flex items-center gap-3">
             <span className="h-px w-10 bg-cream/40" />

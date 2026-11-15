@@ -8,11 +8,11 @@ import { useEdicio } from "@/components/crm/EdicioFitxa";
 import { CampDataHora } from "@/components/crm/CampDataHora";
 import { CampFoto } from "@/components/crm/CampFoto";
 import { MatriuHoraris } from "@/components/crm/MatriuHoraris";
-import { SelectorCeller } from "@/components/crm/SelectorCeller";
+import { SelectorLaboratori } from "@/components/crm/SelectorLaboratori";
 import { SelectorClients } from "@/components/crm/SelectorClients";
-import { SelectorVins } from "@/components/crm/SelectorVins";
+import { SelectorProductes } from "@/components/crm/SelectorProductes";
 import { TriaRelacio } from "@/components/crm/TriaRelacio";
-import type { ClientOLead } from "@/domini/cistella-vins";
+import type { ClientOLead } from "@/domini/cistella-productes";
 import { campVisible, esMultiple, filtreDeRelacio, idDeRelacio, veDeFactusol, type Camp, type Fitxa } from "@/domini/crm-fitxes";
 import { SelectorUbicacio } from "@/components/crm/SelectorUbicacio";
 import { momentLocal } from "@/domini/crm-planner";
@@ -46,7 +46,7 @@ function valorInicial(camp: Camp, valors: Record<string, unknown>) {
   const brut = valors[camp.nom];
   if (brut === null || brut === undefined) return "";
   if (camp.tipus === "datahora") {
-    // Directus desa l'instant en UTC; el formulari treballa en hora d'aquí, com l'agenda.
+    // la base de dades desa l'instant en UTC; el formulari treballa en hora d'aquí, com l'agenda.
     const moment = momentLocal(String(brut));
     return moment ? `${moment.dia}T${moment.hora}` : "";
   }
@@ -56,7 +56,7 @@ function valorInicial(camp: Camp, valors: Record<string, unknown>) {
 
 /** Els camps que ocupen tota l'amplada quan el formulari va a dues columnes. */
 function esAmple(camp: Camp) {
-  return camp.ample === "sencer" || Boolean(camp.parella) || ["area", "horari", "criteris", "vins", "foto"].includes(camp.tipus);
+  return camp.ample === "sencer" || Boolean(camp.parella) || ["area", "horari", "criteris", "productes", "foto"].includes(camp.tipus);
 }
 
 /**
@@ -167,8 +167,8 @@ export function FormulariFitxa({
   );
   const marcaPle = (nom: string, ple: boolean) =>
     setPlens((previ) => (previ[nom] === ple ? previ : { ...previ, [nom]: ple }));
-  // El client (o clients) de l'activitat, amb el nom: el configurador de vins
-  // s'obre amb ell posat, per dir de seguida què ja ha tastat o comprat.
+  // El client (o clients) de l'activitat, amb el nom: el configurador de productes
+  // s'obre amb ell posat, per dir de seguida què ja ha presentat o comprat.
   const [clientsTriats, setClientsTriats] = useState<{ id: string; text: string }[]>(() => {
     const camp = fitxa.camps.find((c) => c.nom === "client" && c.tipus === "relacio");
     const inicial = camp ? valorInicial(camp, valors) : "";
@@ -182,7 +182,7 @@ export function FormulariFitxa({
     if (!camp || !inicial) return null;
     return { id: inicial, text: (opcions[camp.nom] ?? opcions[camp.relacio!] ?? []).find((o) => o.id === inicial)?.text ?? "Lead de l'activitat", lead: true };
   });
-  /** El que cal saber quan canvia una relació: si governa altres camps, si és excloent i si és el lead dels vins. */
+  /** El que cal saber quan canvia una relació: si governa altres camps, si és excloent i si és el lead dels productes. */
   const seguidor = (camp: Camp) =>
     governa(camp.nom) || camp.excloent
       ? (id: string, text: string) => {
@@ -225,11 +225,11 @@ export function FormulariFitxa({
             </div>
             {camp.contacte ? <BotonsContacte mena={camp.contacte} valor={inicial} /> : null}
           </div>
-          {/* Igual als clients que als cellers: el que ve de l'ERP ho diu camp per camp. */}
+          {/* Igual als clients que als laboratoris: el que ve de l'ERP ho diu camp per camp. */}
           {camp.calculat || camp.antic ? (
             <p className="text-[12px] text-muted">{camp.nota}</p>
           ) : camp.deErp ? (
-            <p className="text-[12px] text-muted">Ve de FactuSol: es canvia a l&apos;ERP.</p>
+            <p className="text-[12px] text-muted">Ve de l&apos;ERP: es canvia a l&apos;ERP.</p>
           ) : null}
         </div>
       );
@@ -247,7 +247,7 @@ export function FormulariFitxa({
       <div key={camp.nom} className={`space-y-1.5 ${esAmple(camp) ? "@xl:col-span-2" : ""}`}>
         <label htmlFor={idCamp(camp.nom)} className="block text-[12px] font-medium uppercase tracking-[0.04em] text-muted">
           {camp.etiqueta}
-          {camp.obligatori ? <span className="text-wine"> *</span> : null}
+          {camp.obligatori ? <span className="text-marca"> *</span> : null}
         </label>
 
         {/* Els excloents sempre van dins d'aquest embolcall, per no desmuntar-los
@@ -306,9 +306,9 @@ export function FormulariFitxa({
             alCanviarTriats={camp.nom === "client" ? setClientsTriats : undefined}
           />
         ) : camp.tipus === "relacio" && camp.relacio === "proveidors" ? (
-          // Els cellers són centenars i vénen de l'ERP: es trien amb una
+          // Els laboratoris són centenars i vénen de l'ERP: es trien amb una
           // finestra de cerca, no amb un desplegable.
-          <SelectorCeller
+          <SelectorLaboratori
             nom={camp.nom}
             multiple={!id && esMultiple(camp, govern)}
             valorInicial={inicial || null}
@@ -337,19 +337,19 @@ export function FormulariFitxa({
           <CampDataHora id={idCamp(camp.nom)} nom={camp.nom} inicial={inicial} obligatori={camp.obligatori} />
         ) : camp.contacte ? (
           <CampContacte comu={comu} mena={camp.contacte} />
-        ) : camp.tipus === "vins" ? (
-          <SelectorVins
+        ) : camp.tipus === "productes" ? (
+          <SelectorProductes
             nom={camp.nom}
             triatsInicials={opcions[camp.nom] ?? []}
             activitat={fitxa.clau === "activitats" ? id : null}
-            // La d'un lead convertit porta tots dos: mana el client, que ja n'ha heretat els tastos.
+            // La d'un lead convertit porta tots dos: mana el client, que ja n'ha heretat els presentacions.
             clients={clientsTriats.length > 0 ? clientsTriats : leadTriat ? [leadTriat] : []}
           />
         ) : camp.tipus === "foto" ? (
           <CampFoto id={idCamp(camp.nom)} nom={camp.nom} activitat={id} fitxerInicial={inicial || null} />
         ) : camp.tipus === "booleà" ? (
           <label className="flex items-center gap-2 text-[13.5px] text-muted">
-            <input type="checkbox" name={camp.nom} defaultChecked={valors[camp.nom] === true} className="size-4 accent-wine" />
+            <input type="checkbox" name={camp.nom} defaultChecked={valors[camp.nom] === true} className="size-4 accent-marca" />
             Sí
           </label>
         ) : (
@@ -388,14 +388,14 @@ export function FormulariFitxa({
 
       {fitxa.nomesLectura ? (
         <p className="rounded-lg bg-parchment px-3.5 py-2.5 text-[13px] text-muted">
-          Aquesta fitxa la manté FactuSol. Des del portal es consulta; els canvis es fan a l&apos;ERP i arriben amb la
+          Aquesta fitxa la manté l&apos;ERP. Des del portal es consulta; els canvis es fan a l&apos;ERP i arriben amb la
           propera sincronització.
         </p>
       ) : null}
 
       {/* L'error va a dalt, a tocar del botó que l'ha provocat. */}
       {estat.error ? (
-        <p role="alert" className="rounded-lg bg-wine-tint px-3.5 py-2.5 text-[13px] text-wine-deep">
+        <p role="alert" className="rounded-lg bg-marca-clar px-3.5 py-2.5 text-[13px] text-marca-fosc">
           {estat.error}
         </p>
       ) : null}

@@ -6,7 +6,7 @@
  * Aquí només hi ha la lògica pura, que fan servir totes dues bandes.
  */
 
-/** El costat llarg, en píxels: prou per llegir una carta de vins i prou lleuger per enviar-lo amb poca cobertura. */
+/** El costat llarg, en píxels: prou per llegir una carta de productes i prou lleuger per enviar-lo amb poca cobertura. */
 const COSTAT_MAXIM_FOTO = 1920;
 
 export const QUALITAT_FOTO = 0.82;

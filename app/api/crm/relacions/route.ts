@@ -5,7 +5,7 @@ import { cercaOpcions } from "@/serveis/crm-manteniment";
 
 /**
  * Cerca per als desplegables de relació. Va pel servidor, com tota la resta:
- * el navegador no parla mai amb Directus. El middleware ja exigeix sessió.
+ * el navegador no parla mai amb la base de dades. El middleware ja exigeix sessió.
  *
  * Amb `camp` i `valor` la cerca es limita a qui pengi d'aquella fitxa: és el
  * que fa que el contacte d'una activitat només ofereixi la gent del compte.

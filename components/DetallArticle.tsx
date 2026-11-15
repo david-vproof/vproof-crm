@@ -9,14 +9,14 @@ import { Dada } from "@/components/UI";
 import { dataCurta } from "@/lib/format";
 import type { FitxaArticle } from "@/serveis/articles";
 
-/** Els camps programables de FactuSol. El títol de cadascun el posa la bodega allà. */
+/** Els camps programables de l'ERP. El títol de cadascun el posa l'empresa allà. */
 const PROGRAMABLES = [1, 2, 3, 4, 5] as const;
 
 /**
  * Un article que s'obre: el que es passa com a fill fa de botó, i en tocar-lo
  * surt un modal amb la foto gran i la fitxa de l'article. La foto gran només es
  * demana en obrir-lo, perquè el llistat no la carregui per a cada fila. Com que
- * Directus la transforma en demanar-la i triga una mica, mentrestant hi ha la
+ * La base de dades la transforma en demanar-la i triga una mica, mentrestant hi ha la
  * miniatura, que ja és a la memòria cau, i l'espai de la foto no canvia de mida.
  *
  * És un <dialog> del navegador: es tanca amb Escape, deixa inert el que hi ha
@@ -112,7 +112,7 @@ export function DetallArticle({
                         className="absolute inset-0 m-auto h-full w-full object-contain p-4 opacity-60 blur-[2px] md:p-8"
                       />
                     ) : null}
-                    {/* Ja arriba a la mida que toca des de Directus: no cal que Next la torni a optimitzar. */}
+                    {/* Ja arriba a la mida que toca des de la base de dades: no cal que Next la torni a optimitzar. */}
                     <Image
                       src={gran}
                       alt={`Foto de ${nom}`}
@@ -128,7 +128,7 @@ export function DetallArticle({
                 ) : (
                   <span className="flex aspect-square w-full max-w-[200px] flex-col items-center justify-center gap-2 text-muted/50">
                     <Icona className="size-1/3" />
-                    <span className="text-[13px]">Sense foto a FactuSol</span>
+                    <span className="text-[13px]">Sense foto a l&apos;ERP</span>
                   </span>
                 )}
               </div>
@@ -142,11 +142,11 @@ export function DetallArticle({
 
                 <dl className="mt-5 space-y-3">
                   <Dada
-                    etiqueta="Celler"
+                    etiqueta="Laboratori"
                     valor={
-                      article.celler ? (
-                        <Link href={`/cellers/${article.celler.id}`} className="transition hover:text-wine">
-                          {article.celler.nom_comercial ?? "Sense nom"}
+                      article.laboratori ? (
+                        <Link href={`/laboratoris/${article.laboratori.id}`} className="transition hover:text-marca">
+                          {article.laboratori.nom_comercial ?? "Sense nom"}
                         </Link>
                       ) : (
                         ""

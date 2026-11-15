@@ -1,7 +1,7 @@
 /**
  * El mapa de comptes: projecció i agrupació, sense res de Leaflet ni de xarxa.
  *
- * Cada punt és un establiment d'un client (una direcció d'entrega de FactuSol)
+ * Cada punt és un establiment d'un client (una direcció d'entrega de l'ERP)
  * o, si el client no en té cap, la seva adreça. La idea és que a poc zoom no es
  * vegin cent xinxetes trepitjant-se, sinó unes quantes rodones grans que diuen
  * quants n'hi ha a sota. En apropar-se, les rodones es van partint fins que
@@ -25,7 +25,7 @@ export type PuntCompte = {
   longitud: number;
   poblacio: string;
   tipusClient: string;
-  /** L'agent comercial de FactuSol: l'id per filtrar i el nom per ensenyar. Buits si no en té. */
+  /** L'agent comercial de l'ERP: l'id per filtrar i el nom per ensenyar. Buits si no en té. */
   agentId: string;
   agent: string;
   /** Les dues lletres: la categoria (calculada amb la facturació) i el potencial (posat a mà). */

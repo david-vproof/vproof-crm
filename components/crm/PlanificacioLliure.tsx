@@ -152,7 +152,7 @@ export function PlanificacioLliure({
 
       {triats.length > 0 && !obert ? (
         <div className="px-4 pb-3 sm:px-5">
-          <section className="card overflow-hidden border-wine/30">
+          <section className="card overflow-hidden border-marca/30">
             <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3.5 py-2.5">
               <div className="min-w-0">
                 <h2 className="text-[14.5px] font-medium text-ink">{nom.trim() || "Planificació"}</h2>
@@ -164,7 +164,7 @@ export function PlanificacioLliure({
                 <button type="button" onClick={() => setObert(true)} className="text-muted underline underline-offset-2 hover:text-ink">
                   Canvia la tria
                 </button>
-                <button type="button" onClick={descarta} className="text-muted underline underline-offset-2 hover:text-wine">
+                <button type="button" onClick={descarta} className="text-muted underline underline-offset-2 hover:text-marca">
                   Descarta
                 </button>
               </div>
@@ -208,7 +208,7 @@ export function PlanificacioLliure({
                 {missatge ? (
                   <p
                     role="status"
-                    className={`rounded-lg px-3 py-2 text-[13px] ${missatge.to === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-wine-tint text-wine-deep"}`}
+                    className={`rounded-lg px-3 py-2 text-[13px] ${missatge.to === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-marca-clar text-marca-fosc"}`}
                   >
                     {missatge.text}
                   </p>
@@ -219,7 +219,7 @@ export function PlanificacioLliure({
             {carregant ? (
               <p className="px-3.5 py-3 text-[13px] text-muted">Carregant els clients triats…</p>
             ) : error ? (
-              <p role="alert" className="px-3.5 py-3 text-[13px] text-wine-deep">
+              <p role="alert" className="px-3.5 py-3 text-[13px] text-marca-fosc">
                 {error}
               </p>
             ) : comptes ? (

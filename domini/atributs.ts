@@ -1,6 +1,6 @@
 /**
  * Els atributs d'un client: frases curtes que el caracteritzen («terrassa amb
- * vistes», «carta de vins naturals», «tanca els dilluns»). Cadascun és un
+ * vistes», «carta de productes naturals», «tanca els dilluns»). Cadascun és un
  * registre de `crm_client_atributs`; s'hi posen des de la pestanya Atributs de
  * la fitxa o en tancar una activitat del client.
  *

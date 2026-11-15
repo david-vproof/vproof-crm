@@ -3,7 +3,7 @@
  *
  * Cada lletra comença a partir d'un import de facturació de l'exercici passat
  * sencer (base imposable, sense IVA), i al client li toca la de la franja on
- * cau. Les franges es desen a Directus (`crm_categories`) i es canvien a
+ * cau. Les franges es desen a la base de dades (`crm_categories`) i es canvien a
  * Configuració. Tot és càlcul pur. No s'ha de confondre amb el potencial, que
  * és la mateixa escala però la posa a mà qui porta el compte.
  */
@@ -23,7 +23,7 @@ export const FRANGES_PER_DEFECTE: Franja[] = [
   { lletra: "A", desDe: 7500 },
 ];
 
-/** Les franges tal com arriben de Directus. Una lletra que hi falti agafa el valor de partida. */
+/** Les franges tal com arriben de la base de dades. Una lletra que hi falti agafa el valor de partida. */
 export function llegeixFranges(files: { lletra: string | null; des_de: number | string | null }[]): Franja[] {
   return ORDRE_FRANGES.map((lletra) => {
     const fila = files.find((f) => f.lletra === lletra);

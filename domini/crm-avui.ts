@@ -36,8 +36,8 @@ export type ActeAgenda = {
   fi: string;
   /** El tipus pel seu nom, no pel valor desat. */
   tipus: string;
-  /** Si hi ha vi damunt la taula: cal endur-se'n mostres. */
-  ambVi: boolean;
+  /** Si hi ha producte damunt la taula: cal endur-se'n mostres. */
+  ambProductes: boolean;
   assumpte: string;
   /** Qui es visita. */
   compte: string;

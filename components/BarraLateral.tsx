@@ -39,7 +39,7 @@ function Usuari({
           plegada ? "justify-center" : "px-2"
         } ${actiu ? "bg-white/[0.07]" : ""}`}
       >
-        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-wine text-[13px] font-medium text-white">
+        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-marca text-[13px] font-medium text-white">
           {usuari.slice(0, 1).toUpperCase()}
         </span>
         {plegada ? (
@@ -230,7 +230,7 @@ function Menu({ plegada, usuari, administrador, veuTot }: { plegada: boolean; us
                       } ${esActiu ? "bg-white/[0.07] text-cream" : "text-cream/55 hover:bg-white/[0.04] hover:text-cream/90"}`}
                     >
                       <span
-                        className={`absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-wine transition-opacity ${
+                        className={`absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-marca transition-opacity ${
                           esActiu ? "opacity-100" : "opacity-0"
                         }`}
                       />

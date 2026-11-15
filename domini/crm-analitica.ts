@@ -1,6 +1,6 @@
 import {
   TIPUS_ACTIVITAT,
-  TIPUS_AMB_VI,
+  TIPUS_AMB_PRODUCTE,
   TIPUS_PRESENCIALS,
   TIPUS_REMOTS,
   type Activitat,
@@ -12,7 +12,7 @@ import {
 /** Agregacions del tauler de CRM. Funcions pures, sense dependències de React. */
 
 const DIA = 86_400_000;
-export const ETAPES_EMBUT = ["Contacte", "Qualificada", "Tast", "Proposta", "Negociació"] as const;
+export const ETAPES_EMBUT = ["Contacte", "Qualificada", "Presentació", "Proposta", "Negociació"] as const;
 
 function mes(iso: string) {
   return iso.slice(0, 7);
@@ -177,7 +177,7 @@ export function activitatPerTipus(activitats: Activitat[], mesos: string[]) {
   };
 }
 
-/** Visites i tastos de cada comercial: el treball de carrer. */
+/** Visites i presentacions de cada comercial: el treball de carrer. */
 export function visitesPerComercial(activitats: Activitat[], nomAgent: (codi: number) => string) {
   const codis = [...new Set(activitats.map((a) => a.agent))].sort((a, b) => a - b);
   return codis.map((codi) => {
@@ -185,7 +185,7 @@ export function visitesPerComercial(activitats: Activitat[], nomAgent: (codi: nu
     return {
       nom: nomAgent(codi),
       visites: seves.filter((a) => TIPUS_PRESENCIALS.includes(a.tipus)).length,
-      tastos: seves.filter((a) => TIPUS_AMB_VI.includes(a.tipus)).length,
+      presentacions: seves.filter((a) => TIPUS_AMB_PRODUCTE.includes(a.tipus)).length,
       remotes: seves.filter((a) => TIPUS_REMOTS.includes(a.tipus)).length,
     };
   });

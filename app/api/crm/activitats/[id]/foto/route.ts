@@ -7,7 +7,7 @@ const UUID = /^[0-9a-f-]{36}$/i;
 
 /**
  * La foto d'una activitat. Com la dels articles, va pel servidor: el navegador
- * no parla mai amb Directus. El middleware ja exigeix sessió, i l'activitat d'un
+ * no parla mai amb la base de dades. El middleware ja exigeix sessió, i l'activitat d'un
  * client que no és de qui la demana no surt.
  *
  * Quan l'adreça porta l'id del fitxer (`v`) i és el que toca, la resposta es pot

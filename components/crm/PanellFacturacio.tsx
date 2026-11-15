@@ -9,11 +9,11 @@ function variacio(actual: number, anterior: number) {
 
 function Xifra({ etiqueta, valor, respecte, destacat = false }: { etiqueta: string; valor: number; respecte?: number | null; destacat?: boolean }) {
   return (
-    <div className={`rounded-lg border px-3 py-2.5 ${destacat ? "border-wine/30 bg-white" : "border-line bg-white/60"}`}>
+    <div className={`rounded-lg border px-3 py-2.5 ${destacat ? "border-marca/30 bg-white" : "border-line bg-white/60"}`}>
       <dt className="text-[12px] text-muted">{etiqueta}</dt>
       <dd className="mt-0.5 font-display text-[20px] leading-tight tabular-nums">{euros(valor)}</dd>
       {respecte !== null && respecte !== undefined ? (
-        <dd className={`mt-0.5 text-[11.5px] tabular-nums ${respecte >= 0 ? "text-emerald-700" : "text-wine-deep"}`}>
+        <dd className={`mt-0.5 text-[11.5px] tabular-nums ${respecte >= 0 ? "text-emerald-700" : "text-marca-fosc"}`}>
           {respecte >= 0 ? "+" : ""}
           {Math.round(respecte)}% respecte de l&apos;any anterior
         </dd>
@@ -56,7 +56,7 @@ export function PanellFacturacio({ resum }: { resum: ResumFacturacio }) {
       </section>
 
       <p className="text-[12px] text-muted">
-        Base imposable de les factures de FactuSol, sense IVA; les rectificatives resten. A {actual.exercici} s&apos;hi
+        Base imposable de les factures de l&apos;ERP, sense IVA; les rectificatives resten. A {actual.exercici} s&apos;hi
         sumen els albarans encara no facturats. Es posa al dia amb la sincronització de clients.
       </p>
     </div>

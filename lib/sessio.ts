@@ -7,7 +7,7 @@
  * És una sessió llarga i lliscant, pensada perquè el portal instal·lat al
  * mòbil no demani la contrasenya cada dia: cada dia d'ús l'allarga fins a
  * DURADA_MS, amb un sostre absolut de MAXIM_MS des de l'entrada. A canvi, el
- * middleware comprova un cop al dia que el compte segueixi actiu a Directus.
+ * middleware comprova un cop al dia que el compte segueixi actiu a la base de dades.
  */
 import { ROL_ADMINISTRADOR, ROL_MANAGER } from "@/domini/rols";
 const SECRET = process.env.AUTH_SECRET ?? "wine-backend-secret-de-desenvolupament";
@@ -19,20 +19,20 @@ export const DURADA_MS = 30 * DIA_MS;
 export const MAXIM_MS = 90 * DIA_MS;
 /** Cada quant es torna a signar la galeta amb la caducitat allargada. */
 export const RENOVACIO_MS = DIA_MS;
-/** Cada quant es comprova contra Directus que el compte segueix actiu. */
+/** Cada quant es comprova contra la base de dades que el compte segueix actiu. */
 export const COMPROVACIO_MS = DIA_MS;
 /** Si la comprovació no ha pogut respondre, quan es torna a intentar. */
 export const REINTENT_MS = 60 * 60 * 1000;
 
-export const GALETA_SESSIO = "wine_backend_sessio";
+export const GALETA_SESSIO = "vproof_crm_sessio";
 
-/** `usuari` és la identitat (correu amb Directus); la resta és per pintar. */
+/** `usuari` és la identitat (correu amb la base de dades); la resta és per pintar. */
 export type Sessio = {
   usuari: string;
   nom?: string;
   id?: string;
   rol?: string | null;
-  /** L'agent comercial de FactuSol que és aquesta persona, si n'és un: el seu vincle amb els clients. */
+  /** L'agent comercial de l'ERP que és aquesta persona, si n'és un: el seu vincle amb els clients. */
   agent?: AgentDeSessio | null;
   /** Quan va entrar. La renovació no passa mai de MAXIM_MS des d'aquí. */
   inici: number;
@@ -43,7 +43,7 @@ export type Sessio = {
   expira: number;
 };
 
-/** L'agent lligat al compte: l'id de `crm_agents` i el codi que FactuSol posa als clients (AGECLI). */
+/** L'agent lligat al compte: l'id de `crm_agents` i el codi que l'ERP posa als clients (AGECLI). */
 export type AgentDeSessio = { id: string; codiErp: number | null };
 
 export type Perfil = { nom?: string; id?: string; rol?: string | null; agent?: AgentDeSessio | null };
@@ -92,7 +92,7 @@ export function novaSessio(usuari: string, perfil: Perfil = {}, ara = Date.now()
 
 /**
  * La mateixa sessió amb la caducitat allargada i, si s'ha comprovat, la marca
- * al dia. Amb `perfil`, el rol i l'agent tal com són ara a Directus: un canvi
+ * al dia. Amb `perfil`, el rol i l'agent tal com són ara a la base de dades: un canvi
  * de rol o d'agent fet des d'Usuaris arriba així a la sessió oberta.
  */
 export function renovaSessio(

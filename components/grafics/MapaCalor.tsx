@@ -14,7 +14,7 @@ const explica = (nom: string, cella: Cella) =>
 
 /** La intensitat es corba una mica perquè els valors baixos no desapareguin. */
 const to = (intensitat: number) =>
-  `rgba(140, 47, 69, ${0.06 + Math.pow(intensitat, 0.65) * 0.88})`;
+  `rgba(15, 118, 110, ${0.06 + Math.pow(intensitat, 0.65) * 0.88})`;
 
 /** Cada quants mesos es retola l'eix del mòbil: amb dotze etiquetes no s'hi cabria. */
 const CADA = 3;

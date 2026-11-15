@@ -6,7 +6,7 @@ export type Enllac = {
   icona: NomIcona;
   /** Fals mentre el mòdul no estigui llest: no surt al menú. */
   actiu?: boolean;
-  /** Només el veu qui administra Directus: als altres no els surt al menú. */
+  /** Només el veu qui administra la base de dades: als altres no els surt al menú. */
   nomesAdministrador?: boolean;
   /**
    * Només el veu qui veu els clients de tothom (administrador i manager). Els
@@ -29,8 +29,8 @@ export const SECCIONS: { titol: string; enllacos: Enllac[] }[] = [
       // Tot el que queda per fer, de tots els clients: els To-Do que deixen les activitats en tancar-se.
       { href: "/crm?v=deures", etiqueta: "To-Do", icona: "deures" },
       { href: "/crm?v=activitats", etiqueta: "Activitats", icona: "activitats" },
-      // El configurador de vins: una cistella per criteris, desada com a plantilla. També s'obre des d'una activitat.
-      { href: "/selector-vins", etiqueta: "Selector de vins", icona: "vins" },
+      // El configurador de productes: una cistella per criteris, desada com a plantilla. També s'obre des d'una activitat.
+      { href: "/selector-productes", etiqueta: "Selector de productes", icona: "productes" },
       { href: "/crm?v=segments", etiqueta: "Planificador", icona: "segments" },
       { href: "/crm?v=mapa", etiqueta: "Mapa", icona: "mapa" },
       { href: "/crm?v=oportunitats", etiqueta: "Oportunitats", icona: "oportunitats" },
@@ -40,14 +40,12 @@ export const SECCIONS: { titol: string; enllacos: Enllac[] }[] = [
     ],
   },
   {
-    titol: "ERP",
+    titol: "Catàleg",
     enllacos: [
-      { href: "/clients", etiqueta: "Clients", icona: "clients", nomesVeuTot: true },
-      // Els cellers són els proveïdors de FactuSol. Tenen pantalla pròpia, com
-      // els clients, llegida de la còpia que en manté la sincronització.
-      { href: "/cellers", etiqueta: "Cellers", icona: "cellers", nomesVeuTot: true },
-      // Els articles actius, també de la còpia de la sincronització.
-      { href: "/articles", etiqueta: "Articles", icona: "articles", nomesVeuTot: true },
+      // Els laboratoris són els proveïdors: de qui es compra. Es creen des del portal fins que arribin de l'ERP.
+      { href: "/laboratoris", etiqueta: "Laboratoris", icona: "laboratoris", nomesVeuTot: true },
+      // El catàleg de productes, amb els filtres per característiques.
+      { href: "/productes", etiqueta: "Productes", icona: "articles", nomesVeuTot: true },
     ],
   },
   {
@@ -55,6 +53,8 @@ export const SECCIONS: { titol: string; enllacos: Enllac[] }[] = [
     enllacos: [
       { href: "/compte", etiqueta: "El meu compte", icona: "compte" },
       { href: "/configuracio", etiqueta: "Configuració", icona: "configuracio", nomesVeuTot: true },
+      { href: "/crm?v=tipus_client", etiqueta: "Tipus de client", icona: "segments", nomesVeuTot: true },
+      { href: "/crm?v=agents", etiqueta: "Agents comercials", icona: "usuaris", nomesVeuTot: true },
       { href: "/usuaris", etiqueta: "Usuaris", icona: "usuaris", nomesAdministrador: true },
     ],
   },
@@ -78,7 +78,7 @@ export const TOTS_ELS_ENLLACOS = [...SECCIONS.flatMap((seccio) => seccio.enllaco
  * Si la barra lateral està plegada. És una galeta i no localStorage perquè el
  * servidor la pugui llegir i pintar la barra ja plegada, sense salt en carregar.
  */
-export const GALETA_BARRA = "wine_backend_barra";
+export const GALETA_BARRA = "vproof_crm_barra";
 
 export function cercaEnllac(href: string) {
   return TOTS_ELS_ENLLACOS.find((enllac) => enllac.href === href);

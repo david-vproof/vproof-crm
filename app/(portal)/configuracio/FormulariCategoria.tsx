@@ -79,7 +79,7 @@ export function FormulariCategoria({ franges, quants }: { franges: Franja[]; qua
       {estat.missatge ? (
         <p
           role="status"
-          className={`rounded-lg px-3.5 py-2.5 text-[13px] ${estat.to === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-wine-tint text-wine-deep"}`}
+          className={`rounded-lg px-3.5 py-2.5 text-[13px] ${estat.to === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-marca-clar text-marca-fosc"}`}
         >
           {estat.missatge}
         </p>

@@ -2,7 +2,7 @@
  * Manteniment del CRM: llegir, desar i esborrar fitxes.
  *
  * Tot surt de les descripcions de `domini/crm-fitxes`. Les pantalles no saben
- * res de Directus ni dels noms de les seves col·leccions.
+ * res de la base de dades ni dels noms de les seves col·leccions.
  */
 import "server-only";
 
@@ -39,14 +39,14 @@ import { type ActivitatsDEnguany, activitatsDEnguany } from "@/serveis/crm-perio
 import { fitxaViva } from "@/serveis/crm-tipus-activitat";
 import { avuiLocal, instantDeLocal, momentLocal } from "@/domini/crm-planner";
 import { VARIABLES, descriuCriteri, llegeixCriteris, variable } from "@/domini/crm-segments";
-import { MAXIM_VINS_PER_ACTIVITAT, desaVinsDeLActivitat, vinsDeLActivitat } from "@/serveis/crm-vins";
+import { MAXIM_PRODUCTES_PER_ACTIVITAT, desaProductesDeLActivitat, productesDeLActivitat } from "@/serveis/crm-productes";
 import { type MarquesClient, marquesDe } from "@/domini/marques-client";
 import { clientsMarcats } from "@/serveis/marques-client";
 
 export const PER_PAGINA = 20;
 
 export type ValorsFitxa = Record<string, unknown>;
-/** Una opció d'un desplegable. Els vins porten també d'on són i la foto, per al selector. */
+/** Una opció d'un desplegable. Els productes porten també d'on són i la foto, per al selector. */
 export type Opcio = { id: string; text: string; detall?: string; foto?: string | null };
 export type OpcionsRelacio = Record<string, Opcio[]>;
 
@@ -166,7 +166,7 @@ function deQui(fitxa: Fitxa, comercial: string | null | undefined) {
 }
 
 /**
- * Camp pel qual Directus ordena: una relació s'ordena pel títol de la fitxa
+ * Camp pel qual la base de dades ordena: una relació s'ordena pel títol de la fitxa
  * relacionada. Sempre es desempata per l'id: ordenant per un camp de pocs
  * valors (la categoria), l'ordre dels empatats canvia d'una petició a l'altra, i
  * d'una pàgina a la següent se'n repetien unes i se'n perdien d'altres.
@@ -179,7 +179,7 @@ function campOrdre(fitxa: Fitxa, ordre: OrdreLlistat | null) {
 }
 
 /**
- * Cada filtre de columna, traduït a una condició de Directus segons la mena del
+ * Cada filtre de columna, traduït a una condició de la base de dades segons la mena del
  * camp. Un filtre amb més d'un valor vol dir «qualsevol d'aquests».
  */
 function condicionsDeFiltres(fitxa: Fitxa, filtres: Filtres): Condicio[] {
@@ -187,7 +187,7 @@ function condicionsDeFiltres(fitxa: Fitxa, filtres: Filtres): Condicio[] {
   for (const [nom, valors] of Object.entries(filtres)) {
     if (valors.length === 0) continue;
     const camp = fitxa.camps.find((c) => c.nom === nom);
-    // Com va la periodicitat no és a Directus: el filtra `llistaPerSeguiment`.
+    // Com va la periodicitat no és a la base de dades: el filtra `llistaPerSeguiment`.
     if (camp?.tipus === "periodicitat") continue;
     /** Una condició per valor, unides amb «o»; amb un sol valor, la condició sola. */
     const qualsevol = (perValor: (valor: string) => Condicio | null) => {
@@ -342,7 +342,7 @@ type Consulta = Pick<Parameters<typeof llistaAmbTotal>[1], "cerca" | "campsCerca
 const IDS_PER_PETICIO = 100;
 
 /**
- * Una pàgina filtrada per com va la periodicitat. Directus no ho sap filtrar,
+ * Una pàgina filtrada per com va la periodicitat. La base de dades no ho sap filtrar,
  * perquè surt de comptar activitats: es demanen els ids dels que tenen
  * periodicitat i compleixen la resta de filtres, ja en l'ordre de la llista,
  * s'hi tria aquí, i les files de la pàgina es demanen després per lots.
@@ -509,13 +509,13 @@ export async function opcionsDeRelacions(clau: ClauFitxa, valors: ValorsFitxa = 
   const perSegmentar = deCriteris.length > 0 ? VARIABLES.flatMap((v) => (v.relacio ? [v.relacio] : [])) : [];
   const lliures = [...new Set([...deRelacio.filter((c) => !c.filtradaPer).map((c) => c.relacio!), ...perSegmentar])];
 
-  // Els vins d'una activitat: els que ja té, per al selector. Si Directus no respon, la fitxa s'obre igual, sense.
-  const deVins = fitxa.camps.filter((c) => c.tipus === "vins");
+  // Els productes d'una activitat: els que ja té, per al selector. Si la base de dades no respon, la fitxa s'obre igual, sense.
+  const deProductes = fitxa.camps.filter((c) => c.tipus === "productes");
   const idFitxa = typeof valors.id === "string" ? valors.id : "";
-  const vins = Promise.all(
-    deVins.map(async (camp) => {
-      const triats = idFitxa ? await vinsDeLActivitat(idFitxa).catch(() => []) : [];
-      return [camp.nom, triats.map((vi) => ({ id: vi.id, text: vi.nom, detall: vi.detall, foto: vi.foto }))] as const;
+  const productes = Promise.all(
+    deProductes.map(async (camp) => {
+      const triats = idFitxa ? await productesDeLActivitat(idFitxa).catch(() => []) : [];
+      return [camp.nom, triats.map((producte) => ({ id: producte.id, text: producte.nom, detall: producte.detall, foto: producte.foto }))] as const;
     }),
   );
 
@@ -543,7 +543,7 @@ export async function opcionsDeRelacions(clau: ClauFitxa, valors: ValorsFitxa = 
     ),
   ]);
 
-  return Object.fromEntries([...perFitxa, ...perCamp, ...(await vins)]);
+  return Object.fromEntries([...perFitxa, ...perCamp, ...(await productes)]);
 }
 
 function valorDesat(camp: Camp, brut: FormDataEntryValue | null): unknown {
@@ -600,7 +600,7 @@ const LOT_HERENCIES = 100;
  * Torna a copiar els camps heretats (`heretatDe`) de les fitxes que apunten a
  * les de `clau`: l'agent de les activitats i el tipus de client de les
  * oportunitats d'un lead o d'un client. Es copien en desar-les, i si després
- * canvia l'origen —l'agent d'un lead s'informa més tard, o FactuSol canvia el
+ * canvia l'origen —l'agent d'un lead s'informa més tard, o l'ERP canvia el
  * d'un client— sense això quedarien amb el valor d'abans. Només compta
  * l'origen que mana: el client, i el lead només si no n'hi ha cap.
  *
@@ -701,6 +701,9 @@ async function valorHeretat(fitxa: Fitxa, nom: string, origens: string[], dades:
   return null;
 }
 
+/** El camp de la foto i, a les activitats, el grup: les d'una mateixa visita la comparteixen. */
+const ambGrup = (fitxa: Fitxa, campFoto: string) => (fitxa.clau === "activitats" ? [campFoto, "grup"] : [campFoto]);
+
 /**
  * Què vol fer el formulari amb la foto, ja comprovat; null si no la toca.
  * `perEsborrar` és el fitxer que quedarà sense ús en desar. Una activitat d'un
@@ -717,11 +720,11 @@ async function canviDeFoto(fitxa: Fitxa, id: string | null, formulari: FormData)
   const motiu = bytes ? motiuFotoNoValida(bytes) : null;
   if (motiu) throw new ErrorFitxa(motiu);
 
-  // Es llegeix abans de pujar res: si el camp encara no existeix a Directus,
+  // Es llegeix abans de pujar res: si el camp encara no existeix a la base de dades,
   // s'atura aquí, amb l'avís de completar el model, i no queda cap fitxer orfe.
   let perEsborrar: string | null = null;
   if (id) {
-    const actual = await obteItem<Record<string, unknown>>(fitxa.colleccio, id, [camp.nom, "grup"]);
+    const actual = await obteItem<Record<string, unknown>>(fitxa.colleccio, id, ambGrup(fitxa, camp.nom));
     if (!actual?.grup) perEsborrar = idDeRelacio(actual?.[camp.nom]) || null;
   } else {
     await llistaAmbTotal(fitxa.colleccio, { camps: [camp.nom], limit: 1 });
@@ -747,12 +750,12 @@ export async function desaFitxa(
   const brut: Record<string, unknown> = {};
   for (const camp of fitxa.camps) brut[camp.nom] = formulari.get(camp.nom);
 
-  // El que és fix un cop desat, i d'on ve la fitxa, es mira a Directus abans
+  // El que és fix un cop desat, i d'on ve la fitxa, es mira a la base de dades abans
   // de res: el formulari no ho envia (o no ho ha d'enviar) i mana el que hi ha.
   const fixos = id ? fitxa.camps.filter((camp) => camp.fixEnEditar).map((camp) => camp.nom) : [];
   const perLlegir = [...fixos, ...(id && fitxa.campFont ? [fitxa.campFont] : [])];
   const actual = id && perLlegir.length > 0 ? await obteItem<Record<string, unknown>>(fitxa.colleccio, id, perLlegir) : null;
-  // En una fitxa de FactuSol els camps de l'ERP no es validen ni es desen:
+  // En una fitxa de l'ERP els camps de l'ERP no es validen ni es desen:
   // el formulari els mostra bloquejats i l'ERP els tornaria a posar igualment.
   const deErp = veDeFactusol(fitxa, actual);
 
@@ -765,9 +768,9 @@ export async function desaFitxa(
     if (camp.heretatDe) continue;
     // El que calcula el portal (la categoria) no es desa mai des del formulari.
     if (camp.calculat) continue;
-    // Els vins es desen a part, un cop desada l'activitat; el text d'abans ja no
+    // Els productes es desen a part, un cop desada l'activitat; el text d'abans ja no
     // es toca. La foto no arriba si no es canvia: es posa més avall.
-    if (camp.tipus === "vins" || camp.tipus === "foto" || camp.antic) continue;
+    if (camp.tipus === "productes" || camp.tipus === "foto" || camp.antic) continue;
     if (deErp && camp.deErp) continue;
     if (!campVisible(camp, brut)) {
       dades[camp.nom] = camp.tipus === "booleà" ? false : null;
@@ -800,18 +803,18 @@ export async function desaFitxa(
     if (camp.heretatDe) dades[camp.nom] = await valorHeretat(fitxa, camp.nom, camp.heretatDe, dades);
   }
 
-  // Els vins triats. Si l'activitat ja no és de les que porten vi, se li treuen.
+  // Els productes triats. Si l'activitat ja no és de les que porten producte, se li treuen.
   // Si el formulari no porta el camp, no es toquen: null vol dir «deixa'ls estar».
-  const campVins = fitxa.camps.find((camp) => camp.tipus === "vins");
-  const vins = !campVins
+  const campProductes = fitxa.camps.find((camp) => camp.tipus === "productes");
+  const productes = !campProductes
     ? null
-    : !campVisible(campVins, brut)
+    : !campVisible(campProductes, brut)
       ? []
-      : formulari.has(campVins.nom)
-        ? [...new Set(formulari.getAll(campVins.nom).map(String).filter(Boolean))]
+      : formulari.has(campProductes.nom)
+        ? [...new Set(formulari.getAll(campProductes.nom).map(String).filter(Boolean))]
         : null;
-  if (vins && vins.length > MAXIM_VINS_PER_ACTIVITAT) {
-    throw new ErrorFitxa(`Una activitat pot portar com a molt ${MAXIM_VINS_PER_ACTIVITAT} vins.`);
+  if (productes && productes.length > MAXIM_PRODUCTES_PER_ACTIVITAT) {
+    throw new ErrorFitxa(`Una activitat pot portar com a molt ${MAXIM_PRODUCTES_PER_ACTIVITAT} productes.`);
   }
 
   // La foto es puja l'última, amb tot el formulari ja validat. Treure-la és posar-hi null.
@@ -819,7 +822,7 @@ export async function desaFitxa(
   if (foto) dades[foto.camp] = foto.bytes ? await pujaFotoDActivitat(foto.bytes, String(dades[fitxa.titol] ?? "")) : null;
 
   // Una fitxa nova amb diverses fitxes triades en un camp múltiple (els clients
-  // d'una visita al celler): se'n crea una per cadascuna, amb la resta igual i
+  // d'una visita al laboratori): se'n crea una per cadascuna, amb la resta igual i
   // lligades pel mateix grup. El que depèn d'una sola, com el contacte, es buida.
   const campMultiple = id ? undefined : fitxa.camps.find((camp) => esMultiple(camp, brut));
   const triats = campMultiple ? [...new Set(formulari.getAll(campMultiple.nom).map(String).filter(Boolean))] : [];
@@ -829,27 +832,27 @@ export async function desaFitxa(
     const grup = crypto.randomUUID();
     const comunes = { ...dades, grup, ...Object.fromEntries(dependents.map((camp) => [camp.nom, null])) };
     await creaItems(fitxa.colleccio, triats.map((valor) => ({ ...comunes, [campMultiple.nom]: valor })));
-    // Els mateixos vins a cadascuna: es van tastar a la mateixa visita.
-    if (vins && vins.length > 0) {
+    // Els mateixos productes a cadascuna: es van presentar a la mateixa visita.
+    if (productes && productes.length > 0) {
       const { files: creades } = await llistaAmbTotal<{ id: string }>(fitxa.colleccio, {
         camps: ["id"],
         limit: -1,
         filtre: { camp: "grup", valor: grup },
       });
-      for (const creada of creades) await desaVinsDeLActivitat(creada.id, vins);
+      for (const creada of creades) await desaProductesDeLActivitat(creada.id, productes);
     }
     return "";
   }
 
   if (id) {
     // El que és fix un cop desat no s'accepta ni encara que el formulari ho
-    // enviï: el que hi ha a Directus mana, si hi ha res.
+    // enviï: el que hi ha a la base de dades mana, si hi ha res.
     for (const nom of fixos) {
       const valor = actual?.[nom];
       if (valor !== null && valor !== undefined && valor !== "") delete dades[nom];
     }
     await actualitzaItem(fitxa.colleccio, id, dades);
-    if (vins) await desaVinsDeLActivitat(id, vins);
+    if (productes) await desaProductesDeLActivitat(id, productes);
     // La fitxa ja està desada: un fitxer vell que no s'hagi pogut esborrar no la desfà.
     if (foto?.perEsborrar) await esborraFitxer(foto.perEsborrar).catch(() => undefined);
     // Convertit, el lead passa les seves activitats al client. Si falla es diu:
@@ -871,7 +874,7 @@ export async function desaFitxa(
   // màquina: l'id surt de la sessió del portal.
   if (fitxa.campComercial && comercial) dades[fitxa.campComercial] = comercial;
   const nou = await creaItem(fitxa.colleccio, dades);
-  if (vins && vins.length > 0) await desaVinsDeLActivitat(nou, vins);
+  if (productes && productes.length > 0) await desaProductesDeLActivitat(nou, productes);
   return nou;
 }
 
@@ -893,17 +896,17 @@ export async function esborraFitxa(clau: ClauFitxa, id: string) {
   if (fitxa.nomesLectura) {
     throw new ErrorFitxa(`${fitxa.plural} no s'esborren des del portal: els manté l'ERP.`);
   }
-  // Una fitxa de FactuSol no s'esborra ni per l'URL: la manté l'ERP.
+  // Una fitxa de l'ERP no s'esborra ni per l'URL: la manté l'ERP.
   if (fitxa.campFont) {
     const actual = await obteItem<Record<string, unknown>>(fitxa.colleccio, id, [fitxa.campFont]);
     if (veDeFactusol(fitxa, actual)) {
-      throw new ErrorFitxa("Aquesta fitxa ve de FactuSol i no es pot esborrar des del portal.");
+      throw new ErrorFitxa("Aquesta fitxa ve de l'ERP i no es pot esborrar des del portal.");
     }
   }
   // Amb la fitxa se'n va la seva foto, si no la comparteix amb el seu grup. Si no
   // es pot llegir (el camp encara no existeix, posem), no ha d'impedir esborrar.
   const campFoto = fitxa.camps.find((camp) => camp.tipus === "foto");
-  const ambFoto = campFoto ? await obteItem<Record<string, unknown>>(fitxa.colleccio, id, [campFoto.nom, "grup"]).catch(() => null) : null;
+  const ambFoto = campFoto ? await obteItem<Record<string, unknown>>(fitxa.colleccio, id, ambGrup(fitxa, campFoto.nom)).catch(() => null) : null;
   const fitxerFoto = campFoto && !ambFoto?.grup ? idDeRelacio(ambFoto?.[campFoto.nom]) : "";
 
   await esborraItem(fitxa.colleccio, id);

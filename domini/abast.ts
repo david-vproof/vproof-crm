@@ -2,14 +2,14 @@
  * L'abast d'un usuari sobre les dades del CRM: quins clients veu.
  *
  * L'administrador i el manager ho veuen tot. La resta només veu els seus
- * clients, els que a FactuSol porten el seu agent comercial (el vincle és el
- * camp `agent` del compte de Directus, que es tria a Usuaris), i tot el que en
+ * clients, els que a l'ERP porten el seu agent comercial (el vincle és el
+ * camp `agent` del compte de la base de dades, que es tria a Usuaris), i tot el que en
  * penja: leads del mateix agent, contactes, oportunitats, activitats, deures,
- * establiments, facturació, albarans, atributs i vins d'activitat. Qui no té
+ * establiments, facturació, albarans, atributs i productes d'activitat. Qui no té
  * agent no veu cap client.
  *
  * El filtre s'aplica a totes les pantalles d'un sol lloc: a cada lectura de
- * Directus (`apis/directus/crm.ts`), que hi afegeix la condició d'aquí. Les
+ * La base de dades (`apis/directus/crm.ts`), que hi afegeix la condició d'aquí. Les
  * col·leccions que no són de cap client (articles, agents, segments, zones,
  * plantilles, configuració…) no es toquen.
  */
@@ -19,7 +19,7 @@ export type AbastDades = {
   totes: boolean;
   /** L'agent comercial (id de `crm_agents`) de qui mira, si no ho veu tot. */
   agent: string | null;
-  /** L'id de Directus de qui mira, per les fitxes que són seves encara que no tinguin client. */
+  /** L'id de la base de dades de qui mira, per les fitxes que són seves encara que no tinguin client. */
   jo: string | null;
 };
 
@@ -55,7 +55,7 @@ function condicions(colleccio: string, agent: string, jo: string | null): Condic
       return [deAgent(["client", "agent"])];
     case "crm_albarans_linies":
       return [deAgent(["albara", "client", "agent"])];
-    case "crm_activitats_vins":
+    case "crm_activitats_productes":
       return [deAgent(["activitat", "agent"]), ...(jo ? [{ activitat: { comercial: { _eq: jo } } }] : [])];
     default:
       return null;
@@ -68,7 +68,7 @@ export function esColleccioDeClients(colleccio: string) {
 }
 
 /**
- * La condició de Directus que limita una col·lecció a l'abast, o null si no
+ * La condició de la base de dades que limita una col·lecció a l'abast, o null si no
  * cal filtrar (ho veu tot, o la col·lecció no és de cap client).
  */
 export function condicioDAbast(colleccio: string, abast: AbastDades): Condicio | null {

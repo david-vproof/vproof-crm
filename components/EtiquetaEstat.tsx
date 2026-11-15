@@ -1,6 +1,6 @@
 import { Etiqueta } from "@/components/UI";
 
-const TONS: Record<string, "neutre" | "vi" | "verd"> = {
+const TONS: Record<string, "neutre" | "marca" | "verd"> = {
   servida: "verd",
   cobrada: "verd",
   actiu: "verd",
@@ -8,9 +8,9 @@ const TONS: Record<string, "neutre" | "vi" | "verd"> = {
   pendent: "neutre",
   preparació: "neutre",
   inactiu: "neutre",
-  "anul·lada": "vi",
-  vençuda: "vi",
-  Perduda: "vi",
+  "anul·lada": "marca",
+  vençuda: "marca",
+  Perduda: "marca",
 };
 
 /** Etiqueta d'estat amb el to ja triat segons el valor. */

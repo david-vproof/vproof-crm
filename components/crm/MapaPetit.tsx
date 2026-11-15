@@ -13,7 +13,7 @@ function iconaPunt() {
     iconSize: [22, 22],
     iconAnchor: [11, 11],
     html:
-      '<span style="width:22px;height:22px;background:#8c2f45;display:block;border-radius:9999px;' +
+      '<span style="width:22px;height:22px;background:#0f766e;display:block;border-radius:9999px;' +
       'border:2.5px solid #fff;box-shadow:0 2px 7px rgba(23,16,15,.45)"></span>',
   });
 }
@@ -186,7 +186,7 @@ export default function MapaPetit({
           ))}
         </ul>
       ) : null}
-      {avis ? <p className="text-[12px] text-wine-deep">{avis}</p> : null}
+      {avis ? <p className="text-[12px] text-marca-fosc">{avis}</p> : null}
 
       {/* isolate: els z-index de Leaflet no han de sortir del requadre. */}
       <div className="isolate overflow-hidden rounded-lg border border-line" style={{ height: alcada }}>

@@ -20,7 +20,7 @@ import {
 } from "@/domini/crm-tipus-activitat";
 
 const COLLECCIO = "crm_tipus_activitat";
-const CAMPS = ["id", "valor", "nom", "visita", "amb_vi", "amb_celler", "actiu", "ordre"];
+const CAMPS = ["id", "valor", "nom", "visita", "amb_productes", "amb_laboratori", "actiu", "ordre"];
 /** Entre un tipus i el següent: un de nou va al final de tot. */
 const SALT_ORDRE = 10;
 
@@ -29,8 +29,8 @@ type Fila = {
   valor: string | null;
   nom: string | null;
   visita: boolean | null;
-  amb_vi: boolean | null;
-  amb_celler: boolean | null;
+  amb_productes: boolean | null;
+  amb_laboratori: boolean | null;
   actiu: boolean | null;
   ordre: number | null;
 };
@@ -43,19 +43,19 @@ function aDefinicio(fila: Fila): DefinicioTipus {
     valor: fila.valor ?? "",
     nom: fila.nom ?? fila.valor ?? "",
     visita: fila.visita === true,
-    ambVi: fila.amb_vi === true,
-    ambCeller: fila.amb_celler === true,
+    ambProductes: fila.amb_productes === true,
+    ambLaboratori: fila.amb_laboratori === true,
     actiu: fila.actiu === true,
   };
 }
 
 function aColumnes(tipus: TipusEnviat) {
-  return { nom: tipus.nom, visita: tipus.visita, amb_vi: tipus.ambVi, amb_celler: tipus.ambCeller, actiu: tipus.actiu };
+  return { nom: tipus.nom, visita: tipus.visita, amb_productes: tipus.ambProductes, amb_laboratori: tipus.ambLaboratori, actiu: tipus.actiu };
 }
 
 const llegeixFiles = () => llistaTot<Fila>(COLLECCIO, CAMPS, "ordre");
 
-/** Tal com són a Directus. Si la taula no hi és, falla: Configuració ho ha de dir. */
+/** Tal com són a la base de dades. Si la taula no hi és, falla: Configuració ho ha de dir. */
 export async function llistaTipusActivitat(): Promise<DefinicioTipus[]> {
   return (await llegeixFiles()).filter((fila) => fila.valor).map(aDefinicio);
 }
@@ -64,10 +64,10 @@ export async function llistaTipusActivitat(): Promise<DefinicioTipus[]> {
  * Els tipus per fer-los servir: una sola lectura per petició, encara que els
  * demanin diverses parts de la pàgina.
  *
- * Mentre Directus no té la taula (respon 403, com a tot el que no existeix) o és
+ * Mentre la base de dades no té la taula (respon 403, com a tot el que no existeix) o és
  * buida, manen els de partida: el CRM no s'ha de parar per això. Qualsevol altre
  * error es deixa passar: desar una activitat amb una llista equivocada li
- * esborraria el celler i els vins.
+ * esborraria el laboratori i els productes.
  */
 export const tipusActivitat = cache(async (): Promise<DefinicioTipus[]> => {
   try {
@@ -79,7 +79,7 @@ export const tipusActivitat = cache(async (): Promise<DefinicioTipus[]> => {
   }
 });
 
-/** La descripció d'una fitxa amb el que depèn de Directus ja posat: a les activitats, els tipus. */
+/** La descripció d'una fitxa amb el que depèn de la base de dades ja posat: a les activitats, els tipus. */
 export async function fitxaViva(clau: ClauFitxa): Promise<Fitxa> {
   return clau === "activitats" ? ambTipusActivitat(FITXES.activitats, await tipusActivitat()) : FITXES[clau];
 }
@@ -115,7 +115,7 @@ export async function desaTipusActivitat(enviats: TipusEnviat[], perEsborrar: st
     const nou = delFormulari.get(tipus.id!);
     if (!nou) return [];
     const igual =
-      nou.nom === tipus.nom && nou.visita === tipus.visita && nou.ambVi === tipus.ambVi && nou.ambCeller === tipus.ambCeller && nou.actiu === tipus.actiu;
+      nou.nom === tipus.nom && nou.visita === tipus.visita && nou.ambProductes === tipus.ambProductes && nou.ambLaboratori === tipus.ambLaboratori && nou.actiu === tipus.actiu;
     return igual ? [] : [nou];
   });
   const nous = enviats.filter((tipus) => !tipus.id);

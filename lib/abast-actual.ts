@@ -1,8 +1,8 @@
 /**
- * L'abast que toca aplicar a les lectures de Directus d'aquest moment.
+ * L'abast que toca aplicar a les lectures de la base de dades d'aquest moment.
  *
  * Normalment és el de la sessió de la petició. Però hi ha feina que no és de
- * cap usuari i ha de veure-ho tot: la sincronització amb FactuSol, que si
+ * cap usuari i ha de veure-ho tot: la sincronització amb l'ERP, que si
  * anés filtrada donaria per absents els clients que no veu. Aquesta feina es
  * fa dins de `senseAbast`, i fora de tota petició (el programador) no hi ha
  * sessió i tampoc es filtra.

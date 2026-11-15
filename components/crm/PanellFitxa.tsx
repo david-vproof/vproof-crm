@@ -116,7 +116,7 @@ function PeuEsborrar({
         <Link
           href={hrefEsborrar}
           scroll={false}
-          className="inline-flex items-center rounded-lg bg-wine px-3 py-1.5 text-[13px] font-medium text-cream transition hover:bg-wine-deep"
+          className="inline-flex items-center rounded-lg bg-marca px-3 py-1.5 text-[13px] font-medium text-cream transition hover:bg-marca-fosc"
         >
           Esborra {que}
         </Link>
@@ -125,8 +125,8 @@ function PeuEsborrar({
   }
 
   return (
-    <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-wine/30 bg-wine-tint px-5 py-3">
-      <p className="text-[13px] text-wine-deep">
+    <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-marca/30 bg-marca-clar px-5 py-3">
+      <p className="text-[13px] text-marca-fosc">
         Segur que vols esborrar «{esborrable.nom}»? No es pot desfer.
       </p>
       <div className="flex items-center gap-3">
@@ -139,7 +139,7 @@ function PeuEsborrar({
           <input type="hidden" name="retorn" value={esborrable.retorn} />
           <button
             type="submit"
-            className="rounded-lg bg-wine px-3 py-1.5 text-[13px] font-medium text-cream transition hover:bg-wine-deep"
+            className="rounded-lg bg-marca px-3 py-1.5 text-[13px] font-medium text-cream transition hover:bg-marca-fosc"
           >
             Sí, esborra
           </button>

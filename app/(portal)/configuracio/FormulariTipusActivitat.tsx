@@ -21,12 +21,12 @@ type Fila = Omit<DefinicioTipus, "valor"> & {
   perEsborrar: boolean;
 };
 
-type Marca = "visita" | "ambVi" | "ambCeller" | "actiu";
+type Marca = "visita" | "ambProductes" | "ambLaboratori" | "actiu";
 
 const CASELLES: { marca: Marca; etiqueta: string }[] = [
   { marca: "visita", etiqueta: "Compta com a visita" },
-  { marca: "ambVi", etiqueta: "Demana vins" },
-  { marca: "ambCeller", etiqueta: "Demana celler" },
+  { marca: "ambProductes", etiqueta: "Demana productes" },
+  { marca: "ambLaboratori", etiqueta: "Demana laboratori" },
   { marca: "actiu", etiqueta: "Es pot triar" },
 ];
 
@@ -57,8 +57,8 @@ function FilesTipus({ tipus, usos }: { tipus: DefinicioTipus[]; usos: Record<str
         clau: `nou-${comptador.current}`,
         nom: "",
         visita: false,
-        ambVi: false,
-        ambCeller: false,
+        ambProductes: false,
+        ambLaboratori: false,
         actiu: true,
         usos: 0,
         esborrable: true,
@@ -74,7 +74,7 @@ function FilesTipus({ tipus, usos }: { tipus: DefinicioTipus[]; usos: Record<str
 
   const enviats = files
     .filter((fila) => !fila.perEsborrar)
-    .map(({ id, nom, visita, ambVi, ambCeller, actiu }) => ({ id, nom, visita, ambVi, ambCeller, actiu }));
+    .map(({ id, nom, visita, ambProductes, ambLaboratori, actiu }) => ({ id, nom, visita, ambProductes, ambLaboratori, actiu }));
   const esborrats = files.filter((fila) => fila.perEsborrar && fila.id).map((fila) => fila.id);
 
   return (
@@ -119,7 +119,7 @@ function FilesTipus({ tipus, usos }: { tipus: DefinicioTipus[]; usos: Record<str
                       checked={fila[marca]}
                       disabled={fila.perEsborrar}
                       onChange={(e) => canvia(fila.clau, { [marca]: e.target.checked })}
-                      className="size-4 accent-wine"
+                      className="size-4 accent-marca"
                     />
                     <span className="sm:sr-only">{etiqueta}</span>
                   </label>
@@ -140,7 +140,7 @@ function FilesTipus({ tipus, usos }: { tipus: DefinicioTipus[]; usos: Record<str
                   onClick={() => treu(fila)}
                   aria-label={`${fila.perEsborrar ? "No esborris" : "Esborra"} ${fila.nom || "aquest tipus"}`}
                   title={fila.perEsborrar ? "No l'esborris" : "Esborra'l"}
-                  className="order-2 flex size-6 items-center justify-center rounded text-[14px] text-muted transition hover:bg-parchment hover:text-wine-deep sm:order-none"
+                  className="order-2 flex size-6 items-center justify-center rounded text-[14px] text-muted transition hover:bg-parchment hover:text-marca-fosc sm:order-none"
                 >
                   {fila.perEsborrar ? "↺" : "✕"}
                 </button>
@@ -152,7 +152,7 @@ function FilesTipus({ tipus, usos }: { tipus: DefinicioTipus[]; usos: Record<str
         </ul>
       </div>
 
-      <button type="button" onClick={afegeix} className="text-[13px] font-medium text-wine underline-offset-2 hover:underline">
+      <button type="button" onClick={afegeix} className="text-[13px] font-medium text-marca underline-offset-2 hover:underline">
         + Afegeix un tipus
       </button>
     </>
@@ -180,7 +180,7 @@ export function FormulariTipusActivitat({ tipus, usos }: { tipus: DefinicioTipus
       {estat.missatge ? (
         <p
           role="status"
-          className={`rounded-lg px-3.5 py-2.5 text-[13px] ${estat.to === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-wine-tint text-wine-deep"}`}
+          className={`rounded-lg px-3.5 py-2.5 text-[13px] ${estat.to === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-marca-clar text-marca-fosc"}`}
         >
           {estat.missatge}
         </p>

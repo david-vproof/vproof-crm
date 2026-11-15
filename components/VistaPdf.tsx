@@ -53,7 +53,7 @@ export function VistaPdf({ pdf, titol }: { pdf: Blob; titol: string }) {
 
   return (
     <>
-      {error ? <p className="text-[13px] text-wine-deep">No s&apos;ha pogut ensenyar el PDF: {error}. Obre&apos;l o descarrega&apos;l.</p> : null}
+      {error ? <p className="text-[13px] text-marca-fosc">No s&apos;ha pogut ensenyar el PDF: {error}. Obre&apos;l o descarrega&apos;l.</p> : null}
       <div ref={contenidor} className="space-y-3">
         <p className="py-10 text-center text-[13.5px] text-muted">Preparant la vista…</p>
       </div>

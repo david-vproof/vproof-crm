@@ -69,7 +69,7 @@ export async function VistaMapa({ segmentInicial = "" }: { segmentInicial?: stri
             <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-muted">
               <span>
                 {provatsSenseSort.length > 0
-                  ? "OpenStreetMap no ha trobat aquestes adreces. Repassa la població i el país a la fitxa (els establiments, a FactuSol), o posa les coordenades del client a mà."
+                  ? "OpenStreetMap no ha trobat aquestes adreces. Repassa la població i el país a la fitxa (els establiments, a l'ERP), o posa les coordenades del client a mà."
                   : "Aquests clients no tenen ni població ni adreça, així que no es poden situar."}
               </span>
               {provatsSenseSort.length > 0 ? <BotoReprenUbicacio etiqueta={`Torna a provar els ${provatsSenseSort.length}`} /> : null}

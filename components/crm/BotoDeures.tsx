@@ -14,7 +14,7 @@ function venc(dia: string) {
 function DeuresDelModal({ client }: { client: string }) {
   const dades = useDemanda<{ deures: Deure[] }>(`/api/crm/deures?${new URLSearchParams({ client })}`);
   if (!dades) return <p className="text-[13px] text-muted">Un moment…</p>;
-  if (dades.error) return <p className="text-[13px] text-wine">{dades.error}</p>;
+  if (dades.error) return <p className="text-[13px] text-marca">{dades.error}</p>;
   const deures = dades.valor?.deures ?? [];
   if (deures.length === 0) return <p className="text-[13px] text-muted">Aquest client ja no té cap To-Do pendent.</p>;
   return (

@@ -7,7 +7,7 @@ const UUID = /^[0-9a-f-]{36}$/i;
 
 /**
  * La foto d'un article. Com la resta, va pel servidor: el navegador no parla
- * mai amb Directus. El middleware ja exigeix sessió.
+ * mai amb la base de dades. El middleware ja exigeix sessió.
  *
  * `mida=petita` és la miniatura dels llistats; sense, la foto sencera. Quan
  * l'adreça porta l'id del fitxer (`v`) i és el que toca, la resposta es pot

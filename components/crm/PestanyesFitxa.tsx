@@ -88,7 +88,7 @@ export function PestanyesFitxa({
               aria-current={activa ? "page" : undefined}
               className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] transition-colors sm:-mb-px sm:rounded-none sm:border-b-2 sm:py-2.5 ${
                 activa
-                  ? "bg-parchment font-medium text-ink sm:border-wine sm:bg-transparent"
+                  ? "bg-parchment font-medium text-ink sm:border-marca sm:bg-transparent"
                   : "text-muted hover:bg-parchment/60 hover:text-ink-soft sm:border-transparent sm:hover:border-line sm:hover:bg-transparent"
               }`}
             >
@@ -96,7 +96,7 @@ export function PestanyesFitxa({
               {pestanya.compte === undefined ? null : (
                 <span
                   className={`rounded px-1.5 py-px text-[11px] tabular-nums ${
-                    activa ? "bg-wine-tint text-wine-deep" : "bg-parchment text-muted"
+                    activa ? "bg-marca-clar text-marca-fosc" : "bg-parchment text-muted"
                   }`}
                 >
                   {pestanya.compte}

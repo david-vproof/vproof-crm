@@ -11,7 +11,7 @@ import { euros, eurosCurt, PALETA } from "./tema";
 const MESOS_CURTS = NOM_MES.map((nom) => nom.slice(0, 3));
 
 /** Les etiquetes al costat de les barres: Highcharts hi posa negreta i un contorn blanc que les emborrona; aquí, text normal. */
-const ETIQUETA: Highcharts.CSSObject = { fontWeight: "400", fontSize: "11.5px", color: "#857878", textOutline: "none" };
+const ETIQUETA: Highcharts.CSSObject = { fontWeight: "400", fontSize: "11.5px", color: "#6b7b79", textOutline: "none" };
 
 /** Facturació mes a mes: l'exercici en columnes i l'anterior en línia, sobre el mateix eix d'euros. */
 export function GraficMensual({ actual, anterior, exercici, finsMes }: { actual: number[]; anterior: number[]; exercici: number; finsMes: number }) {

@@ -1,26 +1,26 @@
 /**
  * Els tipus d'activitat.
  *
- * Viuen a Directus (`crm_tipus_activitat`) i es mantenen a Configuració › Valors
+ * Viuen a la base de dades (`crm_tipus_activitat`) i es mantenen a Configuració › Valors
  * CRM. Una activitat desa el `valor` del seu tipus, que no canvia mai: per això
  * es pot canviar el nom d'un tipus sense tocar cap activitat. Les marques diuen
  * què porta cada tipus. El que va lligat a un valor concret (els diversos
- * clients d'una visita al celler) és a `crm-fitxes.ts` i no s'activa en un de nou.
+ * clients d'una visita al laboratori) és a `crm-fitxes.ts` i no s'activa en un de nou.
  */
 import type { Camp, Fitxa } from "./crm-fitxes";
 
 export type DefinicioTipus = {
-  /** La fila de Directus. Null mentre no hi és: un de nou, o si encara no hi ha la taula. */
+  /** La fila de la base de dades. Null mentre no hi és: un de nou, o si encara no hi ha la taula. */
   id: string | null;
   /** El que es desa a l'activitat. Surt del nom en crear-lo i ja no canvia. */
   valor: string;
   nom: string;
   /** És anar-hi: compta a les visites del tauler. */
   visita: boolean;
-  /** Hi ha vi damunt la taula: porta els vins presentats. */
-  ambVi: boolean;
-  /** Hi ha un celler pel mig: porta el camp del celler. */
-  ambCeller: boolean;
+  /** Hi ha producte damunt la taula: porta els productes presentats. */
+  ambProductes: boolean;
+  /** Hi ha un laboratori pel mig: porta el camp del laboratori. */
+  ambLaboratori: boolean;
   /** S'ofereix en crear activitats. Les que ja el tenen el conserven igualment. */
   actiu: boolean;
 };
@@ -28,35 +28,35 @@ export type DefinicioTipus = {
 /** El que envia la taula de Configuració: el valor no hi és perquè no es tria. */
 export type TipusEnviat = Omit<DefinicioTipus, "valor">;
 
-/** La visita en què un o més clients vénen al celler: és l'única que en pot portar diversos. */
-export const VISITA_CLIENTS_A_CELLER = "visita_celler";
+/** La visita en què un o més clients vénen al laboratori: és l'única que en pot portar diversos. */
+export const VISITA_CLIENTS_A_LABORATORI = "visita_laboratori";
 
-/** La visita en què diversos cellers van a veure un client: n'hi surt una per celler. */
-export const VISITA_CELLERS_A_CLIENT = "visita_cellers_client";
+/** La visita en què diversos laboratoris van a veure un client: n'hi surt una per laboratori. */
+export const VISITA_LABORATORIS_A_CLIENT = "visita_laboratoris_client";
 
-const base = (valor: string, nom: string, marques: Partial<Pick<DefinicioTipus, "visita" | "ambVi" | "ambCeller">> = {}): DefinicioTipus => ({
+const base = (valor: string, nom: string, marques: Partial<Pick<DefinicioTipus, "visita" | "ambProductes" | "ambLaboratori">> = {}): DefinicioTipus => ({
   id: null,
   valor,
   nom,
   visita: false,
-  ambVi: false,
-  ambCeller: false,
+  ambProductes: false,
+  ambLaboratori: false,
   actiu: true,
   ...marques,
 });
 
 /**
  * Els de partida. El portal els coneix pel valor, així que no s'esborren: es
- * poden canviar de nom o desactivar. Són també els que manen mentre Directus no
+ * poden canviar de nom o desactivar. Són també els que manen mentre la base de dades no
  * té la taula.
  */
 export const TIPUS_BASE: DefinicioTipus[] = [
   base("trucada", "Trucada"),
-  base("visita_sense_vi", "Visita normal", { visita: true }),
-  base("visita_amb_vi", "Visita amb vins", { visita: true, ambVi: true }),
-  base("visita_celler_client", "Visita de celler a client", { visita: true, ambVi: true, ambCeller: true }),
-  base(VISITA_CELLERS_A_CLIENT, "Visita de cellers a client", { visita: true, ambVi: true, ambCeller: true }),
-  base(VISITA_CLIENTS_A_CELLER, "Visita de client/s a celler", { visita: true, ambVi: true, ambCeller: true }),
+  base("visita_sense_productes", "Visita normal", { visita: true }),
+  base("visita_amb_productes", "Visita amb productes", { visita: true, ambProductes: true }),
+  base("visita_laboratori_client", "Visita de laboratori a client", { visita: true, ambProductes: true, ambLaboratori: true }),
+  base(VISITA_LABORATORIS_A_CLIENT, "Visita de laboratoris a client", { visita: true, ambProductes: true, ambLaboratori: true }),
+  base(VISITA_CLIENTS_A_LABORATORI, "Visita de client/s a laboratori", { visita: true, ambProductes: true, ambLaboratori: true }),
   base("correu", "Correu"),
   base("reunio", "Reunió"),
 ];
@@ -72,8 +72,8 @@ export function nomDelTipus(llista: DefinicioTipus[], valor: string) {
   return llista.find((tipus) => tipus.valor === valor)?.nom ?? "Activitat";
 }
 
-export function tipusPortaVi(llista: DefinicioTipus[], valor: string) {
-  return llista.some((tipus) => tipus.valor === valor && tipus.ambVi);
+export function tipusPortaProducte(llista: DefinicioTipus[], valor: string) {
+  return llista.some((tipus) => tipus.valor === valor && tipus.ambProductes);
 }
 
 /** Els que es poden triar en crear una activitat: [valor, nom]. */
@@ -82,16 +82,16 @@ export function opcionsDeTipus(llista: DefinicioTipus[]): [string, string][] {
 }
 
 /** Els valors dels tipus que porten una cosa o una altra: és el que fa sortir el camp al formulari. */
-export function valorsAmb(llista: DefinicioTipus[], marca: "ambVi" | "ambCeller") {
+export function valorsAmb(llista: DefinicioTipus[], marca: "ambProductes" | "ambLaboratori") {
   return llista.filter((tipus) => tipus[marca]).map((tipus) => tipus.valor);
 }
 
 /** Quina marca fa sortir cada camp condicional de l'activitat. */
-const MARCA_DEL_CAMP: Record<string, "ambVi" | "ambCeller"> = { celler: "ambCeller", vins: "ambVi", referencies: "ambVi" };
+const MARCA_DEL_CAMP: Record<string, "ambProductes" | "ambLaboratori"> = { laboratori: "ambLaboratori", productes: "ambProductes", referencies: "ambProductes" };
 
 /**
  * La fitxa de les activitats amb els tipus que hi ha ara. `crm-fitxes.ts` és una
- * descripció fixa que porta els de partida; els de debò arriben de Directus.
+ * descripció fixa que porta els de partida; els de debò arriben de la base de dades.
  * Hi van tots, també els desactivats: una activitat antiga s'ha de poder llegir
  * i trobar pel seu tipus, encara que ja no se n'ofereixi cap de nou.
  */
@@ -145,8 +145,8 @@ export function llegeixTipusEnviats(brut: unknown): TipusEnviat[] {
       id: typeof fila.id === "string" && fila.id ? fila.id : null,
       nom: String(fila.nom ?? "").trim(),
       visita: fila.visita === true,
-      ambVi: fila.ambVi === true,
-      ambCeller: fila.ambCeller === true,
+      ambProductes: fila.ambProductes === true,
+      ambLaboratori: fila.ambLaboratori === true,
       actiu: fila.actiu === true,
     }));
 }

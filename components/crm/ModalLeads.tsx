@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import type { ClientOLead } from "@/domini/cistella-vins";
+import type { ClientOLead } from "@/domini/cistella-productes";
 
 type Opcio = { id: string; text: string };
 
@@ -10,7 +10,7 @@ type Opcio = { id: string; text: string };
 const OPCIONS_PER_CERCA = 25;
 
 /**
- * El modal de tria de leads del selector de vins: una cerca i prou, que els
+ * El modal de tria de leads del selector de productes: una cerca i prou, que els
  * leads no tenen els filtres ni els segments dels clients. Va dins del
  * configurador, que pot ser dins d'un formulari: cap botó l'envia i cap camp
  * porta `name`.
@@ -73,7 +73,7 @@ export function ModalLeads({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Leads de qui mirar els tastos"
+      aria-label="Leads de qui mirar els presentacions"
       className="fixed inset-0 z-50 flex items-stretch justify-center bg-ink/35 sm:items-center sm:p-6"
       onKeyDown={(e) => {
         if (e.key === "Escape") {
@@ -84,7 +84,7 @@ export function ModalLeads({
     >
       <div className="flex max-h-full w-full max-w-[520px] flex-col overflow-hidden bg-cream shadow-2xl sm:rounded-xl sm:border sm:border-line">
         <header className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
-          <h2 className="font-display text-[20px] leading-tight">Leads de qui mirar els tastos</h2>
+          <h2 className="font-display text-[20px] leading-tight">Leads de qui mirar els presentacions</h2>
           <button
             type="button"
             aria-label="Tanca"
@@ -115,7 +115,7 @@ export function ModalLeads({
           </p>
 
           {error ? (
-            <p role="alert" className="py-3 text-[13px] text-wine-deep">
+            <p role="alert" className="py-3 text-[13px] text-marca-fosc">
               {error}
             </p>
           ) : trobats && trobats.length === 0 && !carregant ? (
@@ -131,13 +131,13 @@ export function ModalLeads({
                       onClick={() => commuta(lead)}
                       aria-pressed={triat}
                       className={`flex w-full items-center gap-2.5 px-1.5 py-2 text-left transition-colors hover:bg-parchment/60 ${
-                        triat ? "shadow-[inset_3px_0_0_0_#8c2f45]" : ""
+                        triat ? "shadow-[inset_3px_0_0_0_#0f766e]" : ""
                       }`}
                     >
                       <span
                         aria-hidden
                         className={`grid size-4 shrink-0 place-items-center rounded border text-[10px] leading-none ${
-                          triat ? "border-wine bg-wine text-cream" : "border-line bg-white"
+                          triat ? "border-marca bg-marca text-cream" : "border-line bg-white"
                         }`}
                       >
                         {triat ? "✓" : ""}

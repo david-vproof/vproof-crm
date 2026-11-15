@@ -1,47 +1,28 @@
-/** Els traços de la copa, en un quadrat de 24: els fan servir les icones de l'app. */
-export const COPA = {
-  cos: "M6 3h12l-1.2 6.2A5 5 0 0 1 12 13a5 5 0 0 1-4.8-3.8L6 3Z",
-  peu: "M12 13v6M8.5 19h7",
+/**
+ * La marca del portal: vproof CRM. L'emblema és una creu sanitària dins d'un
+ * escut arrodonit, en un quadrat de 24; el fan servir també les icones de l'app.
+ */
+export const CREU = {
+  /** L'escut, ple. */
+  escut: "M12 2.2 4 5.2v6.1c0 4.9 3.4 9.1 8 10.5 4.6-1.4 8-5.6 8-10.5V5.2l-8-3Z",
+  /** La creu, buidada sobre l'escut. */
+  creu: "M10.4 7.5h3.2v3h3v3.2h-3v3h-3.2v-3h-3v-3.2h3v-3Z",
 };
 
-export function Copa({ className = "" }: { className?: string }) {
+/** L'emblema sol, en el color del text. La creu queda del color del fons. */
+export function Emblema({ className = "" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden className={className}>
-      <path d={COPA.cos} fill="currentColor" />
-      <path d={COPA.peu} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <svg viewBox="0 0 24 24" aria-hidden className={className}>
+      <path d={CREU.escut} fill="currentColor" />
+      <path d={CREU.creu} fill="var(--color-cream)" />
     </svg>
   );
 }
 
 /**
- * El logotip, traç a traç, tal com ve del fitxer de marca (143 × 26). Es
- * pinta amb `currentColor` perquè el mateix dibuix serveixi en fons clar (gris
- * fosc) i en fons fosc (crema). Els tres últims traços són l'emblema rodó del
- * final: és el que queda quan no hi ha lloc per al nom sencer.
- */
-export const NOM = [
-  "M1.89208 17.1574C2.11924 18.3565 2.57357 19.1242 3.90492 19.1185C5.23627 19.1127 5.8315 18.3076 5.82575 17.2207L5.80274 7.67978H7.86447L7.89035 17.0338C7.89035 19.5469 6.42098 21.0882 3.90779 21.094C1.52689 21.094 0.247292 19.5268 0 17.5255L1.89208 17.1574Z",
-  "M12.8908 7.65964H14.6822L19.283 20.769H17.1638L16.2178 17.8676H11.3984L10.4553 20.7863H8.37341L12.8908 7.65964ZM15.634 16.1078L13.7793 10.6013L11.9937 16.1193L15.634 16.1078Z",
-  "M19.7201 7.6424H21.7818L21.8048 16.2833C21.8048 17.9165 22.5812 19.0754 24.5135 19.0696C26.4459 19.0639 27.228 17.8993 27.2223 16.3063L27.1993 7.62802H29.261L29.284 16.197C29.284 18.9891 27.366 21.0393 24.5193 21.0451C21.6726 21.0508 19.7517 19.015 19.7431 16.22L19.7201 7.6424Z",
-  "M31.2307 7.61076H33.8532L37.367 17.6894L40.8176 7.59351H43.4429L43.4803 20.7173H41.4243L41.3985 11.2281L38.1261 20.7173H36.605L33.3011 11.2281L33.3269 20.7173H31.2623L31.2307 7.61076Z",
-  "M45.9906 7.55901L54.1082 7.53888V9.50859L48.0552 9.52297V12.7838H53.5676V14.7535L48.0581 14.7679V18.7245L54.0967 18.7073V20.6741L45.982 20.6971L45.9906 7.55901Z",
-  "M61.8404 16.9964C62.0675 18.1955 62.5219 18.9632 63.8532 18.9603C65.1846 18.9575 65.7798 18.1494 65.7741 17.0625L65.751 7.51874H67.8128L67.8387 16.8756C67.8387 19.3859 66.3693 20.9272 63.8561 20.9329C61.4752 20.9329 60.1956 19.3687 59.9483 17.3644L61.8404 16.9964Z",
-  "M69.3166 14.072C69.3022 9.27278 71.4358 7.22255 74.2481 7.21392C77.0603 7.2053 79.2169 9.24402 79.2313 14.0432C79.2457 18.8424 77.1322 20.8927 74.2826 20.8984C71.433 20.9042 69.3396 18.8884 69.3166 14.072ZM77.1696 14.049C77.1696 10.3367 76.2178 9.17789 74.251 9.18364C72.2841 9.18939 71.3755 10.354 71.3755 14.072C71.3755 17.79 72.3445 18.9459 74.2768 18.9373C76.2092 18.9287 77.1926 17.7411 77.1811 14.049H77.1696Z",
-  "M80.8186 7.47848L85.4481 7.46411C85.9584 7.45841 86.4648 7.55377 86.9381 7.74468C87.4114 7.93559 87.8422 8.21828 88.2057 8.57646C88.5692 8.93464 88.8583 9.36122 89.0562 9.83162C89.2541 10.302 89.3569 10.8069 89.3588 11.3173C89.3737 12.073 89.1627 12.816 88.7529 13.4512C88.3431 14.0864 87.7531 14.5849 87.0584 14.8829L89.7729 20.5764H87.5415L84.9536 15.1848H82.8947V20.5821H80.833L80.8186 7.47848ZM85.4654 13.2295C86.0089 13.2295 87.3028 12.9994 87.2999 11.3661C87.3146 11.1165 87.2776 10.8665 87.1912 10.6318C87.1049 10.3971 86.971 10.1828 86.798 10.0022C86.625 9.82168 86.4165 9.67876 86.1858 9.58243C85.955 9.48611 85.7068 9.43845 85.4568 9.44244H82.889V13.2295H85.4654Z",
-  "M91.4177 7.44684H95.8804C98.756 7.44684 100.869 9.19802 100.884 13.9943C100.898 18.7907 98.7847 20.562 95.9178 20.5677H91.455L91.4177 7.44684ZM95.9121 18.5894C97.8789 18.5894 98.8336 17.6807 98.8221 13.9886C98.8106 10.2965 97.8559 9.38781 95.8891 9.40506H93.488L93.511 18.5894H95.9121Z",
-  "M105.522 7.40949H107.322L111.923 20.5217H109.806L108.858 17.6175H104.041L103.095 20.5246H101.013L105.522 7.40949ZM103.222 3.21701L107.276 5.6238L106.528 6.84588L102.457 4.47648L103.222 3.21701ZM108.259 15.8692L106.41 10.3511L104.628 15.8692H108.259Z",
-];
-
-export const EMBLEMA = [
-  "M129.33 17.2379C129.617 18.3881 130.264 18.8999 131.343 18.8999C131.629 18.9214 131.917 18.8811 132.187 18.7819C132.457 18.6827 132.702 18.5269 132.907 18.3248C133.27 17.9271 133.461 17.4021 133.439 16.8641V7.90118H134.529V16.7031C134.529 17.7037 134.241 18.4916 133.686 19.0581C133.374 19.3523 133.005 19.5804 132.603 19.7286C132.2 19.8768 131.771 19.9422 131.343 19.9207C129.701 19.9207 128.694 18.9948 128.358 17.5197L129.33 17.2379Z",
-  "M130.998 25.0018C128.624 25.0018 126.303 24.2978 124.33 22.979C122.356 21.6602 120.817 19.7857 119.909 17.5925C119.001 15.3994 118.763 12.9861 119.226 10.6579C119.689 8.32969 120.832 6.19109 122.511 4.51253C124.189 2.83398 126.328 1.69087 128.656 1.22776C130.984 0.764646 133.398 1.00233 135.591 1.91076C137.784 2.81918 139.658 4.35755 140.977 6.33132C142.296 8.30509 143 10.6256 143 12.9995C142.997 16.1817 141.731 19.2328 139.481 21.483C137.231 23.7332 134.18 24.9987 130.998 25.0018ZM130.998 1.98343C128.82 1.98627 126.691 2.63477 124.881 3.84695C123.072 5.05913 121.662 6.78059 120.83 8.79375C119.999 10.8069 119.783 13.0214 120.209 15.1574C120.636 17.2933 121.686 19.2548 123.228 20.794C124.769 22.3332 126.732 23.3809 128.868 23.8048C131.005 24.2287 133.219 24.0097 135.231 23.1755C137.243 22.3413 138.963 20.9294 140.173 19.1181C141.382 17.3069 142.028 15.1776 142.028 12.9995C142.024 10.0765 140.86 7.27456 138.792 5.20907C136.724 3.14358 133.921 1.98342 130.998 1.98343Z",
-  "M127.142 7.32034C126.15 7.32034 125.362 7.60789 124.798 8.18299C124.446 8.56521 124.207 9.03823 124.108 9.54885H125.183C125.27 9.31303 125.403 9.09694 125.575 8.91336C125.779 8.71097 126.025 8.55491 126.296 8.45569C126.566 8.35648 126.855 8.31644 127.142 8.33826C127.538 8.31008 127.933 8.41343 128.264 8.6323C128.596 8.85117 128.846 9.17333 128.976 9.54885H130.057C129.678 8.18012 128.706 7.32034 127.142 7.32034Z",
-];
-
-/**
- * La marca. En fons clar (login, capçalera del mòbil) va en gris fosc, com al
- * fitxer original; en fons fosc (barra lateral) va en crema. Compacta, només
- * l'emblema rodó: és el que cap a la barra plegada.
+ * La marca. En fons clar (login, capçalera del mòbil) va en tinta fosca; en
+ * fons fosc (barra lateral) va en crema. Compacta, només l'emblema: és el que
+ * cap a la barra plegada.
  */
 export function Marca({
   clar = false,
@@ -51,23 +32,28 @@ export function Marca({
   /** Només l'emblema, per a la barra plegada. */
   compacta?: boolean;
 }) {
-  const color = clar ? "text-cream" : "text-[#474747]";
+  const color = clar ? "text-cream" : "text-ink";
 
   if (compacta) {
     return (
-      <span title="Jaume Jordà" className={`block size-9 shrink-0 ${color}`}>
-        <svg viewBox="119 1 24 24" fill="currentColor" role="img" aria-label="Jaume Jordà" className="size-full">
-          {EMBLEMA.map((d) => <path key={d.slice(0, 12)} d={d} />)}
+      <span title="vproof CRM" className={`block size-9 shrink-0 ${clar ? "text-cream" : "text-marca"}`}>
+        <svg viewBox="0 0 24 24" role="img" aria-label="vproof CRM" className="size-full">
+          <path d={CREU.escut} fill="currentColor" />
+          <path d={CREU.creu} fill={clar ? "var(--color-marca-fosc)" : "var(--color-cream)"} />
         </svg>
       </span>
     );
   }
 
   return (
-    <span className={`block min-w-0 shrink ${color}`}>
-      <svg viewBox="0 0 143 26" fill="currentColor" role="img" aria-label="Jaume Jordà" className="block h-[26px] w-auto max-w-full">
-        {[...NOM, ...EMBLEMA].map((d) => <path key={d.slice(0, 12)} d={d} />)}
+    <span className={`flex min-w-0 shrink items-center gap-2 ${color}`} aria-label="vproof CRM" role="img">
+      <svg viewBox="0 0 24 24" aria-hidden className={`size-[26px] shrink-0 ${clar ? "text-cream" : "text-marca"}`}>
+        <path d={CREU.escut} fill="currentColor" />
+        <path d={CREU.creu} fill={clar ? "var(--color-marca-fosc)" : "var(--color-cream)"} />
       </svg>
+      <span className="truncate text-[21px] leading-none tracking-[-0.02em]">
+        <span className="font-semibold">vproof</span> <span className="font-light opacity-80">CRM</span>
+      </span>
     </span>
   );
 }

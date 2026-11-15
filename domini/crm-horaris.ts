@@ -9,7 +9,7 @@
  * Hi ha dos horaris independents: quan es pot anar a vendre i quan es pot
  * entregar. Sovint no coincideixen.
  *
- * Tot és càlcul pur. La forma que es desa a Directus és aquesta mateixa, en
+ * Tot és càlcul pur. La forma que es desa a la base de dades és aquesta mateixa, en
  * JSON, i sempre es torna a validar en llegir-la.
  */
 export const DIES = ["Dilluns", "Dimarts", "Dimecres", "Dijous", "Divendres", "Dissabte", "Diumenge"];
@@ -50,7 +50,7 @@ function esEstat(brut: unknown): brut is EstatDia {
   return brut === "obert" || brut === "preferent" || brut === "bloquejat";
 }
 
-/** Neteja el que arriba de Directus i garanteix els set dies en ordre. */
+/** Neteja el que arriba de la base de dades i garanteix els set dies en ordre. */
 export function llegeixHorari(brut: unknown): Horari {
   const files = Array.isArray(brut) ? brut : [];
 

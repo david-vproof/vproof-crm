@@ -56,7 +56,7 @@ export function UbicacioAutomatica({ perProvar }: { perProvar: number }) {
 
   if (error) {
     return (
-      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-wine-tint px-3 py-2 text-[12.5px] text-wine-deep">
+      <p className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-marca-clar px-3 py-2 text-[12.5px] text-marca-fosc">
         <span>{error}</span>
         <BotoReprenUbicacio etiqueta="Torna-ho a provar" />
       </p>
@@ -66,7 +66,7 @@ export function UbicacioAutomatica({ perProvar }: { perProvar: number }) {
 
   return (
     <p className="flex items-center gap-2 rounded-lg bg-parchment px-3 py-2 text-[12.5px] text-muted">
-      <span className="size-2 animate-pulse rounded-full bg-wine" />
+      <span className="size-2 animate-pulse rounded-full bg-marca" />
       Ubicant els clients que falten… {restants > 0 ? `en queden ${restants}` : "gairebé fet"}
     </p>
   );

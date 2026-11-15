@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ICONES } from "@/components/Icones";
 
 /**
- * La miniatura d'un article als llistats. La foto ve de FactuSol i la serveix
+ * La miniatura d'un article als llistats. La foto ve de l'ERP i la serveix
  * el portal; si es passa `gran`, en tocar-la s'obre sencera. Sense `gran` és
  * només la miniatura, per posar-la dins d'un botó (vegeu `DetallArticle`).
  * Sense foto, un requadre amb la icona perquè les files no canviïn d'alineació.
@@ -31,7 +31,7 @@ export function FotoArticle({
     );
   }
 
-  // Ja arriba a la mida que toca des de Directus: no cal que Next la torni a optimitzar.
+  // Ja arriba a la mida que toca des de la base de dades: no cal que Next la torni a optimitzar.
   const foto = <Image src={petita} alt={nom} width={80} height={80} unoptimized className="size-full object-contain" />;
   if (!gran) return <span className={requadre}>{foto}</span>;
   return (

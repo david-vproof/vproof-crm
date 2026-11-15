@@ -23,7 +23,7 @@ export type Deure = {
   id: string;
   text: string;
   fet: boolean;
-  /** Prioritat de la tasca, per si algú l'ha apujada des de Directus. */
+  /** Prioritat de la tasca, per si algú l'ha apujada des de la base de dades. */
   prioritat: string;
   /** Data de venciment, si en té. */
   venciment: string;

@@ -10,7 +10,7 @@ import { clientsAmbDeures } from "@/serveis/crm-deures";
 
 export type ClientsMarcats = { atributs: Set<string>; deures: Set<string> };
 
-/** Sense tombar la pantalla si Directus falla: sense marques, la llista surt igual. */
+/** Sense tombar la pantalla si la base de dades falla: sense marques, la llista surt igual. */
 export async function clientsMarcats(): Promise<ClientsMarcats> {
   const [atributs, deures] = await Promise.all([
     clientsAmbAtributs().catch(() => new Set<string>()),

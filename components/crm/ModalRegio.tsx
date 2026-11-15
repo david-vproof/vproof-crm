@@ -143,7 +143,7 @@ export function ModalRegio({
               {missatge ? (
                 <p
                   role="status"
-                  className={`rounded-lg px-3 py-2 text-[13px] ${missatge.to === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-wine-tint text-wine-deep"}`}
+                  className={`rounded-lg px-3 py-2 text-[13px] ${missatge.to === "ok" ? "bg-emerald-50 text-emerald-800" : "bg-marca-clar text-marca-fosc"}`}
                 >
                   {missatge.text}
                 </p>
@@ -154,7 +154,7 @@ export function ModalRegio({
           {carregant ? (
             <p className="px-4 py-3 text-[13px] text-muted">Carregant els clients de la regió…</p>
           ) : error ? (
-            <p role="alert" className="px-4 py-3 text-[13px] text-wine-deep">
+            <p role="alert" className="px-4 py-3 text-[13px] text-marca-fosc">
               {error}
             </p>
           ) : comptes ? (

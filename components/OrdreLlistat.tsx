@@ -30,7 +30,7 @@ export function EnllacOrdre({
       className={`inline-flex items-center gap-1 underline-offset-2 transition hover:text-ink hover:underline ${activa ? "text-ink" : ""} ${className}`}
     >
       {etiqueta}
-      <span className={`text-[9px] ${activa ? "text-wine" : "text-line"}`} aria-hidden>
+      <span className={`text-[9px] ${activa ? "text-marca" : "text-line"}`} aria-hidden>
         {activa && ordre?.descendent ? "▼" : "▲"}
       </span>
     </Link>

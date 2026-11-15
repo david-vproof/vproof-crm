@@ -52,7 +52,7 @@ export function CasellaToDo({
         onChange={commuta}
         aria-label={fet ? `Torna a obrir «${text}»` : `Marca com a fet «${text}»`}
         title={fet ? "Torna a obrir" : "Marca com a fet"}
-        className="mt-[3px] size-4 shrink-0 cursor-pointer accent-wine disabled:cursor-wait"
+        className="mt-[3px] size-4 shrink-0 cursor-pointer accent-marca disabled:cursor-wait"
       />
       <div className={`min-w-0 flex-1 transition-opacity ${fet ? "opacity-60" : ""}`}>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -63,7 +63,7 @@ export function CasellaToDo({
         </div>
         {children}
         {error ? (
-          <p role="alert" className="mt-1 text-[12px] text-wine">
+          <p role="alert" className="mt-1 text-[12px] text-marca">
             {error}
           </p>
         ) : null}

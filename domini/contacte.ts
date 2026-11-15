@@ -1,5 +1,5 @@
 /**
- * Telèfons i correus tal com arriben de FactuSol, convertits en accions: trucar,
+ * Telèfons i correus tal com arriben de l'ERP, convertits en accions: trucar,
  * obrir WhatsApp i escriure un correu.
  *
  * Els camps no són nets. Un telèfon pot portar-ne dos («634517572 / 634517528»,

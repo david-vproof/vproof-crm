@@ -10,7 +10,7 @@
 export const TO_RESULTAT: Record<string, string> = {
   Positiu: "border-emerald-300 bg-emerald-50 text-emerald-800",
   Neutre: "border-sky-300 bg-sky-50 text-sky-800",
-  Negatiu: "border-wine/40 bg-wine-tint text-wine-deep",
+  Negatiu: "border-marca/40 bg-marca-clar text-marca-fosc",
   "Sense resposta": "border-amber-300 bg-amber-50 text-amber-800",
 };
 
@@ -18,7 +18,7 @@ export const TO_RESULTAT: Record<string, string> = {
 export const TO_RESULTAT_PLA: Record<string, string> = {
   Positiu: "bg-emerald-50 text-emerald-700",
   Neutre: "bg-sky-50 text-sky-700",
-  Negatiu: "bg-wine-tint text-wine-deep",
+  Negatiu: "bg-marca-clar text-marca-fosc",
   "Sense resposta": "bg-amber-50 text-amber-700",
 };
 

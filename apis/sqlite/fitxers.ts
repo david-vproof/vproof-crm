@@ -3,7 +3,7 @@
  * mida, i el contingut al disc, a `DIR_FITXERS/<id>`. En servir una imatge,
  * se'n pot demanar una mida o un format (`width`, `height`, `fit`, `format`,
  * `quality`, `withoutEnlargement`, i `transforms` amb `trim`), com feia
- * l'endpoint /assets de Directus. Ho fa sharp; si no pot, es dona l'original.
+ * l'endpoint /assets de la base de dades. Ho fa sharp; si no pot, es dona l'original.
  */
 import "server-only";
 

@@ -45,11 +45,11 @@ export function EsborraFitxa({
       {confirmant ? (
         <form
           action={accio}
-          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-wine/30 bg-wine-tint px-4 py-3"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-marca/30 bg-marca-clar px-4 py-3"
         >
           <input type="hidden" name="entitat" value={entitat} />
           <input type="hidden" name="id" value={id} />
-          <p className="text-[13px] text-wine-deep">Segur que vols esborrar «{nom}»? No es pot desfer.</p>
+          <p className="text-[13px] text-marca-fosc">Segur que vols esborrar «{nom}»? No es pot desfer.</p>
           <div className="flex items-center gap-3">
             <button type="button" onClick={() => setConfirmant(false)} className="text-[13px] text-muted hover:text-ink">
               Cancel·la
@@ -57,7 +57,7 @@ export function EsborraFitxa({
             <button
               type="submit"
               disabled={enviant}
-              className="rounded-lg bg-wine px-3 py-1.5 text-[13px] font-medium text-cream transition hover:bg-wine-deep disabled:opacity-60"
+              className="rounded-lg bg-marca px-3 py-1.5 text-[13px] font-medium text-cream transition hover:bg-marca-fosc disabled:opacity-60"
             >
               {enviant ? "Esborrant…" : "Sí, esborra"}
             </button>
@@ -67,13 +67,13 @@ export function EsborraFitxa({
         <button
           type="button"
           onClick={() => setConfirmant(true)}
-          className="inline-flex items-center rounded-lg bg-wine px-3 py-1.5 text-[13px] font-medium text-cream transition hover:bg-wine-deep"
+          className="inline-flex items-center rounded-lg bg-marca px-3 py-1.5 text-[13px] font-medium text-cream transition hover:bg-marca-fosc"
         >
           Esborra {que}
         </button>
       )}
       {estat.error ? (
-        <p role="alert" className="mt-2 text-[12.5px] text-wine">
+        <p role="alert" className="mt-2 text-[12.5px] text-marca">
           {estat.error}
         </p>
       ) : null}

@@ -76,11 +76,11 @@ export const ICONES = {
       <path d="M10 13.5h4" />
     </svg>
   ),
-  // Els cellers de qui es compra: una ampolla.
-  cellers: (p: Props) => (
+  // Els laboratoris de qui es compra: un matràs.
+  laboratoris: (p: Props) => (
     <svg {...base} {...p}>
-      <path d="M10 2.5h4v3.2c0 .9.3 1.7.9 2.4l.9 1.1c.5.6.7 1.3.7 2v8.3a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-8.3c0-.7.2-1.4.7-2l.9-1.1c.6-.7.9-1.5.9-2.4V2.5Z" />
-      <path d="M7.5 13.5h9" />
+      <path d="M9.5 3h5M10.5 3v6.2L5 18.6A1.6 1.6 0 0 0 6.4 21h11.2a1.6 1.6 0 0 0 1.4-2.4l-5.5-9.4V3" />
+      <path d="M7.4 15h9.2" />
     </svg>
   ),
 
@@ -150,11 +150,11 @@ export const ICONES = {
       <path d="m3.5 12 8.5 4.5 8.5-4.5M3.5 16 12 20.5l8.5-4.5" />
     </svg>
   ),
-  // El selector de vins: una copa.
-  vins: (p: Props) => (
+  // El selector de productes: una càpsula.
+  productes: (p: Props) => (
     <svg {...base} {...p}>
-      <path d="M7 3.5h10l-.7 6.6a4.3 4.3 0 0 1-8.6 0L7 3.5Z" />
-      <path d="M12 14.4v5.6M8.5 20h7" />
+      <rect x="2.6" y="8.2" width="18.8" height="7.6" rx="3.8" transform="rotate(-45 12 12)" />
+      <path d="m8.9 8.9 6.2 6.2" />
     </svg>
   ),
   configuracio: (p: Props) => (
