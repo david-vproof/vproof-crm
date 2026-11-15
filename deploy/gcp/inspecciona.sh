@@ -18,3 +18,23 @@ echo "Ordre: $(sudo docker inspect -f '{{json .Config.Cmd}}' "$CADDY")"
 echo "Noms que serveix (capçaleres de bloc del Caddyfile):"
 sudo docker exec "$CADDY" sh -c 'grep -nE "^[^[:space:]#].*\{[[:space:]]*$|^[[:space:]]*import " /etc/caddy/Caddyfile' 2>&1 | sed 's/^/  /'
 echo "Xarxes del CRM: $(sudo docker inspect -f '{{range $nom, $x := .NetworkSettings.Networks}}{{$nom}} {{end}}' vproof-crm 2>/dev/null)"
+
+# --- La sincronització del CRM: com han anat les darreres passades -----------
+# Només recomptes i missatges d'estat: res de noms de clients ni de productes.
+if sudo docker ps --format '{{.Names}}' | grep -qx vproof-crm; then
+  echo "▸ Darreres sincronitzacions del CRM"
+  sudo docker exec -i vproof-crm node - <<'JS' 2>&1 | sed 's/^/  /'
+const Database = require("better-sqlite3");
+const bd = new Database(process.env.SQLITE_RUTA, { readonly: true });
+for (const f of bd.prepare("SELECT inici, fi, estat, desencadenant, missatge FROM crm_sync_execucions ORDER BY inici DESC LIMIT 3").all()) {
+  console.log(`${f.inici} → ${f.fi ?? "…"} · ${f.estat} · ${f.desencadenant}`);
+  for (const linia of String(f.missatge ?? "").split("\n")) console.log(`    ${linia}`);
+}
+const recompte = (taula, extra = "") => bd.prepare(`SELECT COUNT(*) AS n ${extra} FROM ${taula}`).get();
+console.log("Productes:", JSON.stringify(recompte("crm_articles", ", SUM(font = 'erp') AS de_l_erp, SUM(historic) AS historics, SUM(erp_absent_des_de IS NOT NULL) AS absents, SUM(preu IS NOT NULL) AS amb_preu, SUM(estoc_actual > 0) AS amb_estoc, SUM(imatge IS NOT NULL) AS amb_foto")));
+console.log("Clients:", JSON.stringify(recompte("crm_clients", ", SUM(font = 'erp') AS de_l_erp")));
+console.log("Laboratoris:", JSON.stringify(recompte("crm_proveidors", ", SUM(font = 'erp') AS de_l_erp")));
+const cfg = bd.prepare("SELECT url IS NOT NULL AS te_url, host, llista_preus, minuts FROM crm_connexio_erp LIMIT 1").get();
+console.log("Connexió desada:", JSON.stringify(cfg ?? null));
+JS
+fi
