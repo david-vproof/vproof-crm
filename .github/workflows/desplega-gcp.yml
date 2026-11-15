@@ -91,8 +91,14 @@ jobs:
             --command "ETIQUETA=${GITHUB_SHA::12} CRM_PORT=$CRM_PORT CRM_HOST=$CRM_HOST CRM_ADMIN_PASSWORD='${CRM_ADMIN_PASSWORD}' VPROOFERP_API_KEY='${VPROOFERP_API_KEY}' VPROOFERP_API_SECRET='${VPROOFERP_API_SECRET}' bash /tmp/remot.sh; codi=\$?; rm -f /tmp/remot.sh; exit \$codi"
 
       - name: Comprova des de fora
-        if: ${{ !inputs.nomes_estat }}
         run: |
+          source deploy/gcp/config.sh
+          IP="$(gcloud compute instances describe "$VM_NAME" --zone "$ZONE" --project "$PROJECT_ID" --format='value(networkInterfaces[0].accessConfigs[0].natIP)')"
+          CRM_HOST="${CRM_HOST:-crm.${IP//./-}.sslip.io}"
+          # L'ERP ha de seguir responent igual: el proxy és el seu.
+          ERP="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "http://$IP/login" || true)"
+          echo "ERP http://$IP/login → $ERP"
+          echo "### ERP: http://$IP (resposta $ERP)" >> "$GITHUB_STEP_SUMMARY"
           # El certificat el demana Caddy la primera vegada: pot trigar un minut.
           CODI=000
           for _ in $(seq 1 20); do
