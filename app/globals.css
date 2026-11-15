@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #17100f;
+  --color-ink-soft: #241a19;
+  --color-cream: #faf7f4;
+  --color-parchment: #f2ece7;
+  --color-wine: #8c2f45;
+  --color-wine-deep: #6d2235;
+  --color-wine-tint: #f6e9ec;
+  --color-line: #e7ded8;
+  --color-muted: #857878;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), ui-serif, Georgia, serif;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+  html {
+    /* Com una app al telèfon: un doble toc no amplia la pàgina (molta gent fa
+       doble clic per costum, i la deixava moguda), i un toc no deixa l'ombra
+       grisa del navegador. */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html,
+  body {
+    /* Estirar més enllà de dalt o de baix no arrossega la pantalla sencera,
+       capçalera inclosa: només rebota el panell que es desplaça. */
+    overscroll-behavior: none;
+  }
+  body {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection {
+    background: var(--color-wine);
+    color: #fff;
+  }
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-[15px]
+           outline-none transition placeholder:text-muted/60
+           focus:border-wine focus:ring-4 focus:ring-wine/10
+           disabled:cursor-not-allowed disabled:bg-parchment/50 disabled:text-muted;
+  }
+  .btn-primary {
+    @apply inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2.5
+           text-[15px] font-medium text-cream transition
+           hover:bg-ink-soft active:scale-[0.99] disabled:opacity-60 disabled:active:scale-100;
+  }
+  .card {
+    @apply rounded-xl border border-line bg-white;
+  }
+  /* Variants compactes per a l'espai de treball del CRM, on hi ha densitat. */
+  .btn-compacte {
+    @apply inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-1.5 text-[13px]
+           font-medium text-cream transition hover:bg-ink-soft active:scale-[0.99]
+           disabled:opacity-60 disabled:active:scale-100;
+  }
+  .field-compacte {
+    @apply w-full rounded-lg border border-line bg-white px-3 py-1.5 text-[13.5px]
+           outline-none transition placeholder:text-muted/60
+           focus:border-wine focus:ring-4 focus:ring-wine/10;
+  }
+}
+
+/* Sense barra de scroll: qui la substitueix són els degradats i les fletxes del menú lateral. */
+.scroll-amagat {
+  scrollbar-width: none;
+}
+.scroll-amagat::-webkit-scrollbar {
+  display: none;
+}
+
+/* La barra de scroll del panel principal, en tono discreto */
+.scroll-slim::-webkit-scrollbar {
+  width: 10px;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: #ded4cd;
+  border: 3px solid var(--color-cream);
+  border-radius: 99px;
+}
+
+/* La barra d'una fase de la sincronització de què no se sap el total: es mou
+   perquè es vegi que la cosa no està encallada, encara que no digui quant falta. */
+.barra-indeterminada {
+  background-image: linear-gradient(90deg, transparent 0%, var(--color-wine) 50%, transparent 100%);
+  background-size: 40% 100%;
+  background-repeat: no-repeat;
+  animation: barra-indeterminada 1.4s ease-in-out infinite;
+}
+@keyframes apareix {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes barra-indeterminada {
+  from {
+    background-position: -40% 0;
+  }
+  to {
+    background-position: 140% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .barra-indeterminada {
+    animation-duration: 3s;
+  }
+}
