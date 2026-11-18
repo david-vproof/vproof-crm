@@ -83,3 +83,19 @@ const resum = (nom, files, camps) => {
 })();
 JS
 fi
+
+# --- Les adreces vistes des de l'ERP mateix (bench, només lectura i recomptes) -------
+BACKEND="$(sudo docker ps --format '{{.Names}}' | grep -E '(^|-)backend(-|$)' | head -1 || true)"
+if [ -n "$BACKEND" ]; then
+  SITE="$(sudo docker exec -w /home/frappe/frappe-bench/sites "$BACKEND" sh -c 'for d in */site_config.json; do echo "${d%/site_config.json}"; done' 2>/dev/null | head -1)"
+  echo "▸ Adreces a l'ERP (site $SITE, llegit amb bench)"
+  executa() { sudo docker exec -w /home/frappe/frappe-bench "$BACKEND" bench --site "$SITE" execute "$@" 2>/dev/null | tail -1; }
+  echo "  Address en total: $(executa frappe.db.count --args "['Address']")"
+  echo "  Enllaços Address→Customer: $(executa frappe.db.count --args "['Dynamic Link', {'parenttype': 'Address', 'link_doctype': 'Customer'}]")"
+  echo "  Contact en total: $(executa frappe.db.count --args "['Contact']")"
+  echo "  Camps propis (Custom Field) de Customer: $(executa frappe.get_all --args "['Custom Field']" --kwargs "{'filters': {'dt': 'Customer'}, 'fields': ['fieldname', 'fieldtype'], 'limit_page_length': 200}")"
+  echo "  Permisos d'Address (DocPerm): $(executa frappe.get_all --args "['DocPerm']" --kwargs "{'filters': {'parent': 'Address'}, 'fields': ['role', 'permlevel', 'read', 'if_owner'], 'limit_page_length': 50}")"
+  echo "  Permisos d'Address personalitzats (Custom DocPerm): $(executa frappe.get_all --args "['Custom DocPerm']" --kwargs "{'filters': {'parent': 'Address'}, 'fields': ['role', 'permlevel', 'read', 'if_owner'], 'limit_page_length': 50}")"
+  echo "  Rols de l'usuari del CRM: $(executa frappe.get_roles --args "['crm-sync@vproof.local']")"
+  echo "  User Permissions de l'usuari del CRM: $(executa frappe.db.count --args "['User Permission', {'user': 'crm-sync@vproof.local'}]")"
+fi
