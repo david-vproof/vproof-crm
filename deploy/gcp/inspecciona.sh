@@ -39,30 +39,47 @@ console.log("Connexió desada:", JSON.stringify(cfg ?? null));
 JS
 fi
 
-# --- Com veu els articles l'usuari de l'ERP del CRM (només recomptes) ---------
+# --- Com veu les adreces dels clients l'usuari de l'ERP del CRM (només recomptes) ---
 if sudo docker ps --format '{{.Names}}' | grep -qx vproof-crm; then
-  echo "▸ Articles de l'ERP vistos amb la clau del CRM"
+  echo "▸ Adreces de l'ERP vistes amb la clau del CRM"
   sudo docker exec -i vproof-crm node - <<'JS' 2>&1 | sed 's/^/  /'
 const http = require("node:http");
 const Database = require("better-sqlite3");
-const c = new Database(process.env.SQLITE_RUTA, { readonly: true }).prepare("SELECT * FROM crm_connexio_erp LIMIT 1").get() ?? {};
+const bd = new Database(process.env.SQLITE_RUTA, { readonly: true });
+const c = bd.prepare("SELECT * FROM crm_connexio_erp LIMIT 1").get() ?? {};
 const url = new URL(c.url || process.env.VPROOFERP_URL);
 const host = c.host || process.env.VPROOFERP_HOST;
-const clau = c.api_key || process.env.VPROOFERP_API_KEY;
-const secret = c.api_secret || process.env.VPROOFERP_API_SECRET;
-const fields = JSON.stringify(["name", "disabled", "is_sales_item", "is_stock_item", "has_variants", "end_of_life"]);
-const cami = `/api/resource/Item?fields=${encodeURIComponent(fields)}&limit_page_length=1000`;
-http.get(new URL(cami, url), { headers: { Host: host, Authorization: `token ${clau}:${secret}` } }, (res) => {
-  let cos = "";
-  res.on("data", (t) => (cos += t));
-  res.on("end", () => {
-    if (res.statusCode !== 200) return console.log("HTTP", res.statusCode, cos.slice(0, 300).replace(/<[^>]+>/g, ""));
-    const files = JSON.parse(cos).data;
-    const compta = (camp) => files.reduce((m, f) => ((m[String(f[camp])] = (m[String(f[camp])] ?? 0) + 1), m), {});
-    console.log("articles:", files.length, "· camps que arriben:", Object.keys(files[0] ?? {}).join(","));
-    for (const camp of ["disabled", "is_sales_item", "is_stock_item", "has_variants"]) console.log(`  ${camp}:`, JSON.stringify(compta(camp)));
-    console.log("  end_of_life passat:", files.filter((f) => f.end_of_life && f.end_of_life < new Date().toISOString().slice(0, 10)).length);
+const auth = `token ${c.api_key || process.env.VPROOFERP_API_KEY}:${c.api_secret || process.env.VPROOFERP_API_SECRET}`;
+const demana = (doctype, fields, extra = {}) =>
+  new Promise((resol) => {
+    const p = new URLSearchParams({ fields: JSON.stringify(fields), limit_page_length: "2000", ...extra });
+    http.get(new URL(`/api/resource/${encodeURIComponent(doctype)}?${p}`, url), { headers: { Host: host, Authorization: auth } }, (res) => {
+      let cos = "";
+      res.on("data", (t) => (cos += t));
+      res.on("end", () => resol(res.statusCode === 200 ? JSON.parse(cos).data : `HTTP ${res.statusCode} ${cos.slice(0, 200).replace(/<[^>]+>/g, "")}`));
+    }).on("error", (e) => resol(`error ${e.message}`));
   });
-}).on("error", (e) => console.log("error:", e.message));
+const resum = (nom, files, camps) => {
+  if (!Array.isArray(files)) return console.log(`${nom}: ${files}`);
+  const arriben = Object.keys(files[0] ?? {});
+  const plens = Object.fromEntries(camps.map((camp) => [camp, files.filter((f) => f[camp] !== null && f[camp] !== undefined && f[camp] !== "").length]));
+  console.log(`${nom}: ${files.length} files · camps que arriben: ${arriben.join(",")} · amb valor: ${JSON.stringify(plens)}`);
+};
+(async () => {
+  const clients = await demana("Customer", ["name", "customer_primary_address", "primary_address", "customer_primary_contact"]);
+  resum("Customer", clients, ["customer_primary_address", "primary_address", "customer_primary_contact"]);
+  const adreces = await demana("Address", ["name", "address_line1", "city", "pincode", "state", "country", "address_type", "is_primary_address", "is_shipping_address", "disabled"]);
+  resum("Address", adreces, ["address_line1", "city", "pincode", "state", "country", "is_primary_address", "is_shipping_address"]);
+  if (Array.isArray(adreces)) console.log("  address_type:", JSON.stringify(adreces.reduce((m, a) => ((m[a.address_type] = (m[a.address_type] ?? 0) + 1), m), {})));
+  const enllacos = await demana("Dynamic Link", ["parent", "link_doctype", "link_name"], { parent: "Address" });
+  resum("Dynamic Link (parent=Address)", enllacos, ["link_name"]);
+  if (Array.isArray(enllacos)) console.log("  link_doctype:", JSON.stringify(enllacos.reduce((m, e) => ((m[e.link_doctype] = (m[e.link_doctype] ?? 0) + 1), m), {})));
+  const ambFill = await demana("Address", ["name", "`tabDynamic Link`.link_doctype", "`tabDynamic Link`.link_name"]);
+  resum("Address amb `tabDynamic Link`", ambFill, ["link_doctype", "link_name"]);
+  const ambPunt = await demana("Address", ["name", "links.link_doctype", "links.link_name"]);
+  resum("Address amb links.*", ambPunt, ["link_doctype", "link_name", "links.link_name"]);
+  const crm = bd.prepare("SELECT COUNT(*) n, SUM(adreca IS NOT NULL) amb_adreca, SUM(poblacio IS NOT NULL) amb_poblacio, SUM(codi_postal IS NOT NULL) amb_cp FROM crm_clients WHERE font = 'erp'").get();
+  console.log("Clients de l'ERP al CRM:", JSON.stringify(crm));
+})();
 JS
 fi
