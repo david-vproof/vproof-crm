@@ -40,7 +40,7 @@ type Client = {
 };
 type EquipVendes = { parent: string; sales_person: string | null; idx: number };
 type Adreca = {
-  name: string; address_title: string | null; address_line1: string | null; address_line2: string | null; city: string | null;
+  name: string; address_title: string | null; address_type: string | null; address_line1: string | null; address_line2: string | null; city: string | null;
   county: string | null; state: string | null; pincode: string | null; country: string | null; phone: string | null; email_id: string | null;
   is_primary_address: 0 | 1; is_shipping_address: 0 | 1; disabled: 0 | 1;
 };
@@ -127,29 +127,81 @@ async function comercials(erp: ConfigErp) {
   return importa("crm_agents", files, { adopta: (fila) => idPerCamp("crm_agents", "nom", fila.nom) });
 }
 
-async function adrecesPerNom(erp: ConfigErp, noms: string[]) {
-  const unics = [...new Set(noms.filter(Boolean))];
-  const perNom = new Map<string, Adreca>();
-  for (let i = 0; i < unics.length; i += 100) {
-    const tros = unics.slice(i, i + 100);
-    const files = await llistaTot<Adreca>(erp, "Address", { camps: CAMPS_ADRECA, filtres: [["name", "in", tros]] });
-    for (const adreca of files) perNom.set(adreca.name, adreca);
-  }
-  return perNom;
-}
-
 const CAMPS_ADRECA = [
-  "name", "address_title", "address_line1", "address_line2", "city", "county", "state", "pincode", "country", "phone", "email_id",
+  "name", "address_title", "address_type", "address_line1", "address_line2", "city", "county", "state", "pincode", "country", "phone", "email_id",
   "is_primary_address", "is_shipping_address", "disabled",
 ];
+
+type Contacte = { name: string; email_id: string | null; phone: string | null; mobile_no: string | null; is_primary_contact: 0 | 1 };
+
+/**
+ * Les adreces i el contacte principal de cada client (o proveïdor) de l'ERP.
+ *
+ * A ERPNext les adreces i els contactes no pengen de la fitxa: s'hi enllacen
+ * (Dynamic Link), i el camp «adreça principal» del client sovint és buit. Així
+ * que es llegeixen tots i es reparteixen pels enllaços. L'adreça del client és
+ * la que diu la seva fitxa; si no, la marcada com a principal; si no, la de
+ * facturació; si no, la primera. Les altres són els seus establiments.
+ *
+ * Si l'usuari de l'ERP no pot llegir adreces o contactes, Frappe en torna una
+ * llista buida o un error: llavors es diu a l'avís i es continua sense.
+ */
+async function adrecesIContactesDe(erp: ConfigErp, doctype: "Customer" | "Supplier") {
+  const avisos: string[] = [];
+  const llegeix = async <T,>(promesa: Promise<T[]>, que: string) => {
+    try {
+      return await promesa;
+    } catch (error) {
+      avisos.push(`sense ${que}: ${(error as Error).message}`);
+      return [] as T[];
+    }
+  };
+  const [adreces, enllacosAdreca, contactes, enllacosContacte] = await Promise.all([
+    llegeix(llistaTot<Adreca>(erp, "Address", { camps: CAMPS_ADRECA }), "adreces"),
+    llegeix(llistaTot<EnllacDinamic>(erp, "Dynamic Link", { camps: ["parent", "link_doctype", "link_name"], pare: "Address", filtres: [["link_doctype", "=", doctype]] }), "adreces"),
+    llegeix(llistaTot<Contacte>(erp, "Contact", { camps: ["name", "email_id", "phone", "mobile_no", "is_primary_contact"] }), "contactes"),
+    llegeix(llistaTot<EnllacDinamic>(erp, "Dynamic Link", { camps: ["parent", "link_doctype", "link_name"], pare: "Contact", filtres: [["link_doctype", "=", doctype]] }), "contactes"),
+  ]);
+  const adrecaPerNom = new Map(adreces.filter((a) => !a.disabled).map((a) => [a.name, a]));
+  const contactePerNom = new Map(contactes.map((c) => [c.name, c]));
+
+  const adrecesDe = new Map<string, Adreca[]>();
+  for (const enllac of enllacosAdreca) {
+    const adreca = adrecaPerNom.get(enllac.parent);
+    if (!adreca) continue;
+    const llista = adrecesDe.get(enllac.link_name) ?? [];
+    if (!llista.includes(adreca)) llista.push(adreca);
+    adrecesDe.set(enllac.link_name, llista);
+  }
+  const contacteDe = new Map<string, Contacte>();
+  for (const enllac of enllacosContacte) {
+    const contacte = contactePerNom.get(enllac.parent);
+    if (!contacte) continue;
+    const previ = contacteDe.get(enllac.link_name);
+    if (!previ || (!previ.is_primary_contact && contacte.is_primary_contact)) contacteDe.set(enllac.link_name, contacte);
+  }
+
+  /** L'adreça d'una fitxa i les altres (els establiments). */
+  const de = (nom: string, principalDeLaFitxa: string | null) => {
+    const llista = adrecesDe.get(nom) ?? [];
+    const principal =
+      llista.find((a) => a.name === principalDeLaFitxa) ??
+      llista.find((a) => a.is_primary_address) ??
+      llista.find((a) => (a.address_type ?? "").toLowerCase() === "billing") ??
+      llista[0];
+    return { principal, altres: llista.filter((a) => a !== principal), contacte: contacteDe.get(nom) };
+  };
+  if (adreces.length === 0 && !avisos.length) avisos.push("l'usuari de l'ERP no veu cap adreça (li cal el permís «Read» sobre Address)");
+  return { de, avisos };
+}
 
 async function laboratoris(erp: ConfigErp) {
   const proveidors = await llistaTot<Proveidor>(erp, "Supplier", {
     camps: ["name", "supplier_name", "supplier_group", "tax_id", "disabled", "country", "email_id", "mobile_no", "website", "supplier_primary_address"],
   });
-  const adreces = await adrecesPerNom(erp, proveidors.map((p) => p.supplier_primary_address ?? ""));
+  const { de, avisos } = await adrecesIContactesDe(erp, "Supplier");
   const files: FilaImportada[] = proveidors.map((p) => {
-    const adreca = adreces.get(p.supplier_primary_address ?? "");
+    const { principal: adreca, contacte } = de(p.name, p.supplier_primary_address);
     return {
       erp_id: p.name,
       codi_erp: codiSiNoEsElNom(p.name, p.supplier_name),
@@ -158,24 +210,26 @@ async function laboratoris(erp: ConfigErp) {
       nif: net(p.tax_id),
       tipus: "proveidor",
       estat: p.disabled ? "baixa" : "actiu",
-      correu: net(p.email_id) ?? net(adreca?.email_id),
-      telefon: net(p.mobile_no) ?? net(adreca?.phone),
+      correu: net(p.email_id) ?? net(contacte?.email_id) ?? net(adreca?.email_id),
+      telefon: net(p.mobile_no) ?? net(contacte?.phone) ?? net(adreca?.phone),
+      mobil: net(contacte?.mobile_no),
       web: net(p.website),
       ...adrecaDe(adreca),
       ...(adreca ? {} : { pais: pais(p.country) }),
     };
   });
-  return importa("crm_proveidors", files, {
+  const resultat = importa("crm_proveidors", files, {
     adopta: (fila) => idPerCamp("crm_proveidors", "nif", fila.nif) ?? idPerCamp("crm_proveidors", "nom_comercial", fila.nom_comercial),
   });
+  return { ...resultat, avis: avisos.join(" · ") || undefined };
 }
 
 async function clients(erp: ConfigErp) {
   const llista = await llistaTot<Client>(erp, "Customer", {
     camps: ["name", "customer_name", "customer_group", "territory", "tax_id", "disabled", "email_id", "mobile_no", "website", "customer_primary_address", "payment_terms", "creation"],
   });
-  const [adreces, equips] = await Promise.all([
-    adrecesPerNom(erp, llista.map((c) => c.customer_primary_address ?? "")),
+  const [{ de, avisos }, equips] = await Promise.all([
+    adrecesIContactesDe(erp, "Customer"),
     llistaTot<EquipVendes>(erp, "Sales Team", { camps: ["parent", "sales_person", "idx"], pare: "Customer", ordre: "idx asc" }).catch(() => [] as EquipVendes[]),
   ]);
   const comercialDe = new Map<string, string>();
@@ -183,8 +237,10 @@ async function clients(erp: ConfigErp) {
   const tipus = idsPerErpId("crm_tipus_client");
   const agents = idsPerErpId("crm_agents");
 
+  let ambAdreca = 0;
   const files: FilaImportada[] = llista.map((c) => {
-    const adreca = adreces.get(c.customer_primary_address ?? "");
+    const { principal: adreca, contacte } = de(c.name, c.customer_primary_address);
+    if (adreca) ambAdreca += 1;
     const agent = comercialDe.get(c.name);
     return {
       erp_id: c.name,
@@ -198,48 +254,50 @@ async function clients(erp: ConfigErp) {
       ...(agent ? { agent: agents.get(agent) ?? undefined } : {}),
       // Inactiu a l'ERP és baixa; si torna a estar actiu, deixa de ser-ho. La resta d'estats els posa el CRM.
       estat: (actual: unknown) => (c.disabled ? "baixa" : actual === "baixa" || !actual || actual === "sense_seleccionar" ? "habitual" : actual),
-      correu: net(c.email_id) ?? net(adreca?.email_id),
-      telefon: net(c.mobile_no) ?? net(adreca?.phone),
+      correu: net(c.email_id) ?? net(contacte?.email_id) ?? net(adreca?.email_id),
+      telefon: net(c.mobile_no) ?? net(contacte?.mobile_no) ?? net(contacte?.phone) ?? net(adreca?.phone),
       web: net(c.website),
       forma_pagament: net(c.payment_terms),
       data_alta: c.creation?.slice(0, 10) ?? null,
-      ...adrecaDe(adreca),
+      // Sense cap adreça a l'ERP no es toca la que hi hagi al CRM: pot ser que l'usuari de l'ERP no les vegi.
+      ...(adreca ? adrecaDe(adreca) : {}),
     };
   });
-  return importa("crm_clients", files, {
+  const resultat = importa("crm_clients", files, {
     adopta: (fila) => idPerCamp("crm_clients", "nif", fila.nif),
     // Si l'adreça canvia, les coordenades es tornen a calcular.
     quanCanvia: { camps: ["adreca", "poblacio", "codi_postal", "provincia", "pais"], buida: ["latitud", "longitud"] },
   });
+  return { ...resultat, nota: `${ambAdreca} amb adreça`, avis: avisos.join(" · ") || undefined };
 }
 
 async function establiments(erp: ConfigErp) {
-  const enllacos = await llistaTot<EnllacDinamic>(erp, "Dynamic Link", {
-    camps: ["parent", "link_doctype", "link_name"],
-    pare: "Address",
-    filtres: [["link_doctype", "=", "Customer"]],
-  });
-  const adreces = await adrecesPerNom(erp, enllacos.map((e) => e.parent));
+  const llista = await llistaTot<Pick<Client, "name" | "customer_primary_address">>(erp, "Customer", { camps: ["name", "customer_primary_address"] });
+  const { de, avisos } = await adrecesIContactesDe(erp, "Customer");
   const clients = idsPerErpId("crm_clients");
   const files: FilaImportada[] = [];
-  for (const enllac of enllacos) {
-    const adreca = adreces.get(enllac.parent);
-    const client = clients.get(enllac.link_name);
-    // Les d'entrega, i no la principal de facturació (que ja és la del client).
-    if (!adreca || !client || adreca.disabled || (!adreca.is_shipping_address && adreca.is_primary_address)) continue;
-    files.push({
-      erp_id: `${enllac.parent}|${enllac.link_name}`,
-      codi_erp: enllac.parent,
-      client,
-      nom: net(adreca.address_title) ?? enllac.parent,
-      telefon: net(adreca.phone),
-      correu: net(adreca.email_id),
-      ...adrecaDe(adreca),
-    });
+  for (const c of llista) {
+    const client = clients.get(c.name);
+    if (!client) continue;
+    // Les adreces que no són la del client: els seus altres centres o punts d'entrega.
+    for (const adreca of de(c.name, c.customer_primary_address).altres) {
+      files.push({
+        erp_id: `${adreca.name}|${c.name}`,
+        codi_erp: adreca.name,
+        client,
+        nom: net(adreca.address_title) ?? adreca.name,
+        telefon: net(adreca.phone),
+        correu: net(adreca.email_id),
+        ...adrecaDe(adreca),
+      });
+    }
   }
-  return importa("crm_establiments", files, {
+  // Si no es veuen adreces, no es dona per absent cap establiment: potser és un permís.
+  const resultat = importa("crm_establiments", files, {
+    marcaAbsents: avisos.length === 0,
     quanCanvia: { camps: ["adreca", "poblacio", "codi_postal", "provincia", "pais"], buida: ["latitud", "longitud"] },
   });
+  return { ...resultat, avis: avisos.join(" · ") || undefined };
 }
 
 /** La llista de preus de venda: la de Configuració, o «Standard Selling», o la que més articles té. */
